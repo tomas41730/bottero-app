@@ -6,7 +6,8 @@
       :items="desserts"
       :search="search"
       sort-by="name"
-      class="elevation-1" 
+      class="elevation-1"
+      @click="handleClick" 
     >
       <template v-slot:top>
         <v-card-text>
@@ -37,6 +38,10 @@
               <v-card-text>
                 <v-container>
                   <v-row>
+                    <v-col cols="12" sm="6" md="4">
+                      <v-text-field v-model="editedItem.ci" label="CI">
+                      </v-text-field>
+                    </v-col>
                     <v-col cols="12" sm="6" md="4">
                       <v-text-field v-model="editedItem.nombre" label="Nombres">
                       </v-text-field>
@@ -115,6 +120,8 @@
   </v-card>
 </template>
 <script>
+import { addUser, deleteUser, getUsers } from '../services/firestore/FirebaseUsers'
+
   export default {
     data: () => ({
       dialog: false,
@@ -188,63 +195,7 @@
 
     methods: {
       initialize () {
-        this.desserts = [
-          {
-            ci: '5234170',
-            nombre: 'Tomas',
-            apellido: 'Carvajal',
-            celular: '+59167559661',
-            correo: 'tomyandrei@hotmail.com',
-            contraseña: 'Pass123',
-            sucursal: '51',
-            rol: 'Encargado',
-            cuenta: true
-          },
-          {
-            ci: '5245670',
-            nombre: 'Andrea',
-            apellido: 'Agreda',
-            celular: '+59175469769',
-            correo: 'andreaagreda@hotmail.com',
-            contraseña: 'Pass123',
-            sucursal: 'Heroinas',
-            rol: 'Administrador',
-            cuenta: true
-          },
-          {
-            ci: '5245670',
-            nombre: 'Andrea',
-            apellido: 'Agreda',
-            celular: '+59175469769',
-            correo: 'andreaagreda@hotmail.com',
-            contraseña: 'Pass123',
-            sucursal: 'Heroinas',
-            rol: 'Administrador',
-            cuenta: true
-          },
-          {
-            ci: '5245670',
-            nombre: 'Andrea',
-            apellido: 'Agreda',
-            celular: '+59175469769',
-            correo: 'andreaagreda@hotmail.com',
-            contraseña: 'Pass123',
-            sucursal: 'Heroinas',
-            rol: 'Administrador',
-            cuenta: true
-          },
-          {
-            ci: '5245670',
-            nombre: 'Andrea',
-            apellido: 'Agreda',
-            celular: '+59175469769',
-            correo: 'andreaagreda@hotmail.com',
-            contraseña: 'Pass123',
-            sucursal: 'Heroinas',
-            rol: 'Administrador',
-            cuenta: true
-          },
-        ]
+        this.desserts = getUsers()
       },
 
       editItem (item) {
@@ -254,7 +205,6 @@
       },
 
       handleClick(item){
-        if (event.target.classList.contains('btn__content')) return;
         console.log(Object.assign({}, item));
       },
 
@@ -283,13 +233,18 @@
           this.editedItem = Object.assign({}, this.defaultItem)
           this.editedIndex = -1
         })
+        deleteUser(this.editedItem.ci)
       },
 
       save () {
+        const user = Object.assign({},this.editedItem)
         if (this.editedIndex > -1) {
           Object.assign(this.desserts[this.editedIndex], this.editedItem)
-        } else {
+          addUser(user.ci, user)
+        } 
+        else {
           this.desserts.push(this.editedItem)
+          addUser(user.ci, user)
         }
         this.close()
       },

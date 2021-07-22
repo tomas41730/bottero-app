@@ -91,5 +91,10 @@ export default {
       this.drawer = false
     },
   },
+  methods: {
+    handleClick(){
+      
+    }
+  }
 };
 </script>

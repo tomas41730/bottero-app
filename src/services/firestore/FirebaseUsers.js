@@ -7,18 +7,7 @@ export function addUser(ci, user)
 
 export function deleteUser(ci) 
 {
-    return new Promise((resolve, reject)=>
-    {
-        db.collection('users')
-        .doc(ci)
-        .delete().then(()=>{
-            alert('Eliminado Exitosamente')
-            resolve()
-            }).catch((err)=>{
-                alert(err)
-                reject()
-            })
-    })
+    db.collection('users').doc(ci).delete()
 }
 export function getUsers()
 {

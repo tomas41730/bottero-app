@@ -82,7 +82,7 @@ export default {
     drawer: false,
     items: [
         { title: 'PRINCIPAL', icon: 'mdi-view-dashboard', path: '/'},
-        { title: 'SUCURSALES', icon: 'mdi-home-city', path: 'about'},
+        { title: 'SUCURSALES', icon: 'mdi-home-city', path: 'stores'},
         { title: 'USUARIOS', icon: 'mdi-account-group-outline', path: '/users'},
       ],
   }),

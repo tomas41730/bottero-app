@@ -63,12 +63,42 @@
                       </v-text-field>
                     </v-col>
                     <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.sucursal" label="Sucursal">
-                      </v-text-field>
+                      <v-combobox
+                        :items="items"
+                        label="Sucursal"
+                        v-model="editedItem.sucursal"
+                      >
+                        <template v-slot:selection="data">
+                          <v-chip
+                            :key="JSON.stringify(data.item)"
+                            v-bind="data.attrs"
+                            :input-value="data.selected"
+                            :disabled="data.disabled"
+                            @click:close="data.parent.selectItem(data.item)"
+                          >
+                            {{ data.item }}
+                          </v-chip>
+                        </template>
+                      </v-combobox>
                     </v-col>
                     <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.rol" label="Rol">
-                      </v-text-field>
+                      <v-combobox
+                        :items="roles"
+                        label="Rol"
+                        v-model="editedItem.rol"
+                      >
+                        <template v-slot:selection="data">
+                          <v-chip
+                            :key="JSON.stringify(data.item)"
+                            v-bind="data.attrs"
+                            :input-value="data.selected"
+                            :disabled="data.disabled"
+                            @click:close="data.parent.selectItem(data.item)"
+                          >
+                            {{ data.item }}
+                          </v-chip>
+                        </template>
+                      </v-combobox>
                     </v-col>
                     <v-col cols="12" sm="6" md="4">
                       <v-text-field v-model="editedItem.cuenta" label="Cuenta">
@@ -89,18 +119,6 @@
             </v-card>
           </v-dialog>
 
-          <v-dialog v-model="dialogDelete" max-width="600px">
-            <v-card>
-              <v-card-title>{{ deleteFormTitle }}</v-card-title>
-              <v-card-subtitle>¿Desea continuar?</v-card-subtitle>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
-                <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
-                <v-spacer></v-spacer>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
         </v-toolbar>
       </template>
       <template v-slot:[`item.actions`]="{ item }">
@@ -121,12 +139,15 @@
 </template>
 <script>
 import { addUser, deleteUser, getUsers } from '../services/firestore/FirebaseUsers'
-
+import { deleteAlert, createAlert } from '../services/Alerts'
+import { getStoresNames } from '../services/firestore/FirebaseStores'
   export default {
     data: () => ({
       dialog: false,
       dialogDelete: false,
       search: '',
+      items: [],
+      roles: ['Admin', 'Encargado', 'Vendedora'],
       selected:[],
       headers: [
         {
@@ -184,9 +205,6 @@ import { addUser, deleteUser, getUsers } from '../services/firestore/FirebaseUse
       dialog (val) {
         val || this.close()
       },
-      dialogDelete (val) {
-        val || this.closeDelete()
-      },
     },
 
     created () {
@@ -196,6 +214,7 @@ import { addUser, deleteUser, getUsers } from '../services/firestore/FirebaseUse
     methods: {
       initialize () {
         this.desserts = getUsers()
+        this.items = getStoresNames()
       },
 
       editItem (item) {
@@ -211,10 +230,13 @@ import { addUser, deleteUser, getUsers } from '../services/firestore/FirebaseUse
       deleteItem (item) {
         this.editedIndex = this.desserts.indexOf(item);
         this.editedItem = Object.assign({}, item);
-        this.dialogDelete = true;
+        let msg = 'Esta por eliminar al usuario'
+        deleteAlert(msg, this.editedItem.nombre + ' ' + this.editedItem.apellido, this.deleteItemConfirm, this.closeDelete)
       },
 
       deleteItemConfirm () {
+        let ci = this.desserts[this.editedIndex].ci
+        deleteUser(ci)
         this.desserts.splice(this.editedIndex, 1)
         this.closeDelete()
       },
@@ -233,20 +255,23 @@ import { addUser, deleteUser, getUsers } from '../services/firestore/FirebaseUse
           this.editedItem = Object.assign({}, this.defaultItem)
           this.editedIndex = -1
         })
-        deleteUser(this.editedItem.ci)
       },
 
       save () {
         const user = Object.assign({},this.editedItem)
+        let msg = ''
         if (this.editedIndex > -1) {
           Object.assign(this.desserts[this.editedIndex], this.editedItem)
           addUser(user.ci, user)
+          msg = 'El usuario "' + this.editedItem.nombre + ' ' + this.editedItem.apellido + '" fue actualizado con exito!'
         } 
         else {
           this.desserts.push(this.editedItem)
           addUser(user.ci, user)
+          msg = 'El usuario "' + this.editedItem.nombre + '" fue creado con exito!'
         }
         this.close()
+        createAlert(msg)
       },
     },
   }

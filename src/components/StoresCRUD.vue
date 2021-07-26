@@ -50,11 +50,11 @@
               </v-card-text>
               <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn color="blue darken-1" text @click="close">
-                  Cancel
+                <v-btn color="error" text @click="close">
+                  Cancelar
                 </v-btn>
-                <v-btn color="blue darken-1" text @click="save">
-                  Save
+                <v-btn color="primary" text @click="save">
+                  Guardar
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -80,13 +80,14 @@
   </v-card>
 </template>
 <script>
-import { addStore, deleteStore, getStores, updateStore/*, deleteStore*/ } from '../services/firestore/FirebaseStores'
+import { addStore, getStores, updateStore, deleteStore } from '../services/firestore/FirebaseStores'
 import { createAlert, deleteAlert } from '../services/Alerts'
 
-  export default {
-    data: () => ({
+  export default 
+  {
+    data: () => 
+    ({
       dialog: false,
-      //dialogDelete: false,
       search: '',
       headers: [
         {
@@ -95,7 +96,7 @@ import { createAlert, deleteAlert } from '../services/Alerts'
           sortable: false,
           value: 'nombre',
         },
-        { text: 'direccion', value: 'direccion' },
+        { text: 'Dirección', value: 'direccion' },
         { text: 'Acciones', value: 'actions', sortable: false },
       ],
       desserts: [],
@@ -112,81 +113,97 @@ import { createAlert, deleteAlert } from '../services/Alerts'
       },
     }),
 
-    computed: {
-      formTitle () {
+    computed: 
+    {
+      formTitle () 
+      {
         return this.editedIndex === -1 ? 'Nueva Sucursal' : 'Editar Sucursal'
       },
-      deleteFormTitle () {
+      deleteFormTitle () 
+      {
         return 'La sucursal: ' + this.editedItem.nombre + ' sera eliminada.';
       },
     },
 
-    watch: {
-      dialog (val) {
+    watch: 
+    {
+      dialog (val) 
+      {
         val || this.close()
       },
     },
 
-    created () {
+    created () 
+    {
       this.initialize()
     },
 
-    methods: {
-      initialize () {
+    methods: 
+    {
+      initialize () 
+      {
         this.desserts = getStores()
       },
 
-      editItem (item) {
+      editItem (item) 
+      {
         this.editedIndex = this.desserts.indexOf(item)
         this.editedItem = Object.assign({}, item)
         this.dialog = true
       },
 
-      handleClick(item){
+      handleClick(item)
+      {
         console.log(Object.assign({}, item));
       },
 
-      deleteItem (item) {
+      deleteItem (item) 
+      {
         this.editedIndex = this.desserts.indexOf(item);
         this.editedItem = Object.assign({}, item);
         let msg = 'Esta por eliminar la sucursal'
         deleteAlert(msg, this.editedItem.nombre, this.deleteItemConfirm, this.closeDelete)
       },
 
-      deleteItemConfirm () {
+      deleteItemConfirm () 
+      {
         let idItem = this.desserts[this.editedIndex].id
-        console.log('id: ' + idItem)
         deleteStore(idItem)
         this.desserts.splice(this.editedIndex, 1)
         this.closeDelete()
       },
 
-      close () {
+      close () 
+      {
         this.dialog = false
-        this.$nextTick(() => {
+        this.$nextTick(() => 
+        {
           this.editedItem = Object.assign({}, this.defaultItem)
           this.editedIndex = -1
         })
       },
 
-      closeDelete () {  
-        
-        //this.dialogDelete = false
-        this.$nextTick(() => {
+      closeDelete () 
+      {  
+        this.$nextTick(() => 
+        {
           this.editedItem = Object.assign({}, this.defaultItem)
           this.editedIndex = -1
         })
       },
 
-      save () {
+      save () 
+      {
         const store = Object.assign({},this.editedItem)
         let msg = ''
-        if (this.editedIndex > -1) {
+        if (this.editedIndex > -1) 
+        {
           Object.assign(this.desserts[this.editedIndex], this.editedItem)
           updateStore(store.id, this.editedItem)
           msg = 'La sucursal "' + this.editedItem.nombre + '" fue actualizada con exito!'
         } 
-        else {
+        else 
+        {
           this.desserts.push(this.editedItem)
           addStore(store)
           msg = 'La sucursal "' + this.editedItem.nombre + '" fue creada con exito!'

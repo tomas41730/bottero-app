@@ -18,7 +18,6 @@ export function getUsers()
             let currentID = user.id
             let appObj = { ...user.data(), ['id']: currentID }
             users.push(appObj)
-            //users.push(user.data())
         })
 
     })

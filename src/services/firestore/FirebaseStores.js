@@ -7,13 +7,10 @@ export function addStore(store)
     const newDoc = db.collection('stores').doc()
     store['id'] = newDoc.id
     db.collection('stores').doc(newDoc.id).set(store);
-    console.log('add ' + newDoc.id)
 }
 export function updateStore(storeId, store)
 {
-    console.log('store: ' + store + ' ID: ' + storeId)
     db.collection('stores').doc(storeId).set(store);
-    console.log('update')
 }
 
 export function deleteStore(idStore) 
@@ -28,7 +25,6 @@ export function getStores()
         snapshot.docs.forEach(store => {
             let appObj = { ...store.data(), ['id']: store.id }
             stores.push(Object.assign({}, appObj))
-            //users.push(user.data())
         })
 
     })
@@ -41,10 +37,7 @@ export function getStoresNames()
     db.collection('stores').get()
     .then(snapshot => {
         snapshot.docs.forEach(store => {
-            //let currentID = store.id
-            //let appObj = { ...store.data() }
             stores.push(Object.assign({}, store.data()).nombre)
-            //stores.push(user.data())
         })
 
     })

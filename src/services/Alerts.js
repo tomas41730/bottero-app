@@ -30,3 +30,14 @@ export function createAlert(msg)
         timer: 1500
       })
 }
+
+export function showImage(item){
+  Swal.fire({
+    title: item.name,
+    text: item.phone,
+    imageUrl: item.photo,
+    imageWidth: 400,
+    imageHeight: 400,
+    imageAlt: 'Custom image',
+  })
+}

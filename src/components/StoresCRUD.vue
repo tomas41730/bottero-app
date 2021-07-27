@@ -6,18 +6,17 @@
       :search="search"
       sort-by="name"
       class="elevation-1"
-      @click="handleClick" 
     >
       <template v-slot:top>
         <v-card-text>
             <div>
-              <p class="text-h4 text--primary">MODULO DE SUCURSALES</p>
+              <p class="text-h4 text--primary">MÓDULO DE SUCURSALES</p>
             </div>
         </v-card-text>
         <v-divider horizontal></v-divider>
         <v-toolbar flat>
           <v-toolbar-title>
-            <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line>
+            <v-text-field v-model="search" append-icon="mdi-magnify" label="Busacar" single-line>
             </v-text-field>
           </v-toolbar-title>
 
@@ -30,34 +29,36 @@
               </v-btn>
               <v-spacer></v-spacer>
             </template>
-            <v-card>
-              <v-card-title>
-                <span class="text-h5">{{ formTitle }}</span>
-              </v-card-title>
-              <v-card-text>
-                <v-container>
-                  <v-row>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.nombre" label="Nombre">
-                      </v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.direccion" label="Direccion">
-                      </v-text-field>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </v-card-text>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="error" text @click="close">
-                  Cancelar
-                </v-btn>
-                <v-btn color="primary" text @click="save">
-                  Guardar
-                </v-btn>
-              </v-card-actions>
-            </v-card>
+            <v-form ref="form" v-model="valid" lazy-validation>
+              <v-card>
+                <v-card-title>
+                  <span class="text-h5">{{ formTitle }}</span>
+                </v-card-title>
+                <v-card-text>
+                  <v-container>
+                    <v-row>
+                      <v-col cols="12" sm="6" md="4">
+                        <v-text-field v-model="editedItem.nombre" :counter="20" :rules="rules" label="Nombre" required>
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="4">
+                        <v-text-field v-model="editedItem.direccion" :counter="20" :rules="rules" label="Dirección" required>
+                        </v-text-field>
+                      </v-col>
+                    </v-row>
+                  </v-container>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="error" text @click="close">
+                    Cancelar
+                  </v-btn>
+                  <v-btn color="primary" text :disabled="!valid" @click="save">
+                    Guardar
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-form>
           </v-dialog>
 
           
@@ -87,6 +88,7 @@ import { createAlert, deleteAlert } from '../services/Alerts'
   {
     data: () => 
     ({
+      valid: true,
       dialog: false,
       search: '',
       headers: [
@@ -111,6 +113,10 @@ import { createAlert, deleteAlert } from '../services/Alerts'
         direccion: '',
         id: ''
       },
+      rules: [
+        v => !!v || 'Este campo es requerido',
+        v => (v && v.length <= 20) || 'Este campo debe tener 20 carácteres como máximo.',
+      ],
     }),
 
     computed: 
@@ -152,10 +158,6 @@ import { createAlert, deleteAlert } from '../services/Alerts'
         this.dialog = true
       },
 
-      handleClick(item)
-      {
-        console.log(Object.assign({}, item));
-      },
 
       deleteItem (item) 
       {
@@ -175,6 +177,7 @@ import { createAlert, deleteAlert } from '../services/Alerts'
 
       close () 
       {
+        this.$refs.form.reset()
         this.dialog = false
         this.$nextTick(() => 
         {
@@ -194,23 +197,28 @@ import { createAlert, deleteAlert } from '../services/Alerts'
 
       save () 
       {
-        const store = Object.assign({},this.editedItem)
-        let msg = ''
-        if (this.editedIndex > -1) 
+        if(this.$refs.form.validate())
         {
-          Object.assign(this.desserts[this.editedIndex], this.editedItem)
-          updateStore(store.id, this.editedItem)
-          msg = 'La sucursal "' + this.editedItem.nombre + '" fue actualizada con exito!'
-        } 
-        else 
-        {
-          this.desserts.push(this.editedItem)
-          addStore(store)
-          msg = 'La sucursal "' + this.editedItem.nombre + '" fue creada con exito!'
+          const store = Object.assign({},this.editedItem)
+          let msg = ''
+          if (this.editedIndex > -1) 
+          {
+            Object.assign(this.desserts[this.editedIndex], this.editedItem)
+            updateStore(store.id, this.editedItem)
+            msg = 'La sucursal "' + this.editedItem.nombre + '" fue actualizada con exito!'
+          } 
+          else 
+          {
+            this.desserts.push(this.editedItem)
+            addStore(store)
+            msg = 'La sucursal "' + this.editedItem.nombre + '" fue creada con exito!'
+          }
+          this.close()
+          createAlert(msg)
+          this.initialize()
+          this.$refs.form.reset()
         }
-        this.close()
-        createAlert(msg)
-        this.initialize()
+        
       },
     },
   }

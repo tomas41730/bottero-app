@@ -1,8 +1,8 @@
 import db from '../firebase'
 
-export function addUser(ci, user)
+export function addUser(user)
 {
-    db.collection('users').doc(ci).set(user);
+    db.collection('users').doc(user.ci).set(user);
 }
 
 export function deleteUser(ci) 

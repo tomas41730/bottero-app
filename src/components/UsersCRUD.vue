@@ -11,7 +11,7 @@
       <template v-slot:top>
         <v-card-text>
             <div>
-              <p class="text-h4 text--primary">MODULO DE USUARIOS</p>
+              <p class="text-h4 text--primary">MÓDULO DE USUARIOS</p>
             </div>
         </v-card-text>
         <v-divider horizontal></v-divider>
@@ -30,96 +30,109 @@
               </v-btn>
               <v-spacer></v-spacer>
             </template>
-            <v-card>
-              <v-card-title>
-                <span class="text-h5">{{ formTitle }}</span>
-              </v-card-title>
-              <v-card-text>
-                <v-container>
-                  <v-row>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.ci" label="CI">
-                      </v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.nombre" label="Nombres">
-                      </v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.apellido" label="Apellidos" >
-                      </v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="4" >
-                      <v-text-field v-model="editedItem.celular" label="Celular">
-                      </v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.correo" label="Correo">
-                      </v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.contraseña" label="Contraseña">
-                      </v-text-field>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-select
-                        :items="items"
-                        label="Sucursal"
-                        v-model="editedItem.sucursal"
-                      >
-                        <template v-slot:selection="data">
-                          <v-chip
-                            :key="JSON.stringify(data.item)"
-                            v-bind="data.attrs"
-                            :input-value="data.selected"
-                            :disabled="data.disabled"
-                            @click:close="data.parent.selectItem(data.item)"
-                          >
-                            {{ data.item }}
-                          </v-chip>
-                        </template>
-                      </v-select>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-select
-                        :items="roles"
-                        label="Rol"
-                        v-model="editedItem.rol"
-                      >
-                        <template v-slot:selection="data">
-                          <v-chip
-                            :key="JSON.stringify(data.item)"
-                            v-bind="data.attrs"
-                            :input-value="data.selected"
-                            :disabled="data.disabled"
-                            @click:close="data.parent.selectItem(data.item)"
-                          >
-                            {{ data.item }}
-                          </v-chip>
-                        </template>
-                      </v-select>
-                    </v-col>
-                    <v-col cols="12" sm="6" md="4">
-                      <v-text-field v-model="editedItem.cuenta" label="Cuenta">
-                      </v-text-field>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </v-card-text>
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn color="error" text @click="close" error>
-                  Cancelar
-                </v-btn>
-                <v-btn color="primary" text @click="save" primary>
-                  Guardar
-                </v-btn>
-              </v-card-actions>
-            </v-card>
+            <v-form ref="form" v-model="valid" lazy-validation>
+              <v-card>
+                <v-card-title>
+                  <span class="text-h5">{{ formTitle }}</span>
+                </v-card-title>
+                <v-card-text>
+                  <v-container>
+                    <v-row>
+                      <v-col cols="12" sm="6" md="4">
+                        <v-text-field v-model="editedItem.ci" :counter="20" :rules="numberRules" label="CI" required>
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="4">
+                        <v-text-field v-model="editedItem.name" :counter="20" :rules="fullnameRules" label="Nombres" required>
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="4">
+                        <v-text-field v-model="editedItem.lastname" :counter="20" :rules="fullnameRules" label="Apellidos" required>
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="4" >
+                        <v-text-field v-model="editedItem.phone" :counter="15" :rules="numberRules" label="Celular" required>
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="4">
+                        <v-text-field v-model="editedItem.email" :counter="50" :rules="emailRules" label="Correo" required>
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="4">
+                        <v-text-field v-model="editedItem.password" :counter="20" :rules="[v => !!v || 'La contraseña es requerida.']"  label="Contraseña" required>
+                        </v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="4">
+                        <v-select
+                          :items="items"
+                          :rules="[v => !!v || 'Debe asignar una sucursal.']"
+                          label="Sucursal"
+                          v-model="editedItem.store"
+                        >
+                          <template v-slot:selection="data">
+                            <v-chip
+                              :key="JSON.stringify(data.item)"
+                              v-bind="data.attrs"
+                              :input-value="data.selected"
+                              :disabled="data.disabled"
+                              @click:close="data.parent.selectItem(data.item)"
+                            >
+                              {{ data.item }}
+                            </v-chip>
+                          </template>
+                        </v-select>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="4">
+                        <v-select
+                          :items="roles"
+                          :rules="[v => !!v || 'Debe asignar un rol.']"
+                          label="Rol"
+                          v-model="editedItem.role"
+                        >
+                          <template v-slot:selection="data">
+                            <v-chip
+                              :key="JSON.stringify(data.item)"
+                              v-bind="data.attrs"
+                              :input-value="data.selected"
+                              :disabled="data.disabled"
+                              @click:close="data.parent.selectItem(data.item)"
+                            >
+                              {{ data.item }}
+                            </v-chip>
+                          </template>
+                        </v-select>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="4">
+                        <v-switch v-model="editedItem.account" color="success" hide-details :label="`Cuenta: ${ accountState }`"></v-switch>
+                      </v-col>
+                    </v-row>
+                  </v-container>
+                </v-card-text>
+                <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="error" text @click="close" error>
+                    Cancelar
+                  </v-btn>
+                  <v-btn color="primary" text :disabled="!valid" @click="save" primary>
+                    Guardar
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-form>
+            
           </v-dialog>
 
         </v-toolbar>
       </template>
+
+      <template v-slot:[`item.photo`]="{ item }">
+        <div class="p-2">
+          <v-list-item-avatar tile size="50">
+            <v-img @click="show(item)" :src="item.photo"></v-img>
+          </v-list-item-avatar>
+        </div>
+      </template>
+
       <template v-slot:[`item.actions`]="{ item }">
         <v-icon small class="mr-2" @click="editItem(item)">
           mdi-pencil
@@ -138,12 +151,13 @@
 </template>
 <script>
 import { addUser, deleteUser, getUsers } from '../services/firestore/FirebaseUsers'
-import { deleteAlert, createAlert } from '../services/Alerts'
+import { deleteAlert, createAlert, showImage } from '../services/Alerts'
 import { getStoresNames } from '../services/firestore/FirebaseStores'
   export default 
   {
     data: () => 
     ({
+      valid: true,
       dialog: false,
       dialogDelete: false,
       search: '',
@@ -151,46 +165,62 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
       roles: ['Admin', 'Encargado', 'Vendedora'],
       selected:[],
       headers: [
+        { text: 'Foto', value: 'photo' },
         {
           text: 'CI',
           align: 'start',
           sortable: false,
           value: 'ci',
         },
-        { text: 'Nombre', value: 'nombre' },
-        { text: 'Apellido', value: 'apellido' },
-        { text: 'Celular', value: 'celular' },
-        { text: 'Correo', value: 'correo' },
-        { text: 'Contraseña', value: 'contraseña' },
-        { text: 'Sucursal', value: 'sucursal' },
-        { text: 'Rol', value: 'rol' },
-        { text: 'Cuenta Habilitada', value: 'cuenta' },
+        { text: 'Nombre', value: 'name' },
+        { text: 'Apellido', value: 'lastname' },
+        { text: 'Celular', value: 'phone' },
+        { text: 'Correo', value: 'email' },
+        { text: 'Contraseña', value: 'password' },
+        { text: 'Sucursal', value: 'store' },
+        { text: 'Rol', value: 'role' },
+        { text: 'Cuenta Habilitada', value: 'account' },
         { text: 'Acciones', value: 'actions', sortable: false },
       ],
       desserts: [],
       editedIndex: -1,
       editedItem: {
         ci: '',
-        nombre: '',
-        apellido: '',
-        celular: '',
-        correo: '',
-        contraseña: '',
-        sucursal: '',
-        rol: '',
-        cuenta: true
+        name: '',
+        lastname: '',
+        phone: '',
+        email: '',
+        password: '',
+        store: '',
+        role: '',
+        account: true,
+        photo: ''
           },
       defaultItem: {
         ci: '',
-        nombre: '',
-        apellido: '',
-        celular: '',
-        correo: '',
-        contraseña: '',
-        sucursal: '',
-        rol: '',
-        cuenta: true
+        name: '',
+        lastname: '',
+        phone: '',
+        email: '',
+        password: '',
+        store: '',
+        role: '',
+        account: true,
+        photo: ''
       },
+      numberRules: [
+        v => !!v || 'Este campo es requerido.',
+        v => (v && v.length <= 15) || 'Este campo debe tener 10 números como máximo.',
+        v => /^\d+$/.test(v) || 'Debe ser un numero.', 
+      ],
+      fullnameRules: [
+        v => !!v || 'Este campo es requerido.',
+        v => (v && v.length <= 10) || 'Este campo debe tener 10 números como máximo.',
+      ],
+      emailRules: [
+        v => !!v || 'El correo electrónico es requerido.',
+        v => /^(([^<>()[\]\\.,;:\s@']+(\.[^<>()\\[\]\\.,;:\s@']+)*)|('.+'))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) || 'Debe ingresar una dirección de correo válida.',
+ ],
     }),
 
     computed: 
@@ -201,8 +231,19 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
       },
       deleteFormTitle () 
       {
-        return 'El usuario: ' + this.editedItem.nombre + ' ' + this.editedItem.apellido + ' sera eliminado.';
+        return 'El usuario: ' + this.editedItem.name + ' ' + this.editedItem.lastname + ' sera eliminado.';
       },
+      accountState()
+      {
+        if(this.editedItem.account)
+        {
+          return 'Habilitado'
+        }
+        else
+        {
+          return 'Deshabilitado'
+        }
+      }
     },
 
     watch: {
@@ -232,17 +273,12 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
         this.dialog = true
       },
 
-      handleClick(item)
-      {
-        console.log(Object.assign({}, item));
-      },
-
       deleteItem (item) 
       {
         this.editedIndex = this.desserts.indexOf(item);
         this.editedItem = Object.assign({}, item);
         let msg = 'Esta por eliminar al usuario'
-        deleteAlert(msg, this.editedItem.nombre + ' ' + this.editedItem.apellido, this.deleteItemConfirm, this.closeDelete)
+        deleteAlert(msg, this.editedItem.name + ' ' + this.editedItem.lastname, this.deleteItemConfirm, this.closeDelete)
       },
 
       deleteItemConfirm () 
@@ -255,6 +291,7 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
 
       close () 
       {
+        this.$refs.form.reset()
         this.dialog = false
         this.$nextTick(() => 
         {
@@ -275,23 +312,29 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
 
       save () 
       {
-        const user = Object.assign({},this.editedItem)
-        let msg = ''
-        let fullname =this.editedItem.nombre + ' ' + this.editedItem.apellido
-        if (this.editedIndex > -1) 
+        if(this.$refs.form.validate())
         {
-          Object.assign(this.desserts[this.editedIndex], this.editedItem)
-          msg = 'El usuario "' + fullname + '" fue actualizado con exito!'
-        } 
-        else 
-        {
-          this.desserts.push(this.editedItem)
-          msg = 'El usuario "' + fullname + '" fue creado con exito!'
+          let msg = ''
+          let fullname =this.editedItem.name + ' ' + this.editedItem.lastname
+          if (this.editedIndex > -1) 
+          {
+            Object.assign(this.desserts[this.editedIndex], this.editedItem)
+            msg = 'El usuario "' + fullname + '" fue actualizado con exito!'
+          } 
+          else 
+          {
+            this.desserts.push(this.editedItem)
+            msg = 'El usuario "' + fullname + '" fue creado con exito!'
+          }
+          addUser(this.editedItem)
+          this.close()
+          createAlert(msg)
+          this.$refs.form.reset()
         }
-        addUser(user.ci, user)
-        this.close()
-        createAlert(msg)
       },
+      show(item){
+        showImage(item)
+      }
     },
   }
 </script>

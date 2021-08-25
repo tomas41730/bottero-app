@@ -153,6 +153,7 @@
 import { addUser, deleteUser, getUsers } from '../services/firestore/FirebaseUsers'
 import { deleteAlert, createAlert, showImage } from '../services/Alerts'
 import { getStoresNames } from '../services/firestore/FirebaseStores'
+import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
   export default 
   {
     data: () => 
@@ -162,7 +163,7 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
       dialogDelete: false,
       search: '',
       items: [],
-      roles: ['Admin', 'Encargado', 'Vendedora'],
+      roles: getRoleNames(),
       selected:[],
       headers: [
         { text: 'Foto', value: 'photo' },
@@ -193,6 +194,7 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
         password: '',
         store: '',
         role: '',
+        idRole: '',
         account: true,
         photo: ''
           },
@@ -205,17 +207,18 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
         password: '',
         store: '',
         role: '',
+        idRole: '',
         account: true,
         photo: ''
       },
       numberRules: [
         v => !!v || 'Este campo es requerido.',
-        v => (v && v.length <= 15) || 'Este campo debe tener 10 números como máximo.',
+        v => (v && v.length <= 15) || 'Este campo debe tener 15 números como máximo.',
         v => /^\d+$/.test(v) || 'Debe ser un numero.', 
       ],
       fullnameRules: [
         v => !!v || 'Este campo es requerido.',
-        v => (v && v.length <= 10) || 'Este campo debe tener 10 números como máximo.',
+        v => (v && v.length <= 10) || 'Este campo debe tener 20 caracteres como máximo.',
       ],
       emailRules: [
         v => !!v || 'El correo electrónico es requerido.',
@@ -312,19 +315,30 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
 
       save () 
       {
+        const user = Object.assign({},this.editedItem)
         if(this.$refs.form.validate())
         {
           let msg = ''
-          let fullname =this.editedItem.name + ' ' + this.editedItem.lastname
+          let fullname = this.editedItem.name + ' ' + this.editedItem.lastname
           if (this.editedIndex > -1) 
           {
             Object.assign(this.desserts[this.editedIndex], this.editedItem)
             msg = 'El usuario "' + fullname + '" fue actualizado con exito!'
+            console.log('Nombre Rol: ' + this.editedItem.role)
+
+            getIdRole(user.role).then(value =>{
+              console.log('Users Crud id role => ' + value)
+              user.idRole = value
+              addUser(user)
+            })
+            
           } 
           else 
           {
-            this.desserts.push(this.editedItem)
+            this.desserts.push(user)
             msg = 'El usuario "' + fullname + '" fue creado con exito!'
+            console.log('new user: '+ user)
+            //this.initialize()
           }
           addUser(this.editedItem)
           this.close()

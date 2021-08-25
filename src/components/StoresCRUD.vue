@@ -1,12 +1,6 @@
 <template>
   <v-card class="mx-auto" outlined>
-    <v-data-table
-      :headers="headers"
-      :items="desserts"
-      :search="search"
-      sort-by="name"
-      class="elevation-1"
-    >
+    <v-data-table :headers="headers" :items="desserts" :search="search" sort-by="name" class="elevation-1">
       <template v-slot:top>
         <v-card-text>
             <div>
@@ -16,7 +10,7 @@
         <v-divider horizontal></v-divider>
         <v-toolbar flat>
           <v-toolbar-title>
-            <v-text-field v-model="search" append-icon="mdi-magnify" label="Busacar" single-line>
+            <v-text-field v-model="search" append-icon="mdi-magnify" label="Buscar" single-line>
             </v-text-field>
           </v-toolbar-title>
 
@@ -201,10 +195,11 @@ import { createAlert, deleteAlert } from '../services/Alerts'
         {
           const store = Object.assign({},this.editedItem)
           let msg = ''
+          console.log('id-> '+store.id)
           if (this.editedIndex > -1) 
           {
             Object.assign(this.desserts[this.editedIndex], this.editedItem)
-            updateStore(store.id, this.editedItem)
+            updateStore(store)
             msg = 'La sucursal "' + this.editedItem.nombre + '" fue actualizada con exito!'
           } 
           else 

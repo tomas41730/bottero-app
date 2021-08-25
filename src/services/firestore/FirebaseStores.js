@@ -1,16 +1,14 @@
 import db from '../firebase'
 
-
-
 export function addStore(store)
 {
     const newDoc = db.collection('stores').doc()
     store['id'] = newDoc.id
     db.collection('stores').doc(newDoc.id).set(store);
 }
-export function updateStore(storeId, store)
+export function updateStore(store)
 {
-    db.collection('stores').doc(storeId).set(store);
+    db.collection('stores').doc(store.id).set(store);
 }
 
 export function deleteStore(idStore) 

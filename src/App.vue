@@ -29,56 +29,16 @@
             <v-icon>mdi-chevron-left</v-icon>
           </v-btn>
         </v-list-item>
-  
         <v-divider></v-divider>
-  
         <v-list dense>
           <v-list-item v-for="item in items" :key="item.title" :to="item.path" link>
             <v-list-item-icon>
               <v-icon>{{ item.icon }}</v-icon>
             </v-list-item-icon>
-  
             <v-list-item-content>
               <v-list-item-title >{{ item.title }}</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-          
-          <v-list-group :value="true" prepend-icon="mdi-account-circle">
-            <template v-slot:activator>
-              <v-list-item-title>CUENTAS</v-list-item-title>
-            </template>
-
-            <v-list-group :value="true" no-action sub-group>
-              <template v-slot:activator>
-                <v-list-item-content>
-                  <v-list-item-title >Admin</v-list-item-title>
-                </v-list-item-content>
-              </template>
-
-              <v-list-item v-for="([title, icon], i) in admins" :key="i" link>
-                <v-list-item-title v-text="title"></v-list-item-title>
-                <v-list-item-icon>
-                  <v-icon v-text="icon"></v-icon>
-                </v-list-item-icon>
-              </v-list-item>
-            </v-list-group>
-
-            <v-list-group no-action sub-group>
-              <template v-slot:activator>
-                <v-list-item-content>
-                  <v-list-item-title>Actions</v-list-item-title>
-                </v-list-item-content>
-              </template>
-
-              <v-list-item v-for="([title, icon], i) in cruds" :key="i" link>
-                <v-list-item-title v-text="title"></v-list-item-title>
-                <v-list-item-icon>
-                  <v-icon v-text="icon"></v-icon>
-                </v-list-item-icon>
-              </v-list-item>
-            </v-list-group>
-      </v-list-group>
-
         </v-list>
       </v-navigation-drawer>
       <v-container>
@@ -107,19 +67,23 @@ export default {
     items: [
         { title: 'PRINCIPAL', icon: 'mdi-view-dashboard', path: '/'},
         { title: 'SUCURSALES', icon: 'mdi-home-city', path: 'stores'},
-        { title: 'CUENTAS', icon: 'mdi-account-group-outline', path: '/users'},
+        { title: 'USUARIOS', icon: 'mdi-account-group-outline', path: '/users', items: [{ title: 'List Item' }],},
+        { title: 'ROLES', icon: 'mdi-shield-account', path: '/roles'},
         { title: 'INVENTARIO', icon: 'mdi-shoe-heel', path: '/inventory'},
       ],
-    admins: [
-        ['Management', 'mdi-account-multiple-outline'],
-        ['Settings', 'mdi-cog-outline'],
-      ],
-    cruds: [
-        ['Create', 'mdi-plus-outline'],
-        ['Read', 'mdi-file-outline'],
-        ['Update', 'mdi-update'],
-        ['Delete', 'mdi-delete'],
-      ],
+    // itemsSubGroups:[
+    //     { title: 'CUENTAS', icon: 'mdi-account-group-outline', path: '/users', items: [{ title: 'USUARIOS', icon: 'mdi-account' }],},
+    // ],
+    // admins: [
+    //     ['Management', 'mdi-account-multiple-outline'],
+    //     ['Settings', 'mdi-cog-outline'],
+    //   ],
+    // cruds: [
+    //     ['Create', 'mdi-plus-outline'],
+    //     ['Read', 'mdi-file-outline'],
+    //     ['Update', 'mdi-update'],
+    //     ['Delete', 'mdi-delete'],
+    //   ],
   }),
   watch: {
     group () {
@@ -131,3 +95,5 @@ export default {
   }
 };
 </script>
+
+

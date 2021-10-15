@@ -1,10 +1,10 @@
 <template>
   <v-card class="mx-auto" outlined>
-    <v-data-table :headers="headers" :items="stores" :items-per-page="3" :search="search" sort-by="name" class="elevation-1">
+    <v-data-table :headers="headers" :items="materials" :items-per-page="3" :search="search" sort-by="name" class="elevation-1">
       <template v-slot:top>
         <v-card-text>
             <div>
-              <p class="text-h4 text--primary">MÓDULO DE SUCURSALES</p>
+              <p class="text-h4 text--primary">MÓDULO DE MATERIALES</p>
             </div>
         </v-card-text>
         <v-divider horizontal></v-divider>
@@ -14,7 +14,7 @@
             </v-text-field>
           </v-toolbar-title>
 
-          <v-dialog v-model="dialog" max-width="500px">
+          <v-dialog v-model="dialog" max-width="250px">
             <template v-slot:activator="{ on, attrs }">
               <v-btn color="yellow accent-4" class="mx-2" fab dark v-bind="attrs" v-on="on" small >
                 <v-icon dark>
@@ -31,12 +31,8 @@
                 <v-card-text>
                   <v-container>
                     <v-row>
-                      <v-col cols="12" sm="6" md="4">
-                        <v-text-field v-model="editedItem.nombre" :counter="20" :rules="rules" label="Nombre" required>
-                        </v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="6" md="4">
-                        <v-text-field v-model="editedItem.direccion" :counter="20" :rules="rules" label="Dirección" required>
+                      <v-col cols="12">
+                        <v-text-field v-model="editedItem.material" :counter="20" :rules="rules" label="Material" required>
                         </v-text-field>
                       </v-col>
                     </v-row>
@@ -75,7 +71,7 @@
   </v-card>
 </template>
 <script>
-import { addStore, getStores, updateStore, deleteStore } from '../services/firestore/FirebaseStores'
+import { addMaterial, getMaterials, updateMaterial, deleteMaterial } from '../services/firestore/FirebaseMaterials'
 import { createAlert, deleteAlert } from '../services/Alerts'
 
   export default 
@@ -87,24 +83,21 @@ import { createAlert, deleteAlert } from '../services/Alerts'
       search: '',
       headers: [
         {
-          text: 'Nombre',
+          text: 'Marca',
           align: 'start',
-          sortable: false,
-          value: 'nombre',
+          sortable: true,
+          value: 'material',
         },
-        { text: 'Dirección', value: 'direccion' },
         { text: 'Acciones', value: 'actions', sortable: false },
       ],
-      stores: [],
+      materials: [],
       editedIndex: -1,
       editedItem: {
-        nombre: '',
-        direccion: '',
+        material: '',
         id: ''
           },
       defaultItem: {
-        nombre: '',
-        direccion: '',
+        material: '',
         id: ''
       },
       rules: [
@@ -117,11 +110,7 @@ import { createAlert, deleteAlert } from '../services/Alerts'
     {
       formTitle () 
       {
-        return this.editedIndex === -1 ? 'Nueva Sucursal' : 'Editar Sucursal';
-      },
-      deleteFormTitle () 
-      {
-        return 'La sucursal: ' + this.editedItem.nombre + ' sera eliminada.';
+        return this.editedIndex === -1 ? 'Nueva Material' : 'Editar Material';
       },
     },
 
@@ -142,12 +131,12 @@ import { createAlert, deleteAlert } from '../services/Alerts'
     {
       initialize () 
       {
-        this.stores = getStores();
+        this.materials = getMaterials();
       },
 
       editItem (item) 
       {
-        this.editedIndex = this.stores.indexOf(item);
+        this.editedIndex = this.materials.indexOf(item);
         this.editedItem = Object.assign({}, item);
         this.dialog = true;
       },
@@ -155,17 +144,17 @@ import { createAlert, deleteAlert } from '../services/Alerts'
 
       deleteItem (item) 
       {
-        this.editedIndex = this.stores.indexOf(item);
+        this.editedIndex = this.materials.indexOf(item);
         this.editedItem = Object.assign({}, item);
-        let msg = 'Esta por eliminar la sucursal';
-        deleteAlert(msg, this.editedItem.nombre, this.deleteItemConfirm, this.closeDelete);
+        let msg = 'Esta por eliminar la material';
+        deleteAlert(msg, this.editedItem.material, this.deleteItemConfirm, this.closeDelete);
       },
 
       deleteItemConfirm () 
       {
-        let idItem = this.stores[this.editedIndex].id;
-        deleteStore(idItem);
-        this.stores.splice(this.editedIndex, 1);
+        let idItem = this.materials[this.editedIndex].id;
+        deleteMaterial(idItem);
+        this.materials.splice(this.editedIndex, 1);
         this.closeDelete();
       },
 
@@ -186,28 +175,28 @@ import { createAlert, deleteAlert } from '../services/Alerts'
         {
           this.editedItem = Object.assign({}, this.defaultItem);
           this.editedIndex = -1;
-        });
+        })
       },
 
       save () 
       {
         if(this.$refs.form.validate())
         {
-          const store = Object.assign({},this.editedItem);
+          const material = Object.assign({},this.editedItem);
           let msg = '';
-          if (this.editedIndex > -1)
+          if (this.editedIndex > -1) 
           {
-            Object.assign(this.stores[this.editedIndex], this.editedItem);
-            updateStore(store);
-            msg = 'La sucursal "' + this.editedItem.nombre + '" fue actualizada con exito!';
+            Object.assign(this.materials[this.editedIndex], this.editedItem);
+            updateMaterial(material);
+            msg = 'El material "' + this.editedItem.material + '" fue actualizado con exito!';
           } 
           else 
           {
-            this.stores.push(this.editedItem);
-            addStore(store);
-            msg = 'La sucursal "' + this.editedItem.nombre + '" fue creada con exito!';
+            this.materials.push(this.editedItem);
+            addMaterial(material);
+            msg = 'El material "' + this.editedItem.material + '" fue creado con exito!';
           }
-          this.close();
+          this.close()
           createAlert(msg);
           this.initialize();
           this.$refs.form.reset();

@@ -1,5 +1,6 @@
 import firebase from 'firebase/app'
 import 'firebase/firestore'
+import 'firebase/storage'
 
 var firebaseConfig = {
     apiKey: "AIzaSyCcDuwTdTsiIQCh9SL5w2on9wP3IYDhW10",
@@ -14,5 +15,7 @@ var firebaseConfig = {
   firebase.initializeApp(firebaseConfig);
   //firebase.analytics();
   const db = firebase.firestore();
-
+  export const storage = firebase.storage();
+  export const actualDate = firebase.firestore;
   export default db;
+  //export default storage;

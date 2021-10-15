@@ -9,194 +9,123 @@
       <v-divider horizontal></v-divider>
       <v-row>
         <v-col>
-          <v-list-item three-line>
-            <v-list-item-content>
-              <div class="text-overline mb-4">
-                Referencia
-              </div>
-              <v-list-item-title class="text-h5 mb-1">
-                Codigo calzado
-              </v-list-item-title>
-              <v-col>
-                <v-row>
-                  <v-col>
-                    <v-list-item-subtitle>Talla:</v-list-item-subtitle>
-                  </v-col>
-                  <v-col>
-                    <v-list-item-subtitle>Color:</v-list-item-subtitle>
-                  </v-col>
-                </v-row>
-              </v-col>
-              <v-col>
-                <v-list-item-subtitle>Color:</v-list-item-subtitle>
-              </v-col>
-              <v-col>
-                <v-list-item-subtitle>Precio:</v-list-item-subtitle>
-              </v-col>
-              <v-col>
-                <v-list-item-subtitle>Descripcion:</v-list-item-subtitle>
-              </v-col>
-              <v-col>
-                <v-list-item-subtitle>Sucursal:</v-list-item-subtitle>
-              </v-col>
-              <v-col>
-                 <v-card-actions>
-                  <v-btn color="primary" text primary>
-                    Guardar
-                  </v-btn>
-                </v-card-actions>
-              </v-col>
-            </v-list-item-content>
-          </v-list-item>
+          <v-form ref="form" v-model="valid" lazy-validation>
+            <v-list-item three-line>
+              <v-list-item-content>
+                <v-col>
+                  <v-row>
+                    <v-col>
+                      <v-text-field v-model="editedItem.idShoe" :rules="attributeRules" label="Codigo de barras" placeholder="Codigo calzado" @input="onIdChanged"></v-text-field>
+                    </v-col>
+                    <v-col>
+                      <v-text-field v-model="editedItem.reference" :rules="attributeRules" label="Referencia" placeholder="Referencia" @input="onRefChanged"></v-text-field>
+                    </v-col>
+                    <v-col>
+                      <v-text-field v-model="editedItem.brand" :rules="attributeRules" label="Marca" placeholder="Marca"></v-text-field>
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col>
+                      <v-autocomplete :items="sizes" v-model="editedItem.size" :rules="attributeRules" label="Talla" placeholder="Talla"></v-autocomplete>
+                    </v-col>
+                    <v-col>
+                      <v-autocomplete :items="colors" v-model="editedItem.color" :rules="attributeRules" label="Color" placeholder="Color"></v-autocomplete>
+                    </v-col>
+                    <v-col>
+                      <v-autocomplete :items="materials" v-model="editedItem.material" :rules="attributeRules" label="Material" placeholder="Material"></v-autocomplete>
+                    </v-col>
+                    <v-col>
+                      <v-text-field v-model="editedItem.stock" :rules="numberRules" label="Stock" placeholder="Stock"></v-text-field>
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col>
+                      <v-text-field v-model="editedItem.description" :rules="attributeRules" label="Descripcion" placeholder="Descripcion"></v-text-field>
+                    </v-col>
+                    <v-col>
+                      <v-autocomplete :items="categories" v-model="editedItem.category" :rules="attributeRules" label="Categoria" placeholder="Categoria"></v-autocomplete>
+                    </v-col>
+                    <v-col>
+                      <v-select :items="stores" :rules="[v => !!v || 'Debe asignar una sucursal.']" label="Sucursal" v-model="editedItem.store"  @input="onStoreChanged"></v-select>
+                    </v-col>
+                    <v-col>
+                      <v-select :items="conditions" v-model="editedItem.condition" :rules="attributeRules" label="Condicion" placeholder="Condicion"></v-select>
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col>
+                      <v-text-field v-model="editedItem.price" label="Precio" placeholder="Precio"></v-text-field>
+                    </v-col>
+                    <v-col>
+                      <v-text-field v-model="editedItem.purchasePrice" label="Precio Compra" placeholder="Precio Compra"></v-text-field>
+                    </v-col>
+                    <v-col>
+                      <v-text-field v-model="editedItem.oDisccount" label="Des. Oc. %" placeholder="Desc. Oc. %"></v-text-field>
+                    </v-col>
+                    <v-col>
+                      <v-text-field v-model="editedItem.pDisccount" label="Des. Lim. Bs." placeholder="Desc. Per. Bs."></v-text-field>
+                    </v-col>
+                  </v-row>
+                </v-col>
+                <v-col>
+                  <v-card-actions>
+                    <v-btn v-model="btn" color="primary" depressed elevation="2" @click="save">
+                      {{ this.btn }}
+                    </v-btn>
+                  </v-card-actions>
+                </v-col>
+              </v-list-item-content>
+            </v-list-item>
+          </v-form>  
         </v-col>
-        <v-col>
-          <v-list-item-avatar tile size="300">
-            <v-img src="https://i.pinimg.com/736x/8a/7f/5a/8a7f5ab67f311c75f2d53988754b0258.jpg"></v-img>
-          </v-list-item-avatar>
+        <v-col align="center" justify="center">  
+            <v-container bg fill-height grid-list-md text-xs-center>
+            <v-layout row wrap align-center>
+              <v-flex>
+                <v-list-item-avatar tile size="300">
+                  <v-img :src="editedItem.photo"></v-img>
+                </v-list-item-avatar>
+                <v-flex>
+                <template>
+                  <v-file-input accept="image/*" label="Seleccionar imagen del producto" v-model="image" @change="previewImage">
+                  </v-file-input>
+                </template>
+              </v-flex>
+              </v-flex>
+              
+            </v-layout>
+          </v-container>
         </v-col>
       </v-row>
     </v-card>
     
     <v-card class="mx-auto" outlined>
-    <v-data-table
-      v-model="selected"
-      :headers="headers"
-      :items="desserts"
-      :search="search"
-      sort-by="name"
-      class="elevation-1" 
-    >
+      <v-data-table v-model="selected" :headers="headers" :items="products" :search="search" sort-by="name" class="elevation-1">
       <template v-slot:top>
-        
         
         <v-toolbar flat>
           <v-toolbar-title>
-            <v-text-field v-model="search" append-icon="mdi-magnify" label="Buscar" single-line>
-            </v-text-field>
+            <v-row>
+              <v-col cols="12">
+                <v-text-field v-model="search" append-icon="mdi-magnify" label="Buscar" single-line></v-text-field>
+              </v-col>
+            </v-row>
           </v-toolbar-title>
-
-          <v-dialog v-model="dialog" max-width="500px">
-            <template v-slot:activator="{ on, attrs }">
-              <v-btn color="yellow accent-4" class="mx-2" fab dark v-bind="attrs" v-on="on" small >
-                <v-icon dark>
-                  mdi-plus
-                </v-icon>
-              </v-btn>
-              <v-spacer></v-spacer>
-            </template>
-            <v-form ref="form" v-model="valid" lazy-validation>
-              <v-card>
-                <v-card-title>
-                  <span class="text-h5">{{ formTitle }}</span>
-                </v-card-title>
-                <v-card-text>
-                  <v-container>
-                    <v-row>
-                      <v-col cols="12" sm="6" md="4">
-                        <v-text-field v-model="editedItem.ci" :counter="20" :rules="numberRules" label="CI" required>
-                        </v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="6" md="4">
-                        <v-text-field v-model="editedItem.name" :counter="20" :rules="fullnameRules" label="Nombres" required>
-                        </v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="6" md="4">
-                        <v-text-field v-model="editedItem.lastname" :counter="20" :rules="fullnameRules" label="Apellidos" required>
-                        </v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="6" md="4" >
-                        <v-text-field v-model="editedItem.phone" :counter="15" :rules="numberRules" label="Celular" required>
-                        </v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="6" md="4">
-                        <v-text-field v-model="editedItem.email" :counter="50" :rules="emailRules" label="Correo" required>
-                        </v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="6" md="4">
-                        <v-text-field v-model="editedItem.password" :counter="20" :rules="[v => !!v || 'La contraseña es requerida.']"  label="Contraseña" required>
-                        </v-text-field>
-                      </v-col>
-                      <v-col cols="12" sm="6" md="4">
-                        <v-select
-                          :items="items"
-                          :rules="[v => !!v || 'Debe asignar una sucursal.']"
-                          label="Sucursal"
-                          v-model="editedItem.store"
-                        >
-                          <template v-slot:selection="data">
-                            <v-chip
-                              :key="JSON.stringify(data.item)"
-                              v-bind="data.attrs"
-                              :input-value="data.selected"
-                              :disabled="data.disabled"
-                              @click:close="data.parent.selectItem(data.item)"
-                            >
-                              {{ data.item }}
-                            </v-chip>
-                          </template>
-                        </v-select>
-                      </v-col>
-                      <v-col cols="12" sm="6" md="4">
-                        <v-select
-                          :items="roles"
-                          :rules="[v => !!v || 'Debe asignar un rol.']"
-                          label="Rol"
-                          v-model="editedItem.role"
-                        >
-                          <template v-slot:selection="data">
-                            <v-chip
-                              :key="JSON.stringify(data.item)"
-                              v-bind="data.attrs"
-                              :input-value="data.selected"
-                              :disabled="data.disabled"
-                              @click:close="data.parent.selectItem(data.item)"
-                            >
-                              {{ data.item }}
-                            </v-chip>
-                          </template>
-                        </v-select>
-                      </v-col>
-                      <v-col cols="12" sm="6" md="4">
-                        <v-switch v-model="editedItem.account" color="success" hide-details :label="`Cuenta: ${ accountState }`"></v-switch>
-                      </v-col>
-                    </v-row>
-                  </v-container>
-                </v-card-text>
-                <v-card-actions>
-                  <v-spacer></v-spacer>
-                  <v-btn color="error" text @click="close" error>
-                    Cancelar
-                  </v-btn>
-                  <v-btn color="primary" text :disabled="!valid" @click="save" primary>
-                    Guardar
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-form>
-            
-          </v-dialog>
-
         </v-toolbar>
       </template>
 
-      <template v-slot:[`item.photo`]="{ item }">
-        <div class="p-2">
-          <v-list-item-avatar tile size="50">
-            <v-img @click="show(item)" :src="item.photo"></v-img>
-          </v-list-item-avatar>
-        </div>
-      </template>
+     
 
       <template v-slot:[`item.actions`]="{ item }">
-        <v-icon small class="mr-2" @click="editItem(item)">
-          mdi-pencil
-        </v-icon>
-        <v-icon small @click="deleteItem(item)">
+        <v-icon color="error" small class="mr-2" @click="deleteItem(item)">
           mdi-delete
+        </v-icon>
+        <v-icon color="primary" small class="mr-2" @click="viewItem(item)">
+          mdi-eye
         </v-icon>
       </template>
       <template v-slot:no-data>
-        <v-btn color="primary" @click="initialize">
+        <v-btn  ref="btnReset" color="primary" @click="initialize">
           Reset
         </v-btn>
       </template>
@@ -205,97 +134,121 @@
   </v-container>
 </template>
 <script>
-import { addUser, deleteUser, getUsers } from '../services/firestore/FirebaseUsers'
-import { deleteAlert, createAlert, showImage } from '../services/Alerts'
+import { addProduct, getProducts, deleteProduct, getProductById, getProductByRef, getProductByStore } from '../services/firestore/FirebaseProducts'
+import { getColorNames } from '../services/firestore/FirabaseColors'
+import { deleteAlert, createAlert } from '../services/Alerts'
 import { getStoresNames } from '../services/firestore/FirebaseStores'
-import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
+import { onUpload } from '../services/firestore/FirebaseStorage'
+import { getBrandNames } from '../services/firestore/FirebaseBrands'
+import { getSizeNames } from '../services/firestore/FirebaseSizes'
+import { getMaterialNames } from '../services/firestore/FirebaseMaterials'
+import { getCategoryNames } from '../services/firestore/FirebaseCategories'
   export default 
   {
     data: () => 
     ({
+      btn: 'Guardar',
+      defaultImage: 'https://firebasestorage.googleapis.com/v0/b/bottero-app.appspot.com/o/utilities%2Flogo.png?alt=media&token=5be54cad-137f-4050-b392-b2319104b96d',
+      selected: [],
+      addEdit: true,
       valid: true,
       dialog: false,
       dialogDelete: false,
       search: '',
-      items: [],
-      roles: getRoleNames(),
-      selected:[],
+      brands : [],
+      sizes : [],
+      colors: [],
+      materials : [],
+      categories : [],
+      stores: [],
+      conditions : [],
+      actualStock : 0,
       headers: [
-        { text: 'Foto', value: 'photo' },
+        
+        { text: 'Acciones', value: 'actions', sortable: false },
         {
           text: 'Referencia',
           align: 'start',
-          sortable: false,
+          sortable: true,
           value: 'reference',
         },
-        { text: 'Codigo', value: 'idShoe' },
+        { text: 'Codigo de Barras', value: 'idShoe' },
+        { text: 'Fecha', value: 'due' },
+        { text: 'Marca', value: 'brand' },
         { text: 'Talla', value: 'size' },
         { text: 'Color', value: 'color' },
+        { text: 'Material', value: 'material' },
         { text: 'Precio', value: 'price' },
+        { text: 'Precio Comp.', value: 'purchasePrice' },
+        { text: 'Stock', value: 'stock' },
         { text: 'Descripcion', value: 'description' },
+        { text: 'Categoria', value: 'category' },
         { text: 'Sucursal', value: 'store' },
-        //{ text: 'Rol', value: 'role' },
-        //{ text: 'Cuenta Habilitada', value: 'account' },
-        { text: 'Acciones', value: 'actions', sortable: false },
+        { text: 'Des. Limite Bs.', value: 'pDisccount' },
+        { text: 'Des. Ocasional %', value: 'oDisccount' },
+        { text: 'Condicion', value: 'condition' },
       ],
-      desserts: [],
+      products: [],
       editedIndex: -1,
       editedItem: {
         reference: '',
         idShoe: '',
+        due: null,
+        brand: '',
         size: '',
         color: '',
+        material: '',
         price: '',
+        purchasePrice: '',
+        stock: null,
         description: '',
+        category: '',
         store: '',
+        pDisccount: null,
+        oDisccount: null,
+        condition: '',
         photo: ''
           },
       defaultItem: {
         reference: '',
         idShoe: '',
+        due: null,
+        brand: '',
         size: '',
         color: '',
+        material: '',
         price: '',
+        purchasePrice: '',
+        stock: null,
         description: '',
+        category: '',
         store: '',
+        pDisccount: null,
+        oDisccount: null,
+        condition: '',
         photo: ''
       },
+      url: null,
+      image: null,
+      imageData: null,
       numberRules: [
         v => !!v || 'Este campo es requerido.',
         v => (v && v.length <= 15) || 'Este campo debe tener 15 números como máximo.',
-        v => /^\d+$/.test(v) || 'Debe ser un numero.', 
+        v => (/^-?\d+$/.test(v) || /^\d*\.?\d+$/.test(v)) || 'Debe ser un numero.', 
       ],
-      fullnameRules: [
+      attributeRules: [
         v => !!v || 'Este campo es requerido.',
-        v => (v && v.length <= 10) || 'Este campo debe tener 20 caracteres como máximo.',
+        v => (v && v.length <= 20) || 'Este campo debe tener 20 caracteres como máximo.',
       ],
       emailRules: [
         v => !!v || 'El correo electrónico es requerido.',
         v => /^(([^<>()[\]\\.,;:\s@']+(\.[^<>()\\[\]\\.,;:\s@']+)*)|('.+'))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) || 'Debe ingresar una dirección de correo válida.',
- ],
+      ],
     }),
 
     computed: 
     {
-      formTitle () 
-      {
-        return this.editedIndex === -1 ? 'Nuevo Usuario' : 'Editar Usuario'
-      },
-      deleteFormTitle () 
-      {
-        return 'El usuario: ' + this.editedItem.name + ' ' + this.editedItem.lastname + ' sera eliminado.';
-      },
-      accountState()
-      {
-        if(this.editedItem.account)
-        {
-          return 'Habilitado'
-        }
-        else
-        {
-          return 'Deshabilitado'
-        }
-      }
+      
     },
 
     watch: {
@@ -314,89 +267,122 @@ import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
     {
       initialize () 
       {
-        this.desserts = getUsers()
-        this.items = getStoresNames()
+        this.products = getProducts();
+        this.brands = getBrandNames();
+        this.sizes = getSizeNames();
+        this.colors = getColorNames();
+        this.materials = getMaterialNames();
+        this.categories = getCategoryNames();
+        this.stores = getStoresNames();
+        this.conditions = ['Nuevo', 'Medio Viejo', 'Viejo']
+        this.editedItem.photo = this.defaultImage;
       },
-
-      editItem (item) 
+      viewItem() 
       {
-        this.editedIndex = this.desserts.indexOf(item)
-        this.editedItem = Object.assign({}, item)
-        this.dialog = true
+        // this.editedIndex = this.products.indexOf(item);
+        // this.editedItem = Object.assign({}, item);
+        console.log(this.editedItem)
       },
-
+      
       deleteItem (item) 
       {
-        this.editedIndex = this.desserts.indexOf(item);
+        this.editedIndex = this.products.indexOf(item);
         this.editedItem = Object.assign({}, item);
-        let msg = 'Esta por eliminar al usuario'
-        deleteAlert(msg, this.editedItem.name + ' ' + this.editedItem.lastname, this.deleteItemConfirm, this.closeDelete)
+        let msg = 'Esta por eliminar el producto'
+        deleteAlert(msg, this.editedItem.idShoe + ' ' + this.editedItem.description, this.deleteItemConfirm, this.closeDelete)
       },
-
       deleteItemConfirm () 
       {
-        let ci = this.desserts[this.editedIndex].ci
-        deleteUser(ci)
-        this.desserts.splice(this.editedIndex, 1)
+        let shoe = this.products[this.editedIndex]
+        deleteProduct(shoe)
+        this.products.splice(this.editedIndex, 1)
         this.closeDelete()
       },
-
-      close () 
-      {
-        this.$refs.form.reset()
-        this.dialog = false
-        this.$nextTick(() => 
-        {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
-        })
-      },
-
       closeDelete () 
       {
-        this.dialogDelete = false
+        //this.dialogDelete = false
         this.$nextTick(() => 
         {
           this.editedItem = Object.assign({}, this.defaultItem)
           this.editedIndex = -1
         })
+        this.$refs.form.reset();
       },
 
-      save () 
+      async save()
       {
-        const user = Object.assign({},this.editedItem)
+        console.log('Save button pushed');
         if(this.$refs.form.validate())
         {
+          const product = Object.assign({},this.editedItem);
+          product.id = product.store + '-' + product.idShoe;
+          product.due = new Date().toLocaleDateString('en-US');
+          const productIndex = this.products.findIndex( item => item.idShoe ===  product.idShoe && item.store === product.store);
           let msg = ''
-          let fullname = this.editedItem.name + ' ' + this.editedItem.lastname
-          if (this.editedIndex > -1) 
+          if(productIndex > -1)
           {
-            Object.assign(this.desserts[this.editedIndex], this.editedItem)
-            msg = 'El usuario "' + fullname + '" fue actualizado con exito!'
-            console.log('Nombre Rol: ' + this.editedItem.role)
-
-            getIdRole(user.role).then(value =>{
-              console.log('Users Crud id role => ' + value)
-              user.idRole = value
-              addUser(user)
-            })
-            
-          } 
-          else 
-          {
-            this.desserts.push(user)
-            msg = 'El usuario "' + fullname + '" fue creado con exito!'
-            console.log('new user: '+ user)
-            //this.initialize()
+            console.log('Old');
+            console.log(product.due);
+            // let res = this.actualStock - parseInt(product.stock)
+            // console.log('actualStock: ' + this.actualStock)
+            // console.log('newStock: ' + product.stock)
+            // console.log('stock: ' + res)
+            Object.assign(this.products[productIndex], product)
+            msg = 'El producto "' + product.idShoe + '" fue actualizado con exito!'
           }
-          addUser(this.editedItem)
-          this.close()
-          createAlert(msg)
-          this.$refs.form.reset()
+          else
+          {
+            console.log('New');
+            console.log(product.due);
+            product.due = new Date().toLocaleDateString('en-US');
+            this.products.push(product);
+            msg = 'El producto "' + product.idShoe + '" fue agregado con exito!'
+          } 
+          await addProduct(product);
+          createAlert(msg);
+          let res = parseInt(product.stock) + this.actualStock; 
+          product.stock = res.toString();
+          Object.assign(this.products[productIndex], product)
+          this.$refs.form.reset();
+          this.btn = 'Guardar';
+          this.editedItem.photo = this.defaultImage;
         }
       },
-      show(item){
-        showImage(item)
+      previewImage(file){
+        console.log(file)
+        this.imageData = file;
+        this.editedItem.photo = URL.createObjectURL(this.image);
+        onUpload(file, this.editedItem);
+      },
+      onIdChanged(){
+        //console.log(this.editedItem.idShoe)
+        getProductById(this.editedItem.idShoe).then(snap =>{
+          snap.forEach(doc => {
+            if(doc.exists) this.btn = 'Actualizar';
+            this.editedItem = doc.data();
+            console.log('onId stock: ' + doc.data().stock);
+            this.editedItem.stock = '0';
+            this.editedItem.store = null;
+          })
+        })
+      },
+      onRefChanged(){
+        getProductByRef(this.editedItem.reference).then(snap =>{
+          snap.forEach(doc => {
+            if(doc.exists) this.btn = 'Actualizar';
+            this.editedItem = doc.data();
+            this.editedItem.stock = '0';
+            this.editedItem.store = null;
+          })
+        })
+      },
+      onStoreChanged(){
+        getProductByStore(this.editedItem.store).then(snap =>{
+          snap.forEach(doc => {
+            this.actualStock = doc.data().stock;
+            console.log('onId stock: ' + this.actualStock);
+          })
+        })
       }
     },
   }

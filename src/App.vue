@@ -70,6 +70,7 @@ export default {
         { title: 'USUARIOS', icon: 'mdi-account-group-outline', path: '/users', items: [{ title: 'List Item' }],},
         { title: 'ROLES', icon: 'mdi-shield-account', path: '/roles'},
         { title: 'INVENTARIO', icon: 'mdi-shoe-heel', path: '/inventory'},
+        { title: 'CAMBIOS POR LOTE', icon: 'mdi-shoe-heel', path: '/batchChanges'},
       ],
     // itemsSubGroups:[
     //     { title: 'CUENTAS', icon: 'mdi-account-group-outline', path: '/users', items: [{ title: 'USUARIOS', icon: 'mdi-account' }],},

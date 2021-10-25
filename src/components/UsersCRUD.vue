@@ -342,7 +342,7 @@ import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
           }
           addUser(this.editedItem)
           this.close()
-          createAlert(msg)
+          createAlert(msg, 'success')
           this.$refs.form.reset()
         }
       },

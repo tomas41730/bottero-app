@@ -37,6 +37,11 @@ const routes = [
     path: '/about',
     name: 'About',
     component: () => import('../views/About.vue')
+  },
+  {
+    path: '/batchChanges',
+    name: 'Batch-Products',
+    component: () => import('../views/BatchProducts')
   }
 ]
 

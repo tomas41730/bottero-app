@@ -326,7 +326,7 @@ import { addRole, updateRole, deleteRole, getRoles } from '../services/firestore
               msg = 'El rol "' + this.editedItem.name + '" fue creado con exito!'
             }
             this.close()
-            createAlert(msg)
+            createAlert(msg, 'success')
             this.$refs.form.reset()
           }
           

@@ -197,7 +197,7 @@ import { createAlert, deleteAlert } from '../services/Alerts'
             msg = 'El material "' + this.editedItem.material + '" fue creado con exito!';
           }
           this.close()
-          createAlert(msg);
+          createAlert(msg, 'success');
           this.initialize();
           this.$refs.form.reset();
         }

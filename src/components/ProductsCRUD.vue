@@ -21,7 +21,7 @@
                       <v-text-field v-model="editedItem.reference" :rules="attributeRules" label="Referencia" placeholder="Referencia" @input="onRefChanged"></v-text-field>
                     </v-col>
                     <v-col>
-                      <v-text-field v-model="editedItem.brand" :rules="attributeRules" label="Marca" placeholder="Marca"></v-text-field>
+                      <v-autocomplete :items="brands" v-model="editedItem.brand" :rules="attributeRules" label="Marca" placeholder="Marca"></v-autocomplete>
                     </v-col>
                   </v-row>
                   <v-row>
@@ -191,6 +191,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       products: [],
       editedIndex: -1,
       editedItem: {
+        id: null,
         reference: '',
         idShoe: '',
         due: null,
@@ -210,6 +211,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         photo: ''
           },
       defaultItem: {
+        id: null,
         reference: '',
         idShoe: '',
         due: null,
@@ -311,56 +313,54 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
 
       async save()
       {
-        console.log('Save button pushed');
         if(this.$refs.form.validate())
         {
           const product = Object.assign({},this.editedItem);
           product.id = product.store + '-' + product.idShoe;
-          product.due = new Date().toLocaleDateString('en-US');
+          const datetime = new Date();
           const productIndex = this.products.findIndex( item => item.idShoe ===  product.idShoe && item.store === product.store);
           let msg = ''
           if(productIndex > -1)
           {
-            console.log('Old');
-            console.log(product.due);
-            // let res = this.actualStock - parseInt(product.stock)
-            // console.log('actualStock: ' + this.actualStock)
-            // console.log('newStock: ' + product.stock)
-            // console.log('stock: ' + res)
+            product.due = datetime.toLocaleDateString('en-US') + ' ' + datetime.toLocaleTimeString('en-US');
+            let newStock = parseInt(product.stock) + this.actualStock;
+            this.actualStock = product.stock;
+            product.stock = newStock;
             Object.assign(this.products[productIndex], product)
+            product.stock = this.actualStock;
             msg = 'El producto "' + product.idShoe + '" fue actualizado con exito!'
           }
           else
           {
-            console.log('New');
-            console.log(product.due);
-            product.due = new Date().toLocaleDateString('en-US');
+            product.due = datetime.toLocaleDateString('en-US') + ' ' + datetime.toLocaleTimeString('en-US');
             this.products.push(product);
             msg = 'El producto "' + product.idShoe + '" fue agregado con exito!'
           } 
           await addProduct(product);
-          createAlert(msg);
-          let res = parseInt(product.stock) + this.actualStock; 
-          product.stock = res.toString();
-          Object.assign(this.products[productIndex], product)
+          createAlert(msg, 'success');
           this.$refs.form.reset();
           this.btn = 'Guardar';
           this.editedItem.photo = this.defaultImage;
         }
       },
       previewImage(file){
-        console.log(file)
-        this.imageData = file;
-        this.editedItem.photo = URL.createObjectURL(this.image);
-        onUpload(file, this.editedItem);
+        if(this.$refs.form.validate())
+        {
+          console.log(file);
+          this.imageData = file;
+          this.editedItem.photo = URL.createObjectURL(this.image);
+          onUpload(file, this.editedItem);
+        }
+        else 
+        {
+          createAlert("Debe agregar una sucursal.");
+        }
       },
       onIdChanged(){
-        //console.log(this.editedItem.idShoe)
         getProductById(this.editedItem.idShoe).then(snap =>{
           snap.forEach(doc => {
             if(doc.exists) this.btn = 'Actualizar';
             this.editedItem = doc.data();
-            console.log('onId stock: ' + doc.data().stock);
             this.editedItem.stock = '0';
             this.editedItem.store = null;
           })
@@ -377,12 +377,12 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         })
       },
       onStoreChanged(){
-        getProductByStore(this.editedItem.store).then(snap =>{
-          snap.forEach(doc => {
+        getProductByStore(this.editedItem.store, this.editedItem.idShoe).then(doc => {
+          if(doc.exists)
+          {
             this.actualStock = doc.data().stock;
-            console.log('onId stock: ' + this.actualStock);
-          })
-        })
+          }
+        });
       }
     },
   }

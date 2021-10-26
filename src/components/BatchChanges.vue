@@ -22,7 +22,7 @@
                   Reportar condicion de calzados
                 </v-card-title>
                 <v-card-text>
-                  <v-select v-model="idShoe" :items="idShoes" label="Códigos de Barra"></v-select>
+                  <v-select v-model="idShoe" :items="idShoes" label="Códigos de Barra" @input="onIdShoesChanged"></v-select>
                   <v-select v-model="store" :items="stores" label="Sucursal"></v-select>
                   <v-text-field v-model="total" label="Cantidad" placeholder="Cantidad"></v-text-field>
                 </v-card-text>
@@ -151,8 +151,8 @@
   </v-container>
 </template>
 <script>
-import { addProductCondition, getProductByStore, getProducts, getProductsByRef, getProductsByRefBrand, getProductsByRefBrandCondition, getProductsByRefBrandMaterial, getProductsByRefBrandMaterialColor, getProductsByRefBrandNew, updateCategoryProducts, updateConditionProducts, updateDescriptionProducts, updatePricesProducts, updateProductStock } from '../services/firestore/FirebaseProducts'
-import { getDefaultProductPhotho } from '../services/firestore/FirebaseStorage'
+import { addProductCondition, getProductByStore, getProducts, getProductsByRef, getProductsByRefBrand, getProductsByRefBrandCondition, getProductsByRefBrandIdShoe, getProductsByRefBrandMaterial, getProductsByRefBrandNew, updateCategoryProducts, updateConditionProducts, updateDescriptionProducts, updatePricesProducts, updateProductStock } from '../services/firestore/FirebaseProducts'
+import { getDefaultProductPhotho, onUploadBatchProducts, updateProductPhoto } from '../services/firestore/FirebaseStorage'
 import { getBrandNames } from '../services/firestore/FirebaseBrands'
 import { getColorNames } from '../services/firestore/FirabaseColors'
 import { getMaterialNames } from '../services/firestore/FirebaseMaterials'
@@ -290,11 +290,7 @@ import { createAlert } from '../services/Alerts'
           {
             if(this.material !== null && this.color !== null)
             {
-              getProductsByRefBrandMaterialColor(this.reference, this.brand, this.material, this.color).then(snap =>{
-                snap.forEach(doc => {
-                console.log(doc.data())
-                });
-              });
+              await updateProductPhoto(this.reference, this.brand, this.material, this.color);
             }
             else
             {
@@ -395,11 +391,12 @@ import { createAlert } from '../services/Alerts'
           this.dialog = false;
           this.$refs.form.reset();
       },
-      previewImage(file){
+      async previewImage(file){
         console.log(file)
         this.imageData = file;
-        this.editedItem.photo = URL.createObjectURL(this.image);
-        //onUpload(file, this.editedItem);
+        this.photo = URL.createObjectURL(this.image);
+        await onUploadBatchProducts(file, this.brand, this.reference, this.color, this.material);
+        
       },
       onRefChanged(){
         this.brands = [];
@@ -475,6 +472,15 @@ import { createAlert } from '../services/Alerts'
             this.colors.push(doc.data().color)
           });
         });
+      },
+      onIdShoesChanged()
+      {
+        this.stores = [];
+        getProductsByRefBrandIdShoe(this.reference, this.brand, this.idShoe).then(snap =>{
+            snap.forEach(doc => {
+              this.stores.push(doc.data().store);
+              });
+            });
       },
       onRadioButtonChanged()
       {

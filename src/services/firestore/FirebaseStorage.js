@@ -1,7 +1,7 @@
 //import storage from '../firebase'
 import firebase from 'firebase/app'
 import 'firebase/storage'
-import { addProduct } from '../firestore/FirebaseProducts'
+import { addProduct, getProductsByRefBrandMaterialColor } from '../firestore/FirebaseProducts'
 export async function onUpload(file, product)
 {
     console.log(file.name);
@@ -16,19 +16,17 @@ export function getDefaultProductPhotho()
 {
     return firebase.storage().ref().child('utilities/logo.png').getDownloadURL();
 }
-export async function onUploadBatchProducts(file, product)
+export async function onUploadBatchProducts(file, brand, ref, color, material)
 {
-    await firebase.storage().ref('products/' + product.reference + '-' + product.material + '-' + product.color).put(file);
+    await firebase.storage().ref('products/' + brand + '-' +ref + '-' + color + '-' + material).put(file);
 }
-export async function updateProductPhoto()
+export async function updateProductPhoto(ref, brand, material, color)
 {
-    // await firebase.storage().ref().child('products/' + product.reference + '-' + product.material + '-' + product.color).getDownloadURL().then(val => {
-        // product.photo = val;
-        // addProduct(product);
-    //     getProductsByRefBrandMaterialColor(this.reference, this.brand, this.material, this.color).then(snap =>{
-    //         snap.forEach(doc => {
-    //             firebase.firestore().collection('products').doc('')
-    //         });
-    //       });
-    // })
+    await firebase.storage().ref().child('products/' + brand + '-' +ref + '-' + color + '-' + material).getDownloadURL().then(val => {
+        getProductsByRefBrandMaterialColor(ref, brand, material, color).then(snap =>{
+            snap.forEach(doc => {
+                firebase.firestore().collection('products').doc(doc.data().id).update({ photo: val });
+            });
+          });
+    })
 }

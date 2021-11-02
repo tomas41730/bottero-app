@@ -15,7 +15,7 @@ export function deleteSize(idColor)
 {
     db.collection('sizes').doc(idColor).delete();   
 }
-export function getSizes()
+export function getSizes1()
 {
     const sizes = []
     db.collection('sizes').get()
@@ -28,13 +28,25 @@ export function getSizes()
     });
     return sizes;
 }
+export function getSizes()
+{
+    const sizes = []
+    db.collection('sizes').orderBy('size', 'asc').get()
+    .then(snapshot => {
+        snapshot.docs.forEach(size => {
+            sizes.push(size.data());
+        });
+
+    });
+    return sizes;
+}
 export function getSizeNames()
 {
     const sizes = [];
-    db.collection('sizes').get()
+    db.collection('sizes').orderBy('size', 'asc').get()
     .then(snapshot => {
         snapshot.docs.forEach(size => {
-            sizes.push(Object.assign({}, size.data()).size);
+            sizes.push(size.data().size);
         });
 
     });

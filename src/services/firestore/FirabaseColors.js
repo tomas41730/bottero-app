@@ -18,7 +18,7 @@ export function deleteColor(idColor)
 export function getColors()
 {
     const colors = [];
-    db.collection('colors').get()
+    db.collection('colors').orderBy('color', 'asc').get()
     .then(snapshot => {
         snapshot.docs.forEach(color => {
             let appObj = { ...color.data(), ['id']: color.id };
@@ -30,7 +30,7 @@ export function getColors()
 export function getColorNames()
 {
     const colors = [];
-    db.collection('colors').get()
+    db.collection('colors').orderBy('color', 'asc').get()
     .then(snapshot => {
         snapshot.docs.forEach(color => {
             colors.push(Object.assign({}, color.data()).color);

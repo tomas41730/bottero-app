@@ -32,11 +32,11 @@
                   <v-container>
                     <v-row>
                       <v-col cols="12" sm="6" md="4">
-                        <v-text-field v-model="editedItem.nombre" :counter="20" :rules="rules" label="Nombre" required>
+                        <v-text-field v-model="editedItem.name" :counter="20" :rules="rules" label="Nombre" required>
                         </v-text-field>
                       </v-col>
                       <v-col cols="12" sm="6" md="4">
-                        <v-text-field v-model="editedItem.direccion" :counter="20" :rules="rules" label="Dirección" required>
+                        <v-text-field v-model="editedItem.direction" :counter="20" :rules="rules" label="Dirección" required>
                         </v-text-field>
                       </v-col>
                     </v-row>
@@ -89,22 +89,22 @@ import { createAlert, deleteAlert } from '../services/Alerts'
         {
           text: 'Nombre',
           align: 'start',
-          sortable: false,
-          value: 'nombre',
+          sortable: true,
+          value: 'name',
         },
-        { text: 'Dirección', value: 'direccion' },
+        { text: 'Dirección', value: 'direction' },
         { text: 'Acciones', value: 'actions', sortable: false },
       ],
       stores: [],
       editedIndex: -1,
       editedItem: {
-        nombre: '',
-        direccion: '',
+        name: '',
+        direction: '',
         id: ''
           },
       defaultItem: {
-        nombre: '',
-        direccion: '',
+        name: '',
+        direction: '',
         id: ''
       },
       rules: [
@@ -121,7 +121,7 @@ import { createAlert, deleteAlert } from '../services/Alerts'
       },
       deleteFormTitle () 
       {
-        return 'La sucursal: ' + this.editedItem.nombre + ' sera eliminada.';
+        return 'La sucursal: ' + this.editedItem.name + ' sera eliminada.';
       },
     },
 
@@ -158,7 +158,7 @@ import { createAlert, deleteAlert } from '../services/Alerts'
         this.editedIndex = this.stores.indexOf(item);
         this.editedItem = Object.assign({}, item);
         let msg = 'Esta por eliminar la sucursal';
-        deleteAlert(msg, this.editedItem.nombre, this.deleteItemConfirm, this.closeDelete);
+        deleteAlert(msg, this.editedItem.name, this.deleteItemConfirm, this.closeDelete);
       },
 
       deleteItemConfirm () 
@@ -199,13 +199,13 @@ import { createAlert, deleteAlert } from '../services/Alerts'
           {
             Object.assign(this.stores[this.editedIndex], this.editedItem);
             updateStore(store);
-            msg = 'La sucursal "' + this.editedItem.nombre + '" fue actualizada con exito!';
+            msg = 'La sucursal "' + this.editedItem.name + '" fue actualizada con exito!';
           } 
           else 
           {
             this.stores.push(this.editedItem);
             addStore(store);
-            msg = 'La sucursal "' + this.editedItem.nombre + '" fue creada con exito!';
+            msg = 'La sucursal "' + this.editedItem.name + '" fue creada con exito!';
           }
           this.close();
           createAlert(msg, 'success');

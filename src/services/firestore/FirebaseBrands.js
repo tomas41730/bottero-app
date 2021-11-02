@@ -18,7 +18,7 @@ export function deleteBrand(idColor)
 export function getBrands()
 {
     const brands = []
-    db.collection('brands').get()
+    db.collection('brands').orderBy('brand', 'asc').get()
     .then(snapshot => {
         snapshot.docs.forEach(brand => {
             let appObj = { ...brand.data(), ['id']: brand.id };
@@ -31,7 +31,7 @@ export function getBrands()
 export function getBrandNames()
 {
     const brands = [];
-    db.collection('brands').get()
+    db.collection('brands').orderBy('brand', 'asc').get()
     .then(snapshot => {
         snapshot.docs.forEach(brand => {
             brands.push(Object.assign({}, brand.data()).brand);

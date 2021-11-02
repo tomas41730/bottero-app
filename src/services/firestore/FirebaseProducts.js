@@ -75,6 +75,11 @@ export function getProductsByRef(ref)
     const products = db.collection('products').where('reference', '==', ref).get()
     return products
 }
+export function getProductsByRefBrandIdShoe(ref, brand, idShoe)
+{
+    const products = db.collection('products').where('reference', '==', ref).where('brand', '==', brand).where('idShoe', '==', idShoe).get()
+    return products
+}
 export async function getProductsByRefBrand(ref, brand)
 {
     const products = db.collection('products').where('reference', '==', ref).where('brand', '==', brand).get()

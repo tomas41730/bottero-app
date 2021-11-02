@@ -361,7 +361,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
           snap.forEach(doc => {
             if(doc.exists) this.btn = 'Actualizar';
             this.editedItem = doc.data();
-            this.editedItem.stock = '0';
+            this.editedItem.stock = '';
             this.editedItem.store = null;
           })
         })
@@ -370,9 +370,11 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         getProductByRef(this.editedItem.reference).then(snap =>{
           snap.forEach(doc => {
             if(doc.exists) this.btn = 'Actualizar';
-            this.editedItem = doc.data();
-            this.editedItem.stock = '0';
-            this.editedItem.store = null;
+            this.editedItem.description = doc.data().description;
+            this.editedItem.category = doc.data().category;
+            this.editedItem.condition = doc.data().condition;
+            this.editedItem.photo = doc.data().photo;
+            this.editedItem.brand = doc.data().brand;
           })
         })
       },

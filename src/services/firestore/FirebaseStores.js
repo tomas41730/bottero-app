@@ -18,11 +18,12 @@ export function deleteStore(idStore)
 export function getStores()
 {
     const stores = []
-    db.collection('stores').get()
+    db.collection('stores').orderBy('name', 'asc').get()
     .then(snapshot => {
         snapshot.docs.forEach(store => {
-            let appObj = { ...store.data(), ['id']: store.id };
-            stores.push(Object.assign({}, appObj));
+            // let appObj = { ...store.data(), ['id']: store.id };
+            // stores.push(Object.assign({}, appObj));
+            stores.push(store.data());
         });
     });
     return stores
@@ -30,10 +31,10 @@ export function getStores()
 export function getStoresNames()
 {
     const stores = []
-    db.collection('stores').get()
+    db.collection('stores').orderBy('name', 'asc').get()
     .then(snapshot => {
         snapshot.docs.forEach(store => {
-            stores.push(Object.assign({}, store.data()).nombre);
+            stores.push(store.data().name);
         });
     });
     return stores;

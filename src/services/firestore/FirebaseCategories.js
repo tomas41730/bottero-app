@@ -18,11 +18,12 @@ export function deleteCategory(idColor)
 export function getCategories()
 {
     const categories = []
-    db.collection('categories').get()
+    db.collection('categories').orderBy('category', 'asc').get()
     .then(snapshot => {
         snapshot.docs.forEach(category => {
-            let appObj = { ...category.data(), ['id']: category.id };
-            categories.push(Object.assign({}, appObj));
+            // let appObj = { ...category.data(), ['id']: category.id };
+            // categories.push(Object.assign({}, appObj));
+            categories.push(category.data())
         });
 
     });

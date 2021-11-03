@@ -19,15 +19,16 @@
             <v-dialog v-model="dialog" max-width="500px">
               <v-card>
                 <v-card-title>
-                  Reportar condicion de calzados
+                  Reportar calzados en condición de: {{ this.condition }}
                 </v-card-title>
                 <v-card-text>
-                  <v-select v-model="idShoe" :items="idShoes" label="Códigos de Barra" @input="onIdShoesChanged"></v-select>
-                  <v-select v-model="store" :items="stores" label="Sucursal"></v-select>
+                  <v-autocomplete v-model="idShoe" :items="idShoes" label="Códigos de Barra" @input="onIdShoesChanged"></v-autocomplete>
+                  <v-autocomplete v-model="store" :items="stores" label="Sucursal"></v-autocomplete>
+                  <v-text-field v-model="observation" label="Observación" placeholder="Observación"></v-text-field>
                   <v-text-field v-model="total" label="Cantidad" placeholder="Cantidad"></v-text-field>
                 </v-card-text>
                 <v-card-actions>
-                  <v-btn color="primary" text @click="dialog = false">
+                  <v-btn color="primary" text @click="closeDialog">
                     Close
                   </v-btn>
                   <v-btn color="primary" text @click="saveCondition">
@@ -178,6 +179,7 @@ import { createAlert } from '../services/Alerts'
       total: null,
       photo: null,
       image: null,
+      observation: null,
       products: [],
       brands: [],
       materials: [],
@@ -262,7 +264,16 @@ import { createAlert } from '../services/Alerts'
       {
         
       },
-      
+      closeDialog(){
+        this.dialog = false;
+        this.dialog = false;
+        this.$refs.form.reset();
+        this.brand = null;
+        this.idShoe = null;
+        this.store = null;
+        this.total = null;
+        this.observation = null;
+      },
       async saveCondition()
       {
         await getProductByStore(this.store, this.idShoe).then(doc => {
@@ -273,7 +284,7 @@ import { createAlert } from '../services/Alerts'
             updateProductStock(product, product.stock);
             product.stock = null;
             product.stock = this.total;
-            addProductCondition(product, this.condition);
+            addProductCondition(product, this.condition, this.observation);
           }
         });
         this.dialog = false;
@@ -282,6 +293,7 @@ import { createAlert } from '../services/Alerts'
         this.idShoe = null;
         this.store = null;
         this.total = null;
+        this.observation = null;
       },
       async save()
       {
@@ -402,17 +414,17 @@ import { createAlert } from '../services/Alerts'
         this.brands = [];
         this.products = [];
         getProductsByRef(this.reference).then(snap => {
-            snap.forEach(doc => {
-                this.brands.push(doc.data().brand);
-                this.products.push(doc.data());
-            });
-        });
-        
+          snap.forEach(doc => {
+            this.brands.push(doc.data().brand);
+            this.products.push(doc.data());
+          });
+        })
       },
       onBrandChanged()
       {
         this.conditions = [];
         this.materials = [];
+        // this.conditionDisabled = false;
         if(this.radioGroup === 'prices')
         {
           getProductsByRefBrand(this.reference, this.brand).then(snap =>{
@@ -431,13 +443,13 @@ import { createAlert } from '../services/Alerts'
         }
         else
         {
-          this.conditions = ['Nuevo', 'Medio Viejo', 'Viejo']
+          this.conditions = ['Nuevo', 'Normal', 'Oferta', 'Fallado']
         }
         
       },
       onConditionChanged()
       {
-        if(this.condition === 'Medio Viejo' || this.condition === 'Viejo')
+        if(this.condition === 'Oferta' || this.condition === 'Fallado')
         {
           this.idShoes = [];
           this.stores = [];
@@ -452,7 +464,7 @@ import { createAlert } from '../services/Alerts'
           this.dialog = true;
           }        
         }
-        else if (this.condition === 'Nuevo')
+        else if (this.condition === 'Nuevo' || this.condition === 'Normal')
         {
           getProductsByRefBrand(this.reference, this.brand).then(snap =>{
             snap.forEach(doc => {
@@ -506,7 +518,10 @@ import { createAlert } from '../services/Alerts'
           }
           else if(this.radioGroup === 'condition')
           {
-              this.conditionDisabled = false;
+            this.conditionDisabled = false;
+            // if(this.brand !== null){
+            // this.conditionDisabled = true;
+            // }
           }
           else if(this.radioGroup === 'prices')
           {

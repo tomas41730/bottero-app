@@ -129,10 +129,11 @@ export function updatePricesProducts(id, price, purchasePrice, oDisccount, pDisc
                 due: actualDate.FieldValue.serverTimestamp(),
             });
 }
-export async function addProductCondition(product, condition)
+export async function addProductCondition(product, condition, observation)
 {
     //product.due = actualDate.FieldValue.serverTimestamp();
-    //const incrementStock = actualDate.FieldValue.increment(parseInt(product.stock));  
+    //const incrementStock = actualDate.FieldValue.increment(parseInt(product.stock)); 
+    if (observation === null) observation = 'Sin Observación';
     await db.collection('products').doc(condition.replace(' ', '-') + '-' + product.store+ '-' +product.idShoe).get()
     .then(docSnapshot => {
         if(docSnapshot.exists){
@@ -156,6 +157,7 @@ export async function addProductCondition(product, condition)
                         pDisccount: product.pDisccount,
                         oDisccount: product.oDisccount,
                         condition: condition,
+                        observation: observation,
                         photo: product.photo
                    });
             console.log('existe')
@@ -163,6 +165,7 @@ export async function addProductCondition(product, condition)
         else
         {
             console.log('no existe')
+            product.observation = observation;
             product.stock = parseInt(product.stock);
             product.due = actualDate.FieldValue.serverTimestamp();
             product.id = condition.replace(' ', '-') + '-' + product.store + '-' + product.idShoe;

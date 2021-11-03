@@ -5,8 +5,8 @@ import { addProduct, getProductsByRefBrandMaterialColor } from '../firestore/Fir
 export async function onUpload(file, product)
 {
     console.log(file.name);
-    await firebase.storage().ref('products/' + product.reference + '-' + product.material + '-' + product.color).put(file);
-    await firebase.storage().ref().child('products/' + product.reference + '-' + product.material + '-' + product.color).getDownloadURL().then(val => {
+    await firebase.storage().ref('products/' + product.brand + '-' + product.reference + '-' + product.color + '-' + product.material).put(file);
+    await firebase.storage().ref().child('products/' + product.brand + '-' + product.reference + '-' + product.color + '-' + product.material).getDownloadURL().then(val => {
         product.photo = val;
         addProduct(product);
     })

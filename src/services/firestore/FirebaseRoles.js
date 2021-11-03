@@ -26,7 +26,7 @@ export function getRoles()
         })
 
     })
-    console.log(roles)
+    //console.log(roles)
     return roles
 }
 export function getRoleNames()
@@ -39,7 +39,7 @@ export function getRoleNames()
         })
 
     })
-    console.log(roles)
+    //console.log(roles)
     return roles
 }
 export function getIdRole(name)
@@ -50,7 +50,7 @@ export function getIdRole(name)
         id: doc.id,
         ...doc.data(),
       }));
-      console.log("Roles "+name+": ", data[0]['id']);
+      //console.log("Roles "+name+": ", data[0]['id']);
       return data[0]['id'];
     });
     return role

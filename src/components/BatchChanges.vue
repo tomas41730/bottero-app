@@ -153,7 +153,7 @@
 </template>
 <script>
 import { addProductCondition, getProductByStore, getProducts, getProductsByRef, getProductsByRefBrand, getProductsByRefBrandCondition, getProductsByRefBrandIdShoe, getProductsByRefBrandMaterial, getProductsByRefBrandNew, updateCategoryProducts, updateConditionProducts, updateDescriptionProducts, updatePricesProducts, updateProductStock } from '../services/firestore/FirebaseProducts'
-import { getDefaultProductPhotho, onUploadBatchProducts, updateProductPhoto } from '../services/firestore/FirebaseStorage'
+import { onUploadBatchProducts, updateProductPhoto, getDefaultProductPhoto } from '../services/firestore/FirebaseStorage'
 import { getBrandNames } from '../services/firestore/FirebaseBrands'
 import { getColorNames } from '../services/firestore/FirabaseColors'
 import { getMaterialNames } from '../services/firestore/FirebaseMaterials'
@@ -257,8 +257,7 @@ import { createAlert } from '../services/Alerts'
         this.materials = getMaterialNames();
         this.categories = getCategoryNames();
         //this.conditions = ['Nuevo', 'Medio Viejo', 'Viejo']
-        getDefaultProductPhotho().then(val => { this.photo = val; });
-        console.log('Initialize radio group with ' + this.radioGroup)
+        getDefaultProductPhoto().then(val => { this.photo = val; });
       },
       viewItem() 
       {

@@ -8,7 +8,7 @@ export async function addProduct(product)
     const incrementStock = actualDate.FieldValue.increment(parseInt(product.stock));  
     await db.collection('products').doc(product.store+'-'+product.idShoe).get()
     .then(docSnapshot => {
-        if(docSnapshot.exists){
+        if(docSnapshot.exists){// si el producto existe
             db.collection('products').doc(product.store+'-'+product.idShoe)
             .update({ 
                         reference: product.reference,
@@ -36,6 +36,7 @@ export async function addProduct(product)
             product.stock = parseInt(product.stock);
             product.id = product.store+"-"+product.idShoe;
             db.collection('products').doc(product.store+"-"+product.idShoe).set(product);
+            product.stock = product.stock.toString();
         }
     });
     product.due = new Date().toLocaleDateString('en-US') + ' ' + new Date().toLocaleTimeString('en-US');
@@ -44,6 +45,10 @@ export async function addProduct(product)
 export function deleteProduct(product) 
 {
     db.collection('products').doc(product.store+"-"+product.idShoe).delete()
+}
+export function deleteProductCondition(product) 
+{
+    db.collection('products').doc(product.condition+"-"+product.store+"-"+product.idShoe).delete()
 }
 export function getProducts()
 {

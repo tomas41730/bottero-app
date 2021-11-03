@@ -10,9 +10,9 @@ export async function onUpload(file, product)
         product.photo = val;
         addProduct(product);
     })
-    console.log(product);
+    
 }
-export function getDefaultProductPhotho()
+export function getDefaultProductPhoto()
 {
     return firebase.storage().ref().child('utilities/logo.png').getDownloadURL();
 }

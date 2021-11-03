@@ -125,13 +125,13 @@
         </v-toolbar>
       </template>
 
-      <template v-slot:[`item.photo`]="{ item }">
+  <!--  <template v-slot:[`item.photo`]="{ item }">
         <div class="p-2">
           <v-list-item-avatar tile size="50">
             <v-img @click="show(item)" :src="item.photo"></v-img>
           </v-list-item-avatar>
         </div>
-      </template>
+      </template> -->
 
       <template v-slot:[`item.actions`]="{ item }">
         <v-icon small class="mr-2" @click="editItem(item)">
@@ -151,7 +151,7 @@
 </template>
 <script>
 import { addUser, deleteUser, getUsers } from '../services/firestore/FirebaseUsers'
-import { deleteAlert, createAlert, showImage } from '../services/Alerts'
+import { deleteAlert, createAlert } from '../services/Alerts'
 import { getStoresNames } from '../services/firestore/FirebaseStores'
 import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
   export default 
@@ -166,7 +166,6 @@ import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
       roles: getRoleNames(),
       selected:[],
       headers: [
-        { text: 'Foto', value: 'photo' },
         {
           text: 'CI',
           align: 'start',
@@ -195,8 +194,7 @@ import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
         store: '',
         role: '',
         idRole: '',
-        account: true,
-        photo: ''
+        account: true
           },
       defaultItem: {
         ci: '',
@@ -208,8 +206,7 @@ import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
         store: '',
         role: '',
         idRole: '',
-        account: true,
-        photo: ''
+        account: true
       },
       numberRules: [
         v => !!v || 'Este campo es requerido.',
@@ -324,10 +321,10 @@ import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
           {
             Object.assign(this.desserts[this.editedIndex], this.editedItem)
             msg = 'El usuario "' + fullname + '" fue actualizado con exito!'
-            console.log('Nombre Rol: ' + this.editedItem.role)
+            //console.log('Nombre Rol: ' + this.editedItem.role)
 
             getIdRole(user.role).then(value =>{
-              console.log('Users Crud id role => ' + value)
+              //console.log('Users Crud id role => ' + value)
               user.idRole = value
               addUser(user)
             })
@@ -345,9 +342,6 @@ import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
           createAlert(msg, 'success')
           this.$refs.form.reset()
         }
-      },
-      show(item){
-        showImage(item)
       }
     },
   }

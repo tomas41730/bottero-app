@@ -9,7 +9,7 @@
       <v-divider horizontal></v-divider>
       <v-row>
         <v-col>
-          <v-form ref="form" v-model="valid" lazy-validation>
+          <v-form ref="form" v-model="valid" lazy-validation :readonly="formDisabled">
             <v-list-item three-line>
               <v-list-item-content>
                 <v-col>
@@ -69,8 +69,11 @@
                 </v-col>
                 <v-col>
                   <v-card-actions>
-                    <v-btn v-model="btn" color="primary" depressed elevation="2" @click="save">
+                    <v-btn v-model="btn" :disabled="cleanDisabled" color="primary" depressed elevation="2" @click="save">
                       {{ this.btn }}
+                    </v-btn>
+                    <v-btn color="primary" depressed elevation="2" @click="clean" hidden>
+                      Limpiar
                     </v-btn>
                   </v-card-actions>
                 </v-col>
@@ -134,11 +137,11 @@
   </v-container>
 </template>
 <script>
-import { addProduct, getProducts, deleteProduct, getProductById, getProductByRef, getProductByStore } from '../services/firestore/FirebaseProducts'
+import { addProduct, getProducts, deleteProduct, getProductById, getProductByRef, getProductByStore, deleteProductCondition } from '../services/firestore/FirebaseProducts'
 import { getColorNames } from '../services/firestore/FirabaseColors'
-import { deleteAlert, createAlert } from '../services/Alerts'
+import { createAlert, deleteAlertWithImage, uploadAlert } from '../services/Alerts'
 import { getStoresNames } from '../services/firestore/FirebaseStores'
-import { onUpload } from '../services/firestore/FirebaseStorage'
+import { getDefaultProductPhoto, onUpload } from '../services/firestore/FirebaseStorage'
 import { getBrandNames } from '../services/firestore/FirebaseBrands'
 import { getSizeNames } from '../services/firestore/FirebaseSizes'
 import { getMaterialNames } from '../services/firestore/FirebaseMaterials'
@@ -148,7 +151,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
     data: () => 
     ({
       btn: 'Guardar',
-      defaultImage: 'https://firebasestorage.googleapis.com/v0/b/bottero-app.appspot.com/o/utilities%2Flogo.png?alt=media&token=5be54cad-137f-4050-b392-b2319104b96d',
+      defaultImage: '',
       selected: [],
       addEdit: true,
       valid: true,
@@ -166,14 +169,9 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       headers: [
         
         { text: 'Acciones', value: 'actions', sortable: false },
-        {
-          text: 'Referencia',
-          align: 'start',
-          sortable: true,
-          value: 'reference',
-        },
-        { text: 'Codigo de Barras', value: 'idShoe' },
         { text: 'Fecha', value: 'due' },
+        { text: 'Codigo de Barras', value: 'idShoe' },
+        { text: 'Referencia', value: 'reference' },
         { text: 'Marca', value: 'brand' },
         { text: 'Talla', value: 'size' },
         { text: 'Color', value: 'color' },
@@ -228,7 +226,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         pDisccount: null,
         oDisccount: null,
         condition: '',
-        photo: ''
+        photo: 'https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e'
       },
       url: null,
       image: null,
@@ -246,6 +244,8 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         v => !!v || 'El correo electrónico es requerido.',
         v => /^(([^<>()[\]\\.,;:\s@']+(\.[^<>()\\[\]\\.,;:\s@']+)*)|('.+'))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) || 'Debe ingresar una dirección de correo válida.',
       ],
+      formDisabled: false,
+      cleanDisabled: false,
     }),
 
     computed: 
@@ -277,32 +277,47 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         this.categories = getCategoryNames();
         this.stores = getStoresNames();
         this.conditions = ['Nuevo', 'Medio Viejo', 'Viejo']
-        this.editedItem.photo = this.defaultImage;
+        getDefaultProductPhoto().then(val => { this.editedItem.photo = val; });
       },
-      viewItem() 
+      viewItem(item) 
       {
-        // this.editedIndex = this.products.indexOf(item);
-        // this.editedItem = Object.assign({}, item);
-        console.log(this.editedItem)
+        //this.editedIndex = this.products.indexOf(item);
+        item.stock = item.stock.toString();
+        this.editedItem = Object.assign({}, item);
+        this.cleanDisabled = true;
+        this.formDisabled = true; 
       },
       
       deleteItem (item) 
       {
         this.editedIndex = this.products.indexOf(item);
         this.editedItem = Object.assign({}, item);
-        let msg = 'Esta por eliminar el producto'
-        deleteAlert(msg, this.editedItem.idShoe + ' ' + this.editedItem.description, this.deleteItemConfirm, this.closeDelete)
+        let msg = 'Esta por eliminar el producto:\n'
+        let description = 'Marca: ' + item.brand + '\n'
+                        + 'Referencia: ' + item.reference + '\n'
+                        + 'Color: ' + item.color + '\n'
+                        + 'Material: ' + item.material + '\n'
+                        + 'Talla: ' + item.size + '\n'
+                        + 'Cod. Barras: ' + item.idShoe + '\n'
+        deleteAlertWithImage(msg, description, item.photo, this.deleteItemConfirm, this.closeDelete)
       },
       deleteItemConfirm () 
       {
         let shoe = this.products[this.editedIndex]
-        deleteProduct(shoe)
+        //deleteProduct(shoe)
+        if(this.editedItem.condition === 'Oferta' || this.editedItem.condition === 'Fallado')
+        {
+          deleteProductCondition(shoe)
+        }
+        else 
+        {
+          deleteProduct(shoe)
+        }
         this.products.splice(this.editedIndex, 1)
         this.closeDelete()
       },
       closeDelete () 
       {
-        //this.dialogDelete = false
         this.$nextTick(() => 
         {
           this.editedItem = Object.assign({}, this.defaultItem)
@@ -340,21 +355,25 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
           createAlert(msg, 'success');
           this.$refs.form.reset();
           this.btn = 'Guardar';
-          this.editedItem.photo = this.defaultImage;
+          this.image = null;
         }
       },
-      previewImage(file){
+      async previewImage(file){
         if(this.$refs.form.validate())
         {
+          uploadAlert(4000);
           console.log(file);
-          this.imageData = file;
+          this.image = file;
           this.editedItem.photo = URL.createObjectURL(this.image);
-          onUpload(file, this.editedItem);
+          await onUpload(file, this.editedItem, this.uploadValue, this.cleanDisabled);
+          
         }
         else 
         {
-          createAlert("Debe agregar una sucursal.");
+          createAlert("Debe llenar los campos.", "error");
+          this.image = null;
         }
+        this.editedItem.stock = this.editedItem.stock.toString();
       },
       onIdChanged(){
         getProductById(this.editedItem.idShoe).then(snap =>{
@@ -385,6 +404,15 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
             this.actualStock = doc.data().stock;
           }
         });
+      },
+      clean(){
+        this.formDisabled = false; 
+        this.cleanDisabled = false;
+        this.$refs.form.reset();
+        Object.assign(this.editedItem, this.defaultItem);
+      },
+      sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
       }
     },
   }

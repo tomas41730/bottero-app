@@ -31,8 +31,7 @@ export function getBrands()
 export function getBrandNames()
 {
     const brands = [];
-    db.collection('brands').orderBy('brand', 'asc').get()
-    .then(snapshot => {
+    db.collection('brands').orderBy('brand', 'asc').onSnapshot(snapshot => {
         snapshot.docs.forEach(brand => {
             brands.push(Object.assign({}, brand.data()).brand);
         });

@@ -31,8 +31,7 @@ export function getMaterials()
 export function getMaterialNames()
 {
     const materials = [];
-    db.collection('materials').get()
-    .then(snapshot => {
+    db.collection('materials').onSnapshot(snapshot => {
         snapshot.docs.forEach(material => {
             materials.push(Object.assign({}, material.data()).material);
         });

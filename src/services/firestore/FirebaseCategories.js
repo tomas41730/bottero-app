@@ -32,8 +32,7 @@ export function getCategories()
 export function getCategoryNames()
 {
     const categories = [];
-    db.collection('categories').get()
-    .then(snapshot => {
+    db.collection('categories').onSnapshot(snapshot => {
         snapshot.docs.forEach(category => {
             categories.push(Object.assign({}, category.data()).category);
         });

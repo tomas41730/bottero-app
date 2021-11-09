@@ -81,28 +81,22 @@ export function showImage(item){
 
 export function uploadAlert(time)
 {
-  let timerInterval
-Swal.fire({
-  title: 'Subiendo imagen!',
-  html: 'Restan <b></b> milisegundos.',
-  timer: time,
-  allowOutsideClick: false,
-  timerProgressBar: true,
-  didOpen: () => {
-    Swal.showLoading()
-    const b = Swal.getHtmlContainer().querySelector('b')
-    timerInterval = setInterval(() => {
-      b.textContent = Swal.getTimerLeft()
-    }, 100)
-  },
-  willClose: () => {
-    clearInterval(timerInterval)
-  }
-}).then((result) => {
-  /* Read more about handling dismissals below */
-  if (result.dismiss === Swal.DismissReason.timer) {
-    console.log('La imagen ya fue subida.')
-  }
-  console.log('La imagen ya fue subida1.')
-})
+  let timerInterval;
+  Swal.fire({
+    title: 'Subiendo imagen!',
+    html: 'Restan <b></b> milisegundos.',
+    timer: time,
+    allowOutsideClick: false,
+    timerProgressBar: true,
+    didOpen: () => {
+      Swal.showLoading()
+      const b = Swal.getHtmlContainer().querySelector('b')
+      timerInterval = setInterval(() => {
+        b.textContent = Swal.getTimerLeft()
+      }, 100);
+    },
+    willClose: () => {
+      clearInterval(timerInterval);
+    }
+  });
 }

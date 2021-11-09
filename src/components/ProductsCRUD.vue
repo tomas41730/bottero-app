@@ -6,6 +6,20 @@
           <p class="text-h4 text--primary">MÓDULO DE INVENTARIO</p>
         </div>
       </v-card-text>
+      <v-dialog v-model="dialogObservation" max-width="500px">
+        <v-card>
+          <v-card-title>
+            Reportar calzados en condición de: {{ this.editedItem.observation }}
+          </v-card-title>
+          <v-card-text>
+            <v-text-field v-model="editedItem.observation" label="Observación" placeholder="Observación"></v-text-field></v-card-text>
+              <v-card-actions>
+                <v-btn color="primary" text @click="closeDialog">
+                  Continuar
+                </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
       <v-divider horizontal></v-divider>
       <v-row>
         <v-col>
@@ -40,7 +54,7 @@
                   </v-row>
                   <v-row>
                     <v-col>
-                      <v-text-field v-model="editedItem.description" :rules="attributeRules" label="Descripcion" placeholder="Descripcion"></v-text-field>
+                      <v-textarea rows="1" v-model="editedItem.description" :rules="attributeRules" label="Descripcion" placeholder="Descripcion"></v-textarea>
                     </v-col>
                     <v-col>
                       <v-autocomplete :items="categories" v-model="editedItem.category" :rules="attributeRules" label="Categoria" placeholder="Categoria"></v-autocomplete>
@@ -49,7 +63,7 @@
                       <v-select :items="stores" :rules="[v => !!v || 'Debe asignar una sucursal.']" label="Sucursal" v-model="editedItem.store"  @input="onStoreChanged"></v-select>
                     </v-col>
                     <v-col>
-                      <v-select :items="conditions" v-model="editedItem.condition" :rules="attributeRules" label="Condicion" placeholder="Condicion"></v-select>
+                      <v-select :items="conditions" v-model="editedItem.condition" :rules="attributeRules" label="Condicion" placeholder="Condicion" @input="onConditionChanged"></v-select>
                     </v-col>
                   </v-row>
                   <v-row>
@@ -137,7 +151,7 @@
   </v-container>
 </template>
 <script>
-import { addProduct, getProducts, deleteProduct, getProductById, getProductByRef, getProductByStore, deleteProductCondition } from '../services/firestore/FirebaseProducts'
+import { addProduct, getProducts, deleteProduct, getProductByRef, getProductByStore, getProductByIdShoe } from '../services/firestore/FirebaseProducts'
 import { getColorNames } from '../services/firestore/FirabaseColors'
 import { createAlert, deleteAlertWithImage, uploadAlert } from '../services/Alerts'
 import { getStoresNames } from '../services/firestore/FirebaseStores'
@@ -175,16 +189,17 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         { text: 'Marca', value: 'brand' },
         { text: 'Talla', value: 'size' },
         { text: 'Color', value: 'color' },
-        { text: 'Material', value: 'material' },
-        { text: 'Precio', value: 'price' },
-        { text: 'Precio Comp.', value: 'purchasePrice' },
+        { text: 'Material', value: 'material' },        
         { text: 'Stock', value: 'stock' },
         { text: 'Descripcion', value: 'description' },
         { text: 'Categoria', value: 'category' },
         { text: 'Sucursal', value: 'store' },
+        { text: 'Condicion', value: 'condition' },
+        { text: 'Observacion', value: 'observation' },
+        { text: 'Precio', value: 'price' },
+        { text: 'Precio Comp.', value: 'purchasePrice' },
         { text: 'Des. Limite Bs.', value: 'pDisccount' },
         { text: 'Des. Ocasional %', value: 'oDisccount' },
-        { text: 'Condicion', value: 'condition' },
       ],
       products: [],
       editedIndex: -1,
@@ -206,7 +221,8 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         pDisccount: null,
         oDisccount: null,
         condition: '',
-        photo: ''
+        photo: '',
+        observation: 'Sin Observación'
           },
       defaultItem: {
         id: null,
@@ -226,7 +242,8 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         pDisccount: null,
         oDisccount: null,
         condition: '',
-        photo: 'https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e'
+        photo: 'https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e',
+        observation: 'Sin Observación',
       },
       url: null,
       image: null,
@@ -238,14 +255,15 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       ],
       attributeRules: [
         v => !!v || 'Este campo es requerido.',
-        v => (v && v.length <= 20) || 'Este campo debe tener 20 caracteres como máximo.',
+        v => (v && v.length <= 200) || 'Este campo debe tener 200 caracteres como máximo.',
       ],
-      emailRules: [
-        v => !!v || 'El correo electrónico es requerido.',
-        v => /^(([^<>()[\]\\.,;:\s@']+(\.[^<>()\\[\]\\.,;:\s@']+)*)|('.+'))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) || 'Debe ingresar una dirección de correo válida.',
-      ],
+      // emailRules: [
+      //   v => !!v || 'El correo electrónico es requerido.',
+      //   v => /^(([^<>()[\]\\.,;:\s@']+(\.[^<>()\\[\]\\.,;:\s@']+)*)|('.+'))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) || 'Debe ingresar una dirección de correo válida.',
+      // ],
       formDisabled: false,
       cleanDisabled: false,
+      dialogObservation: false
     }),
 
     computed: 
@@ -276,7 +294,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         this.materials = getMaterialNames();
         this.categories = getCategoryNames();
         this.stores = getStoresNames();
-        this.conditions = ['Nuevo', 'Medio Viejo', 'Viejo']
+        this.conditions = ['Nuevo', 'Normal', 'Oferta', 'Fallado']
         getDefaultProductPhoto().then(val => { this.editedItem.photo = val; });
       },
       viewItem(item) 
@@ -298,21 +316,15 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
                         + 'Color: ' + item.color + '\n'
                         + 'Material: ' + item.material + '\n'
                         + 'Talla: ' + item.size + '\n'
+                        + 'Condición: ' + item.condition + '\n'
                         + 'Cod. Barras: ' + item.idShoe + '\n'
+                        + 'Sucursal: ' + item.store + '\n'
         deleteAlertWithImage(msg, description, item.photo, this.deleteItemConfirm, this.closeDelete)
       },
       deleteItemConfirm () 
       {
         let shoe = this.products[this.editedIndex]
-        //deleteProduct(shoe)
-        if(this.editedItem.condition === 'Oferta' || this.editedItem.condition === 'Fallado')
-        {
-          deleteProductCondition(shoe)
-        }
-        else 
-        {
-          deleteProduct(shoe)
-        }
+        deleteProduct(shoe)
         this.products.splice(this.editedIndex, 1)
         this.closeDelete()
       },
@@ -331,9 +343,9 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         if(this.$refs.form.validate())
         {
           const product = Object.assign({},this.editedItem);
-          product.id = product.store + '-' + product.idShoe;
+          product.id = product.condition + '-' + product.store + '-' + product.idShoe;
           const datetime = new Date();
-          const productIndex = this.products.findIndex( item => item.idShoe ===  product.idShoe && item.store === product.store);
+          const productIndex = this.products.findIndex( item => item.condition ===  product.condition && item.idShoe ===  product.idShoe && item.store === product.store);
           let msg = ''
           if(productIndex > -1)
           {
@@ -356,6 +368,8 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
           this.$refs.form.reset();
           this.btn = 'Guardar';
           this.image = null;
+          this.editedItem.observation = 'Sin Observación';
+          console.log('Save: ' + this.editedItem.observation)
         }
       },
       async previewImage(file){
@@ -376,14 +390,16 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         this.editedItem.stock = this.editedItem.stock.toString();
       },
       onIdChanged(){
-        getProductById(this.editedItem.idShoe).then(snap =>{
+        getProductByIdShoe(this.editedItem.idShoe).then(snap =>{
           snap.forEach(doc => {
             if(doc.exists) this.btn = 'Actualizar';
             this.editedItem = doc.data();
             this.editedItem.stock = '';
             this.editedItem.store = null;
-          })
-        })
+            this.editedItem.condition = null;
+          });
+        });
+        this.editedItem.observation = 'Sin Observación';
       },
       onRefChanged(){
         getProductByRef(this.editedItem.reference).then(snap =>{
@@ -405,15 +421,26 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
           }
         });
       },
+      onConditionChanged()
+      {
+        if(this.editedItem.condition === 'Oferta' || this.editedItem.condition === 'Fallado')
+        {
+          this.dialogObservation = true;
+          this.editedItem.observation = '';
+        }
+      },
+      closeDialog()
+      {
+        this.dialogObservation = false;
+        console.log('Close: ' + this.editedItem.observation)
+        createAlert(this.editedItem.observation, 'succes')
+      },
       clean(){
         this.formDisabled = false; 
         this.cleanDisabled = false;
         this.$refs.form.reset();
         Object.assign(this.editedItem, this.defaultItem);
       },
-      sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-      }
     },
   }
 </script>

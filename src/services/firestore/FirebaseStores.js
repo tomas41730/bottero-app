@@ -31,8 +31,7 @@ export function getStores()
 export function getStoresNames()
 {
     const stores = []
-    db.collection('stores').orderBy('name', 'asc').get()
-    .then(snapshot => {
+    db.collection('stores').orderBy('name', 'asc').onSnapshot(snapshot => {
         snapshot.docs.forEach(store => {
             stores.push(store.data().name);
         });

@@ -24,6 +24,7 @@
                 <v-card-text>
                   <v-autocomplete v-model="idShoe" :items="idShoes" label="Códigos de Barra" @input="onIdShoesChanged"></v-autocomplete>
                   <v-autocomplete v-model="store" :items="stores" label="Sucursal"></v-autocomplete>
+                  <v-autocomplete v-model="pCondition" :items="pConditions" label="Condición"></v-autocomplete>
                   <v-text-field v-model="observation" label="Observación" placeholder="Observación"></v-text-field>
                   <v-text-field v-model="total" label="Cantidad" placeholder="Cantidad"></v-text-field>
                 </v-card-text>
@@ -152,7 +153,7 @@
   </v-container>
 </template>
 <script>
-import { addProductCondition, getProductByStore, getProducts, getProductsByRef, getProductsByRefBrand, getProductsByRefBrandCondition, getProductsByRefBrandIdShoe, getProductsByRefBrandMaterial, getProductsByRefBrandNew, updateCategoryProducts, updateConditionProducts, updateDescriptionProducts, updatePricesProducts, updateProductStock } from '../services/firestore/FirebaseProducts'
+import { addProductCondition, getProductByStore, getProducts, getProductsByRef, getProductsByRefBrand, getProductsByRefBrandCondition, getProductsByRefBrandIdShoe, getProductsByRefBrandMaterial, getProductsByRefBrandNew, updateCategoryProducts/*, updateConditionProducts*/, updateDescriptionProducts, updatePricesProducts, updateProductStock } from '../services/firestore/FirebaseProducts'
 import { onUploadBatchProducts, updateProductPhoto, getDefaultProductPhoto } from '../services/firestore/FirebaseStorage'
 import { getBrandNames } from '../services/firestore/FirebaseBrands'
 import { getColorNames } from '../services/firestore/FirabaseColors'
@@ -180,12 +181,14 @@ import { createAlert } from '../services/Alerts'
       photo: null,
       image: null,
       observation: null,
+      pCondition: null,
       products: [],
       brands: [],
       materials: [],
       colors: [],
       categories: [],
       conditions: [],
+      pConditions: [],
       idShoes: [],
       stores: [],
       attributeRules: [
@@ -275,7 +278,7 @@ import { createAlert } from '../services/Alerts'
       },
       async saveCondition()
       {
-        await getProductByStore(this.store, this.idShoe).then(doc => {
+        await getProductByStore(this.pCondition, this.store, this.idShoe).then(doc => {
           if(doc.exists)
           {
             const product = doc.data();
@@ -355,14 +358,15 @@ import { createAlert } from '../services/Alerts'
           {
             if(this.price !== null && this.purchasePrice !== null && this.oDisccount !== null && this.pDisccount !== null)
             {
-              if(this.condition === 'Medio Viejo' || this.condition === 'Viejo')
+              if(this.condition === 'Fallado' || this.condition === 'Oferta')
               {
                 await getProductsByRefBrandCondition(this.reference, this.brand, this.condition).then(snap =>{
                   snap.forEach(doc => {
-                    let id = this.condition.replace(' ', '-') +  '-' + doc.data().store + '-' + doc.data().idShoe
+                    let id = this.condition +  '-' + doc.data().store + '-' + doc.data().idShoe
                     updatePricesProducts(id, this.price, this.purchasePrice, this.oDisccount, this.pDisccount);
                     console.log('Viejos')
                     const productIndex = this.products.findIndex( item => item.idShoe ===  doc.data().idShoe && item.store === doc.data().store && item.condition === this.condition);
+                    console.log('index: ' + productIndex)
                     Object.assign(this.products[productIndex], 
                     { 
                       price: this.price,
@@ -377,7 +381,7 @@ import { createAlert } from '../services/Alerts'
               {
                 await getProductsByRefBrandNew(this.reference, this.brand).then(snap =>{
                 snap.forEach(doc => {
-                  let id = doc.data().store + '-' + doc.data().idShoe
+                  let id = this.condition + '-' + doc.data().store + '-' + doc.data().idShoe
                   updatePricesProducts(id, this.price, this.purchasePrice, this.oDisccount, this.pDisccount);
                   console.log('Nuevos')
                   const productIndex = this.products.findIndex( item => item.idShoe ===  doc.data().idShoe && item.store === doc.data().store);
@@ -440,7 +444,7 @@ import { createAlert } from '../services/Alerts'
             });
           });
         }
-        else
+        else if(this.radioGroup === 'condition')
         {
           this.conditions = ['Nuevo', 'Normal', 'Oferta', 'Fallado']
         }
@@ -452,28 +456,30 @@ import { createAlert } from '../services/Alerts'
         {
           this.idShoes = [];
           this.stores = [];
+          this.pConditions = [];
           if(this.radioGroup === 'condition')
           {
             getProductsByRefBrand(this.reference, this.brand).then(snap =>{
             snap.forEach(doc => {
               this.idShoes.push(doc.data().idShoe);
               this.stores.push(doc.data().store);
+              this.pConditions.push(doc.data().condition);
               });
             });
           this.dialog = true;
           }        
         }
-        else if (this.condition === 'Nuevo' || this.condition === 'Normal')
-        {
-          getProductsByRefBrand(this.reference, this.brand).then(snap =>{
-            snap.forEach(doc => {
-              let id = doc.data().store + '-' + doc.data().idShoe;
-              updateConditionProducts(id, this.condition);
-              const productIndex = this.products.findIndex( item => item.idShoe ===  doc.data().idShoe && item.store === doc.data().store);
-              Object.assign(this.products[productIndex], { condition: this.condition });
-            });
-          });
-        }
+        // else if (this.condition === 'Nuevo' || this.condition === 'Normal')
+        // {
+        //   getProductsByRefBrand(this.reference, this.brand).then(snap =>{
+        //     snap.forEach(doc => {
+        //       let id = this.condition + '-' + doc.data().store + '-' + doc.data().idShoe;
+        //       updateConditionProducts(id, this.condition);
+        //       const productIndex = this.products.findIndex( item => item.idShoe ===  doc.data().idShoe && item.store === doc.data().store);
+        //       Object.assign(this.products[productIndex], { condition: this.condition });
+        //     });
+        //   });
+        // }
       },
       onMaterialChanged()
       {

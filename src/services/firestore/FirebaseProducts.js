@@ -6,14 +6,14 @@ export async function addProduct(product)
 {
     product.due = actualDate.FieldValue.serverTimestamp();
     const incrementStock = actualDate.FieldValue.increment(parseInt(product.stock));  
-    await db.collection('products').doc(product.store+'-'+product.idShoe).get()
+    await db.collection('products').doc(product.id).get()
     .then(docSnapshot => {
         if(docSnapshot.exists){// si el producto existe
-            db.collection('products').doc(product.store+'-'+product.idShoe)
+            db.collection('products').doc(product.id)
             .update({ 
                         reference: product.reference,
                         idShoe: product.idShoe,
-                        id: product.store+'-'+product.idShoe,
+                        id: product.condition + '-' + product.store + '-' + product.idShoe,
                         due: actualDate.FieldValue.serverTimestamp(),
                         brand: product.brand,
                         size: product.size,
@@ -28,27 +28,76 @@ export async function addProduct(product)
                         pDisccount: product.pDisccount,
                         oDisccount: product.oDisccount,
                         condition: product.condition,
-                        photo: product.photo
+                        photo: product.photo,
+                        observation: product.observation
                    });
         }
         else
         {
             product.stock = parseInt(product.stock);
-            product.id = product.store+"-"+product.idShoe;
-            db.collection('products').doc(product.store+"-"+product.idShoe).set(product);
+            //product.id = product.condition + '-' + product.store + '-' + product.idShoe;
+            db.collection('products').doc(product.condition + '-' + product.store + '-' + product.idShoe).set(product);
             product.stock = product.stock.toString();
         }
+    });
+    product.due = new Date().toLocaleDateString('en-US') + ' ' + new Date().toLocaleTimeString('en-US');
+}
+export async function addProduct1(product)
+{
+    
+    product.due = actualDate.FieldValue.serverTimestamp();
+    const incrementStock = actualDate.FieldValue.increment(parseInt(product.stock));  
+    
+    await db.collection('products').where('idShoe', '==', product.idShoe).where('store', '==', product.store).where('condition', '==', product.condition).get()
+    .then(docSnapshot => {
+        docSnapshot.forEach(doc => {
+            if(doc.exists){// si el producto existe
+                db.collection('products').doc(doc.id)
+                .update({ 
+                            reference: product.reference,
+                            idShoe: product.idShoe,
+                            id: doc.data().id,
+                            due: actualDate.FieldValue.serverTimestamp(),
+                            brand: product.brand,
+                            size: product.size,
+                            color: product.color,
+                            material: product.material,
+                            price: product.price,
+                            purchasePrice: product.purchasePrice,
+                            stock: incrementStock,
+                            description: product.description,
+                            category: product.category,
+                            store: product.store,
+                            pDisccount: product.pDisccount,
+                            oDisccount: product.oDisccount,
+                            condition: product.condition,
+                            photo: product.photo,
+                            observation: product.observation
+                       });
+                console.log('exists-idShoe: ' + doc.data().id)
+            }
+            else
+            {   
+                const newDoc = db.collection('products').doc()
+                product.stock = parseInt(product.stock);
+                product.id = newDoc.id;
+                db.collection('products').doc(product.id).set(product);
+                product.stock = product.stock.toString();
+                console.log('new-idShoe: ' + product.id)
+            }
+        })       
     });
     product.due = new Date().toLocaleDateString('en-US') + ' ' + new Date().toLocaleTimeString('en-US');
 }
 
 export function deleteProduct(product) 
 {
-    db.collection('products').doc(product.store+"-"+product.idShoe).delete()
+    //db.collection('products').doc(product.store+"-"+product.idShoe).delete();
+    db.collection('products').doc(product.condition+"-"+product.store+"-"+product.idShoe).delete()
 }
 export function deleteProductCondition(product) 
 {
-    db.collection('products').doc(product.condition+"-"+product.store+"-"+product.idShoe).delete()
+    db.collection('products').doc(product.condition+"-"+product.store+"-"+product.idShoe).delete();
 }
 export function getProducts()
 {
@@ -66,8 +115,13 @@ export function getProducts()
 }
 export function getProductById(id)
 {
-    const product = db.collection('products').where('idShoe', '==', id).where('photo', '!=', '').limit(1).get()
+    const product = db.collection('products').doc(id).get();
 
+    return product
+}
+export function getProductByIdShoe(idShoe)
+{
+    const product = db.collection('products').where('idShoe', '==', idShoe).where('photo', '!=', '').limit(1).get()
     return product
 }
 export function getProductByRef(ref)
@@ -105,9 +159,9 @@ export async function getProductsByRefBrandMaterial(ref, brand, material)
     const products = db.collection('products').where('reference', '==', ref).where('brand', '==', brand).where('material', '==', material).get()
     return products
 }
-export function getProductByStore(store, idShoe)
+export function getProductByStore(condition, store, idShoe)
 {
-    const product = db.collection('products').doc(store + '-' + idShoe).get()
+    const product = db.collection('products').doc(condition + '-' + store + '-' + idShoe).get()
     return product
 }
 export function updateDescriptionProducts(id, description)
@@ -139,15 +193,15 @@ export async function addProductCondition(product, condition, observation)
     //product.due = actualDate.FieldValue.serverTimestamp();
     //const incrementStock = actualDate.FieldValue.increment(parseInt(product.stock)); 
     if (observation === null) observation = 'Sin Observación';
-    await db.collection('products').doc(condition.replace(' ', '-') + '-' + product.store+ '-' +product.idShoe).get()
+    await db.collection('products').doc(condition + '-' + product.store+ '-' +product.idShoe).get()
     .then(docSnapshot => {
         if(docSnapshot.exists){
             console.log('existe')
-            db.collection('products').doc(condition.replace(' ', '-') + '-' + product.store + '-' + product.idShoe)
+            db.collection('products').doc(condition + '-' + product.store + '-' + product.idShoe)
             .update({ 
                         reference: product.reference,
                         idShoe: product.idShoe,
-                        id: condition.replace(' ', '-') + '-' + product.store + '-' + product.idShoe,
+                        id: condition + '-' + product.store + '-' + product.idShoe,
                         due: actualDate.FieldValue.serverTimestamp(),
                         brand: product.brand,
                         size: product.size,
@@ -173,9 +227,9 @@ export async function addProductCondition(product, condition, observation)
             product.observation = observation;
             product.stock = parseInt(product.stock);
             product.due = actualDate.FieldValue.serverTimestamp();
-            product.id = condition.replace(' ', '-') + '-' + product.store + '-' + product.idShoe;
+            product.id = condition + '-' + product.store + '-' + product.idShoe;
             product.condition = condition;
-            db.collection('products').doc(condition.replace(' ', '-') + '-' + product.store+ '-' +product.idShoe).set(product);
+            db.collection('products').doc(condition + '-' + product.store+ '-' +product.idShoe).set(product);
         }
     });
     product.due = new Date().toLocaleDateString('en-US') + ' ' + new Date().toLocaleTimeString('en-US');
@@ -184,7 +238,7 @@ export async function addProductCondition(product, condition, observation)
 export async function updateProductStock(product, stock)
 {
     product.due = actualDate.FieldValue.serverTimestamp();
-    db.collection('products').doc(product.store + '-' + product.idShoe)
+    db.collection('products').doc(product.condition + '-' + product.store + '-' + product.idShoe)
             .update({ 
                         due: product.due,
                         stock: actualDate.FieldValue.increment(parseInt(stock)),

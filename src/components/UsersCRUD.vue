@@ -125,19 +125,16 @@
         </v-toolbar>
       </template>
 
-  <!--  <template v-slot:[`item.photo`]="{ item }">
-        <div class="p-2">
-          <v-list-item-avatar tile size="50">
-            <v-img @click="show(item)" :src="item.photo"></v-img>
-          </v-list-item-avatar>
-        </div>
-      </template> -->
+      <template v-slot:[`item.account`]="{ item }">
+        <v-icon color="green" v-if="item.account">mdi-check-circle</v-icon> 
+        <v-icon color="red" v-else>mdi-close-circle</v-icon>
+      </template> 
 
       <template v-slot:[`item.actions`]="{ item }">
-        <v-icon small class="mr-2" @click="editItem(item)">
+        <v-icon color="orange" small class="mr-2" @click="editItem(item)">
           mdi-pencil
         </v-icon>
-        <v-icon small @click="deleteItem(item)">
+        <v-icon color="error" small @click="deleteItem(item)">
           mdi-delete
         </v-icon>
       </template>
@@ -179,7 +176,7 @@ import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
         { text: 'Contraseña', value: 'password' },
         { text: 'Sucursal', value: 'store' },
         { text: 'Rol', value: 'role' },
-        { text: 'Cuenta Habilitada', value: 'account' },
+        { text: 'Cuenta Habilitada', value: 'account', align: 'center', },
         { text: 'Acciones', value: 'actions', sortable: false },
       ],
       desserts: [],

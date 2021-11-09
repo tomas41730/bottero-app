@@ -30,8 +30,7 @@ export function getColors()
 export function getColorNames()
 {
     const colors = [];
-    db.collection('colors').orderBy('color', 'asc').get()
-    .then(snapshot => {
+    db.collection('colors').orderBy('color', 'asc').onSnapshot(snapshot => {
         snapshot.docs.forEach(color => {
             colors.push(Object.assign({}, color.data()).color);
         });

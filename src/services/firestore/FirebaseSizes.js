@@ -43,8 +43,7 @@ export function getSizes()
 export function getSizeNames()
 {
     const sizes = [];
-    db.collection('sizes').orderBy('size', 'asc').get()
-    .then(snapshot => {
+    db.collection('sizes').orderBy('size', 'asc').onSnapshot(snapshot => {
         snapshot.docs.forEach(size => {
             sizes.push(size.data().size);
         });

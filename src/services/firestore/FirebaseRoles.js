@@ -32,8 +32,7 @@ export function getRoles()
 export function getRoleNames()
 {
     const roles = []
-    db.collection('roles').get()
-    .then(snapshot => {
+    db.collection('roles').onSnapshot(snapshot => {
         snapshot.docs.forEach(role => {
             roles.push(Object.assign({}, role.data()).name)
         })

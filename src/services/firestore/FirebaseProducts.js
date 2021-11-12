@@ -159,10 +159,10 @@ export async function getProductsByRefBrandMaterial(ref, brand, material)
     const products = db.collection('products').where('reference', '==', ref).where('brand', '==', brand).where('material', '==', material).get()
     return products
 }
-export function getProductByStore(condition, store, idShoe)
+export function getProductsByIdShoeStore(idShoe, store)
 {
-    const product = db.collection('products').doc(condition + '-' + store + '-' + idShoe).get()
-    return product
+    const products = db.collection('products').where('idShoe', '==', idShoe).where('store', '==', store).get();
+    return products;
 }
 export function updateDescriptionProducts(id, description)
 {

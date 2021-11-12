@@ -9,7 +9,7 @@
       <v-dialog v-model="dialogObservation" max-width="500px">
         <v-card>
           <v-card-title>
-            Reportar calzados en condición de: {{ this.editedItem.observation }}
+            Reportar calzados en condición de: {{ this.editedItem.condition }}
           </v-card-title>
           <v-card-text>
             <v-text-field v-model="editedItem.observation" label="Observación" placeholder="Observación"></v-text-field></v-card-text>
@@ -17,66 +17,69 @@
                 <v-btn color="primary" text @click="closeDialog">
                   Continuar
                 </v-btn>
+                <v-btn color="primary" text @click="cancelObservation">
+                  Cancelar
+                </v-btn>
                 </v-card-actions>
               </v-card>
             </v-dialog>
       <v-divider horizontal></v-divider>
       <v-row>
         <v-col>
-          <v-form ref="form" v-model="valid" lazy-validation :readonly="formDisabled">
+          <v-form ref="form" lazy-validation :readonly="formDisabled">
             <v-list-item three-line>
               <v-list-item-content>
                 <v-col>
                   <v-row>
-                    <v-col>
+                    <v-col cols="12" sm="6" md="4">
                       <v-text-field v-model="editedItem.idShoe" :rules="attributeRules" label="Codigo de barras" placeholder="Codigo calzado" @input="onIdChanged"></v-text-field>
                     </v-col>
-                    <v-col>
+                    <v-col cols="6" sm="6" md="4">
                       <v-text-field v-model="editedItem.reference" :rules="attributeRules" label="Referencia" placeholder="Referencia" @input="onRefChanged"></v-text-field>
                     </v-col>
-                    <v-col>
+                    <v-col cols="6" sm="6" md="4">
                       <v-autocomplete :items="brands" v-model="editedItem.brand" :rules="attributeRules" label="Marca" placeholder="Marca"></v-autocomplete>
                     </v-col>
                   </v-row>
                   <v-row>
-                    <v-col>
+                    <v-col cols="6" sm="6" md="3">
                       <v-autocomplete :items="sizes" v-model="editedItem.size" :rules="attributeRules" label="Talla" placeholder="Talla"></v-autocomplete>
                     </v-col>
-                    <v-col>
+                    <v-col cols="6" sm="6" md="3">
                       <v-autocomplete :items="colors" v-model="editedItem.color" :rules="attributeRules" label="Color" placeholder="Color"></v-autocomplete>
                     </v-col>
-                    <v-col>
+                    <v-col cols="6" sm="6" md="3">
                       <v-autocomplete :items="materials" v-model="editedItem.material" :rules="attributeRules" label="Material" placeholder="Material"></v-autocomplete>
                     </v-col>
-                    <v-col>
+                    <v-col cols="6" sm="6" md="3">
                       <v-text-field v-model="editedItem.stock" :rules="numberRules" label="Stock" placeholder="Stock"></v-text-field>
                     </v-col>
                   </v-row>
                   <v-row>
-                    <v-col>
+                    <v-col cols="12" sm="6" md="3">
                       <v-textarea rows="1" v-model="editedItem.description" :rules="attributeRules" label="Descripcion" placeholder="Descripcion"></v-textarea>
                     </v-col>
-                    <v-col>
+                    <v-col cols="4" sm="6" md="3">
                       <v-autocomplete :items="categories" v-model="editedItem.category" :rules="attributeRules" label="Categoria" placeholder="Categoria"></v-autocomplete>
                     </v-col>
-                    <v-col>
+                    <v-col cols="4" sm="6" md="3">
                       <v-select :items="stores" :rules="[v => !!v || 'Debe asignar una sucursal.']" label="Sucursal" v-model="editedItem.store"  @input="onStoreChanged"></v-select>
                     </v-col>
-                    <v-col>
+                    <v-col cols="4" sm="6" md="3">
                       <v-select :items="conditions" v-model="editedItem.condition" :rules="attributeRules" label="Condicion" placeholder="Condicion" @input="onConditionChanged"></v-select>
                     </v-col>
                   </v-row>
                   <v-row>
-                    <v-col>
+                    <v-col cols="6" sm="6" md="3">
                       <v-text-field v-model="editedItem.price" label="Precio" placeholder="Precio"></v-text-field>
                     </v-col>
-                    <v-col>
+                    <v-col cols="6" sm="6" md="3">
                       <v-text-field v-model="editedItem.purchasePrice" label="Precio Compra" placeholder="Precio Compra"></v-text-field>
                     </v-col>
-                    <v-col>
+                    <v-col cols="6" sm="6" md="3">
                       <v-text-field v-model="editedItem.oDisccount" label="Des. Oc. %" placeholder="Desc. Oc. %"></v-text-field>
                     </v-col>
-                    <v-col>
+                    <v-col cols="6" sm="6" md="3">
                       <v-text-field v-model="editedItem.pDisccount" label="Des. Lim. Bs." placeholder="Desc. Per. Bs."></v-text-field>
                     </v-col>
                   </v-row>
@@ -151,11 +154,11 @@
   </v-container>
 </template>
 <script>
-import { addProduct, getProducts, deleteProduct, getProductByRef, getProductByStore, getProductByIdShoe } from '../services/firestore/FirebaseProducts'
+import { addProduct, getProducts, deleteProduct, getProductByRef, getProductByIdShoe, getProductsByRefBrandMaterialColor, getProductById } from '../services/firestore/FirebaseProducts'
 import { getColorNames } from '../services/firestore/FirabaseColors'
 import { createAlert, deleteAlertWithImage, uploadAlert } from '../services/Alerts'
 import { getStoresNames } from '../services/firestore/FirebaseStores'
-import { getDefaultProductPhoto, onUpload } from '../services/firestore/FirebaseStorage'
+import { deletePhoto, getDefaultProductPhoto, onUpload } from '../services/firestore/FirebaseStorage'
 import { getBrandNames } from '../services/firestore/FirebaseBrands'
 import { getSizeNames } from '../services/firestore/FirebaseSizes'
 import { getMaterialNames } from '../services/firestore/FirebaseMaterials'
@@ -167,8 +170,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       btn: 'Guardar',
       defaultImage: '',
       selected: [],
-      addEdit: true,
-      valid: true,
+      addEdit: false,
       dialog: false,
       dialogDelete: false,
       search: '',
@@ -179,7 +181,6 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       categories : [],
       stores: [],
       conditions : [],
-      actualStock : 0,
       headers: [
         
         { text: 'Acciones', value: 'actions', sortable: false },
@@ -324,7 +325,18 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       deleteItemConfirm () 
       {
         let shoe = this.products[this.editedIndex]
-        deleteProduct(shoe)
+        //deleteProduct(shoe);
+        getProductsByRefBrandMaterialColor(shoe.reference, shoe.brand, shoe.material, shoe.color).then(snap =>{
+               console.log('size: ' + snap.size)
+               if(snap.size === 1)
+               {
+                 deletePhoto(shoe);
+                 console.log('Se elimino la foto.');
+               }
+               console.log('No se elimino la foto.');
+               deleteProduct(shoe);
+              });
+        //deletePhoto(shoe);
         this.products.splice(this.editedIndex, 1)
         this.closeDelete()
       },
@@ -345,34 +357,55 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
           const product = Object.assign({},this.editedItem);
           product.id = product.condition + '-' + product.store + '-' + product.idShoe;
           const datetime = new Date();
-          const productIndex = this.products.findIndex( item => item.condition ===  product.condition && item.idShoe ===  product.idShoe && item.store === product.store);
+          const productIndex = this.products.findIndex( item => item.condition ===  product.condition && item.idShoe ===  product.idShoe && item.store === product.store);        
           let msg = ''
           if(productIndex > -1)
           {
+            let actualStock = parseInt(this.products[productIndex].stock);
             product.due = datetime.toLocaleDateString('en-US') + ' ' + datetime.toLocaleTimeString('en-US');
-            let newStock = parseInt(product.stock) + this.actualStock;
-            this.actualStock = product.stock;
-            product.stock = newStock;
-            Object.assign(this.products[productIndex], product)
-            product.stock = this.actualStock;
-            msg = 'El producto "' + product.idShoe + '" fue actualizado con exito!'
+            let auxStock = parseInt(product.stock);
+            if(actualStock + parseInt(product.stock) < 0) 
+            { 
+              createAlert('No se puede tener un stock menor a 0.', 'error'); 
+              this.editedItem.stock = parseInt(product.stock);
+            } 
+            else
+            { 
+              product.stock = actualStock + parseInt(product.stock);
+              Object.assign(this.products[productIndex], product);
+              product.stock = auxStock;
+              msg = 'El producto "' + product.idShoe + '" fue actualizado con exito!';
+              this.succesSave(product, msg);
+            }
           }
           else
           {
-            product.due = datetime.toLocaleDateString('en-US') + ' ' + datetime.toLocaleTimeString('en-US');
-            this.products.push(product);
-            msg = 'El producto "' + product.idShoe + '" fue agregado con exito!'
+            if(parseInt(product.stock) < 0) 
+            { 
+              createAlert('No se puede tener un stock menor a 0.', 'error'); 
+              this.editedItem.stock = parseInt(product.stock);
+            }
+            else
+            {
+              product.due = datetime.toLocaleDateString('en-US') + ' ' + datetime.toLocaleTimeString('en-US');
+              this.products.push(product);
+              msg = 'El producto "' + product.idShoe + '" fue agregado con exito!';
+              this.succesSave(product, msg);
+            }
           } 
-          await addProduct(product);
-          createAlert(msg, 'success');
-          this.$refs.form.reset();
-          this.btn = 'Guardar';
-          this.image = null;
-          this.editedItem.observation = 'Sin Observación';
-          console.log('Save: ' + this.editedItem.observation)
         }
       },
-      async previewImage(file){
+      async succesSave(product, msg)
+      {
+        await addProduct(product);
+        createAlert(msg, 'success');
+        this.$refs.form.reset();
+        this.btn = 'Guardar';
+        this.image = null;
+        this.editedItem.observation = 'Sin Observación';
+      },
+      async previewImage(file)
+      {
         if(this.$refs.form.validate())
         {
           uploadAlert(4000);
@@ -414,26 +447,51 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         })
       },
       onStoreChanged(){
-        getProductByStore(this.editedItem.store, this.editedItem.idShoe).then(doc => {
-          if(doc.exists)
-          {
-            this.actualStock = doc.data().stock;
-          }
-        });
+
       },
       onConditionChanged()
       {
-        if(this.editedItem.condition === 'Oferta' || this.editedItem.condition === 'Fallado')
+        let idShoe = this.editedItem.condition + '-' + this.editedItem.store + '-' + this.editedItem.idShoe;
+        if((this.editedItem.condition === 'Oferta' || this.editedItem.condition === 'Fallado'))
         {
           this.dialogObservation = true;
           this.editedItem.observation = '';
+          getProductById(idShoe).then(doc =>{
+            if(doc.exists)
+            {
+              this.dialogObservation = true;
+              this.editedItem.observation = doc.data().observation;
+            }
+          });
+
         }
+        // else if((this.editedItem.condition === 'Oferta' || this.editedItem.condition === 'Fallado') && this.editedItem.stock < 0)
+        // {
+        //   getProductById(this.editedItem.id).then(doc =>{
+        //     if(doc.exists)
+        //     {
+        //       this.dialogObservation = true;
+        //       this.editedItem.observation = doc.data().observation;
+        //     }
+        //   });
+        //   this.editedItem.observation = '';
+        // }
+        else
+        {
+          this.editedItem.observation = 'Sin Observación';
+        }
+        console.log(this.editedItem.observation)
       },
       closeDialog()
       {
         this.dialogObservation = false;
         console.log('Close: ' + this.editedItem.observation)
         createAlert(this.editedItem.observation, 'succes')
+      },
+      cancelObservation()
+      {
+        this.dialogObservation = false;
+        this.editedItem.condition = null;
       },
       clean(){
         this.formDisabled = false; 

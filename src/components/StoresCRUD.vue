@@ -1,6 +1,6 @@
 <template>
   <v-card class="mx-auto" outlined>
-    <v-data-table :headers="headers" :items="stores" :items-per-page="3" :search="search" sort-by="name" class="elevation-1">
+    <v-data-table :headers="headers" :items="stores" :items-per-page="5" :search="search" sort-by="name" class="elevation-1">
       <template v-slot:top>
         <v-card-text>
             <div>

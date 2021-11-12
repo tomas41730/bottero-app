@@ -1,14 +1,20 @@
 //import storage from '../firebase'
 import firebase from 'firebase/app'
 import 'firebase/storage'
-import { addProduct, getProductsByRefBrandMaterialColor } from '../firestore/FirebaseProducts'
+import { addProduct, getProductById, getProductsByRefBrandMaterialColor } from '../firestore/FirebaseProducts'
 export async function onUpload(file, product)
 {
     console.log(file.name);
     await firebase.storage().ref('products/' + product.brand + '-' + product.reference + '-' + product.color + '-' + product.material).put(file);
     await firebase.storage().ref().child('products/' + product.brand + '-' + product.reference + '-' + product.color + '-' + product.material).getDownloadURL().then(val => {
         product.photo = val;
-        addProduct(product);
+        getProductById().then(doc =>{
+            if(doc.exists)
+            {
+                addProduct(product);
+            }
+          });
+        //addProduct(product);
     })
     
 }
@@ -29,4 +35,8 @@ export async function updateProductPhoto(ref, brand, material, color)
             });
           });
     })
+}
+export async function deletePhoto(product)
+{
+    await firebase.storage().ref().child('products/' + product.brand + '-' + product.reference + '-' + product.color + '-' + product.material).delete();
 }

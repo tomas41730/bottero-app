@@ -61,8 +61,7 @@ export function createAlert(msg, type)
     {
       Swal.fire({
         icon: 'error',
-        title: msg,
-        timer: 1500
+        title: msg
       });
     }
 

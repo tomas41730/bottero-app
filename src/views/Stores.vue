@@ -1,25 +1,31 @@
 <template>
   
-  <v-row>
-    <v-col cols="6">
-      <crud-stores/>
-    </v-col>
-    <v-col cols="6">
-      <crud-colors/>
-    </v-col>
-    <v-col cols="6">
-      <crud-sizes/>
-    </v-col>
-    <v-col cols="6">
-      <crud-categories/>
-    </v-col>
-    <v-col cols="6">
-      <crud-brands/>
-    </v-col>
-    <v-col cols="6">
-      <crud-materials/>
-    </v-col>
-  </v-row>
+  <v-col>
+    <v-row>
+      <v-col cols="12" md="6" sm="6">
+        <crud-stores/>
+      </v-col>
+      <v-col cols="12" md="6" sm="6">
+        <crud-colors/>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12" md="6" sm="6">
+        <crud-sizes/>
+      </v-col>
+      <v-col cols="12" md="6" sm="6">
+        <crud-categories/>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col cols="12" md="6" sm="6">
+        <crud-brands/>
+      </v-col>
+      <v-col cols="12" md="6" sm="6">
+        <crud-materials/>
+      </v-col>
+    </v-row>
+  </v-col>
 </template>
 
 <script>

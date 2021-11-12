@@ -10,33 +10,80 @@
       <v-row>
           <v-col>
             <v-radio-group v-model="radioGroup" row mandatory>
-              <v-radio label="Foto" value="photo" @click="onRadioButtonChanged"></v-radio>
-              <v-radio label="Descripción" value="description" @click="onRadioButtonChanged"></v-radio>
-              <v-radio label="Categoría" value="category" @click="onRadioButtonChanged"></v-radio>
-              <v-radio label="Condición" value="condition" @click="onRadioButtonChanged"></v-radio>
-              <v-radio label="Precios" value="prices" @click="onRadioButtonChanged"></v-radio>
+              <v-row>
+                <v-col cols="5" sm="2" md="2">
+                  <v-radio label="Descripción" value="description" @click="onRadioButtonChanged"></v-radio>
+                </v-col>
+                <v-col cols="5" sm="2" md="2">
+                  <v-radio label="Categoría" value="category" @click="onRadioButtonChanged"></v-radio>
+                </v-col>
+                <v-col cols="5" sm="2" md="2">
+                  <v-radio label="Condición" value="condition" @click="onRadioButtonChanged"></v-radio>
+                </v-col>
+                <v-col cols="5" sm="2" md="2">
+                  <v-radio label="Precios" value="prices" @click="onRadioButtonChanged"></v-radio>
+                </v-col>
+                <v-col cols="5" sm="2" md="2">
+                  <v-radio label="Foto" value="photo" @click="onRadioButtonChanged"></v-radio>
+                </v-col>
+              </v-row>
             </v-radio-group>
-            <v-dialog v-model="dialog" max-width="500px">
-              <v-card>
-                <v-card-title>
-                  Reportar calzados en condición de: {{ this.condition }}
-                </v-card-title>
-                <v-card-text>
-                  <v-autocomplete v-model="idShoe" :items="idShoes" label="Códigos de Barra" @input="onIdShoesChanged"></v-autocomplete>
-                  <v-autocomplete v-model="store" :items="stores" label="Sucursal"></v-autocomplete>
-                  <v-autocomplete v-model="pCondition" :items="pConditions" label="Condición"></v-autocomplete>
-                  <v-text-field v-model="observation" label="Observación" placeholder="Observación"></v-text-field>
-                  <v-text-field v-model="total" label="Cantidad" placeholder="Cantidad"></v-text-field>
-                </v-card-text>
-                <v-card-actions>
-                  <v-btn color="primary" text @click="closeDialog">
-                    Close
-                  </v-btn>
-                  <v-btn color="primary" text @click="saveCondition">
-                    Guardar
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
+            <v-dialog v-model="dialog" max-width="500px" persistent>
+              <v-form>
+                <v-card>
+                  <v-card-title>
+                      <p class="text-h5 text--primary bold">
+                        Calzado(s) en condición de: "{{ this.condition }}"
+                      </p>
+                  </v-card-title>
+                  <v-divider horizontal></v-divider>
+                  <v-card-text>
+                    <v-row>
+                      <v-col cols="12" sm="6" md="12">
+                        <p class="text-h6 text--primary">
+                          Información del lote al cual se le restará stock:
+                        </p>
+                    </v-col>
+                      <v-col cols="12" sm="6" md="6">
+                        <v-autocomplete v-model="idShoe" :items="idShoes" label="Códigos de Barra" @input="onIdShoesChanged"></v-autocomplete>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="6">
+                        <v-autocomplete v-model="pStore" :items="pStores" label="Sucursal de origen" @input="onPStoreChanged"></v-autocomplete>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="6">
+                        <v-spacer></v-spacer>
+                        <v-autocomplete v-model="pCondition" :items="pConditions" label="Condición"></v-autocomplete>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="12">
+                        <v-divider horizontal></v-divider>
+                        <p class="text-h6 text--primary">
+                          Información del producto reportado:
+                        </p>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="6">
+                        <v-autocomplete v-model="store" :items="stores" label="Sucursal de destino"></v-autocomplete>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="6">
+                        <v-autocomplete v-model="condition" :items="conditions" label="Condición"></v-autocomplete>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="6">
+                        <v-text-field v-model="total" label="Cantidad" placeholder="Cantidad"></v-text-field>
+                      </v-col>
+                      <v-col cols="12" sm="6" md="12">
+                        <v-textarea rows="1" v-model="observation" label="Observación" placeholder="Observación"></v-textarea>
+                      </v-col>
+                    </v-row>
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-btn color="primary" text @click="closeDialog">
+                      Cancelar
+                    </v-btn>
+                    <v-btn color="primary" text @click="saveCondition">
+                      Guardar
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-form>
             </v-dialog>
           </v-col>
             
@@ -45,10 +92,10 @@
         <v-col>
           <v-col>
             <v-row>
-            <v-col>
+            <v-col cols="6" sm="6" md="6">
               <v-text-field v-model="reference" :rules="attributeRules" label="Referencia" placeholder="Referencia" @input="onRefChanged"></v-text-field>
             </v-col>
-            <v-col>
+            <v-col cols="6" sm="6" md="6">
               <v-autocomplete :items="brands" v-model="brand" :rules="attributeRules" label="Marca" placeholder="Marca" @input="onBrandChanged"></v-autocomplete>
             </v-col>
           </v-row>
@@ -57,44 +104,36 @@
             <v-list-item three-line>
               <v-list-item-content>
                 <v-col>
-                  <!--  <v-row>
-                        <v-col>
-                        <v-text-field v-model="reference" :rules="attributeRules" label="Referencia" placeholder="Referencia" @input="onRefChanged"></v-text-field>
-                        </v-col>
-                        <v-col>
-                        <v-autocomplete :items="brands" v-model="brand" :rules="attributeRules" label="Marca" placeholder="Marca"></v-autocomplete>
-                        </v-col>
-                    </v-row> -->
                     <v-row>
-                        <v-col>
+                        <v-col cols="6" sm="6" md="6">
                         <v-autocomplete :disabled="materialDisabled" :items="materials" v-model="material" :rules="attributeRules" label="Material" placeholder="Material" @input="onMaterialChanged"></v-autocomplete>
                         </v-col>
-                        <v-col>
-                        <v-autocomplete :disabled="colorDisabled" :items="colors" v-model="color" :rules="attributeRules" label="Color" placeholder="Color" ></v-autocomplete>
+                        <v-col cols="6" sm="6" md="6">
+                        <v-autocomplete :disabled="colorDisabled" :items="colors" v-model="color" :rules="attributeRules" label="Color" placeholder="Color" @input="onColorChanged"></v-autocomplete>
                         </v-col>
                     </v-row>
                     <v-row>
-                        <v-col>
+                        <v-col cols="12" sm="6" md="4">
                         <v-text-field :disabled="descriptionDisabled" v-model="description" :rules="attributeRules" label="Descripcion" placeholder="Descripcion"></v-text-field>
                         </v-col>
-                        <v-col>
-                        <v-autocomplete :disabled="categoryDisabled" :items="categories" v-model="category" label="Categoria" placeholder="Categoria"></v-autocomplete>
+                        <v-col cols="6" sm="6" md="4">
+                        <v-autocomplete :disabled="categoryDisabled" :items="categories" v-model="category" label="Categoria" placeholder="Categoria" @input="onCategoryChanged"></v-autocomplete>
                         </v-col>
-                        <v-col>
-                        <v-select :disabled="conditionDisabled" :items="conditions" v-model="condition" label="Condicion" placeholder="Condicion" @input="onConditionChanged"></v-select>
+                        <v-col cols="6" sm="6" md="4">
+                        <v-select :disabled="conditionDisabled || !brand" :items="conditions" v-model="condition" label="Condicion" placeholder="Condicion" @input="onConditionChanged"></v-select>
                         </v-col>
                     </v-row>
                     <v-row>
-                        <v-col>
+                        <v-col cols="6" sm="6" md="3">
                         <v-text-field :disabled="pricesDisabled" v-model="price" label="Precio" placeholder="Precio"></v-text-field>
                         </v-col>
-                        <v-col>
+                        <v-col cols="6" sm="6" md="3">
                         <v-text-field :disabled="pricesDisabled" v-model="purchasePrice" label="Precio Compra" placeholder="Precio Compra"></v-text-field>
                         </v-col>
-                        <v-col>
+                        <v-col cols="6" sm="6" md="3">
                         <v-text-field :disabled="pricesDisabled" v-model="oDisccount" label="Des. Oc. %" placeholder="Desc. Oc. %"></v-text-field>
                         </v-col>
-                        <v-col>
+                        <v-col cols="6" sm="6" md="3">
                         <v-text-field :disabled="pricesDisabled" v-model="pDisccount" label="Des. Lim. Bs." placeholder="Desc. Per. Bs."></v-text-field>
                         </v-col>
                     </v-row>
@@ -119,7 +158,7 @@
                 </v-list-item-avatar>
                 <v-flex>
                     <template>
-                        <v-file-input accept="image/*" label="Seleccionar imagen del producto" v-model="image" @change="previewImage">
+                        <v-file-input :disabled="photoDisabled" accept="image/*" label="Seleccionar imagen del producto" v-model="image" @change="previewImage">
                         </v-file-input>
                     </template>
                 </v-flex>
@@ -153,13 +192,14 @@
   </v-container>
 </template>
 <script>
-import { addProductCondition, getProductByStore, getProducts, getProductsByRef, getProductsByRefBrand, getProductsByRefBrandCondition, getProductsByRefBrandIdShoe, getProductsByRefBrandMaterial, getProductsByRefBrandNew, updateCategoryProducts/*, updateConditionProducts*/, updateDescriptionProducts, updatePricesProducts, updateProductStock } from '../services/firestore/FirebaseProducts'
+import { /*addProductCondition,*/ getProductsByIdShoeStore, getProducts, getProductsByRef, getProductsByRefBrand, getProductsByRefBrandCondition, getProductsByRefBrandIdShoe, getProductsByRefBrandMaterial, getProductsByRefBrandNew, updateCategoryProducts/*, updateConditionProducts*/, updateDescriptionProducts, updatePricesProducts, /*updateProductStock*/ } from '../services/firestore/FirebaseProducts'
 import { onUploadBatchProducts, updateProductPhoto, getDefaultProductPhoto } from '../services/firestore/FirebaseStorage'
-import { getBrandNames } from '../services/firestore/FirebaseBrands'
-import { getColorNames } from '../services/firestore/FirabaseColors'
-import { getMaterialNames } from '../services/firestore/FirebaseMaterials'
+//import { getBrandNames } from '../services/firestore/FirebaseBrands'
+//import { getColorNames } from '../services/firestore/FirabaseColors'
+//import { getMaterialNames } from '../services/firestore/FirebaseMaterials'
 import { getCategoryNames } from '../services/firestore/FirebaseCategories'
 import { createAlert } from '../services/Alerts'
+import { getStoresNames } from '../services/firestore/FirebaseStores'
   export default 
   {
     data: () => 
@@ -177,6 +217,7 @@ import { createAlert } from '../services/Alerts'
       pDisccount: null,
       idShoe: null,
       store: null,
+      pStore: null,
       total: null,
       photo: null,
       image: null,
@@ -190,6 +231,7 @@ import { createAlert } from '../services/Alerts'
       conditions: [],
       pConditions: [],
       idShoes: [],
+      pStores: [],
       stores: [],
       attributeRules: [
         v => !!v || 'Este campo es requerido.',
@@ -217,32 +259,24 @@ import { createAlert } from '../services/Alerts'
         { text: 'Condicion', value: 'condition' },
       ],
     search: '',
-    radioGroup: 'photo',
+    radioGroup: 'description',
     pricesDisabled: true,
-    materialDisabled: false,
-    colorDisabled: false,
-    descriptionDisabled: true,
+    materialDisabled: true,
+    colorDisabled: true,
+    descriptionDisabled: false,
     categoryDisabled: true,
     conditionDisabled: true,
+    photoDisabled: true,
     btn: true,
-    dialog: false,
-    select: [
-          { text: 'State 1' },
-          { text: 'State 2' },
-          { text: 'State 3' },
-          { text: 'State 4' },
-          { text: 'State 5' },
-          { text: 'State 6' },
-          { text: 'State 7' },
-        ],
+    dialog: false
     }),
 
     computed: 
     {
-      
     },
 
-    watch: {
+    watch: 
+    {
     },
 
     created () 
@@ -255,17 +289,22 @@ import { createAlert } from '../services/Alerts'
       initialize () 
       {
         this.products = getProducts();
-        this.brands = getBrandNames();
-        this.colors = getColorNames();
-        this.materials = getMaterialNames();
+        //this.brands = getBrandNames();
+        //this.colors = getColorNames();
+        //this.materials = getMaterialNames();
         this.categories = getCategoryNames();
         //this.conditions = ['Nuevo', 'Medio Viejo', 'Viejo']
         getDefaultProductPhoto().then(val => { this.photo = val; });
+        this.storesDest = getStoresNames();
       },
       viewItem() 
       {
         
       },
+      // photoDisabled()
+      // {
+      //   return !(this.reference !== null && this.brand !== null && this.material !== null && this.color !== null);
+      // },
       closeDialog(){
         this.dialog = false;
         this.dialog = false;
@@ -278,17 +317,17 @@ import { createAlert } from '../services/Alerts'
       },
       async saveCondition()
       {
-        await getProductByStore(this.pCondition, this.store, this.idShoe).then(doc => {
-          if(doc.exists)
-          {
-            const product = doc.data();
-            product.stock = '-'.concat(this.total);
-            updateProductStock(product, product.stock);
-            product.stock = null;
-            product.stock = this.total;
-            addProductCondition(product, this.condition, this.observation);
-          }
-        });
+        // await getProductByIdShoeStore(this.pCondition, this.store, this.idShoe).then(doc => {
+        //   if(doc.exists)
+        //   {
+        //     const product = doc.data();
+        //     product.stock = '-'.concat(this.total);
+        //     updateProductStock(product, product.stock);
+        //     product.stock = null;
+        //     product.stock = this.total;
+        //     addProductCondition(product, this.condition, this.observation);
+        //   }
+        // });
         this.dialog = false;
         this.$refs.form.reset();
         this.brand = null;
@@ -317,10 +356,10 @@ import { createAlert } from '../services/Alerts'
             {
               await getProductsByRefBrand(this.reference, this.brand).then(snap =>{
                 snap.forEach(doc => {
-                  let id = doc.data().store + '-' + doc.data().idShoe
+                  let id = doc.data().condition + '-' + doc.data().store + '-' + doc.data().idShoe;
                   updateDescriptionProducts(id, this.description);
                   const productIndex = this.products.findIndex( item => item.idShoe ===  doc.data().idShoe && item.store === doc.data().store);
-                  Object.assign(this.products[productIndex], { description: this.description })
+                  Object.assign(this.products[productIndex], { description: this.description });
                 });
               });
             }
@@ -333,11 +372,11 @@ import { createAlert } from '../services/Alerts'
           {
             if(this.category !== null)
             {
-              getProductsByRefBrand(this.reference, this.brand).then(snap =>{
+              await getProductsByRefBrand(this.reference, this.brand).then(snap =>{
                 snap.forEach(doc => {
-                  let id = doc.data().store + '-' + doc.data().idShoe
+                  let id = doc.data().condition + '-' + doc.data().store + '-' + doc.data().idShoe;
                   updateCategoryProducts(id, this.category);
-                  const productIndex = this.products.findIndex( item => item.idShoe ===  doc.data().idShoe && item.store === doc.data().store);
+                  const productIndex = this.products.findIndex( item => item.condition ===  doc.data().condition && item.idShoe ===  doc.data().idShoe && item.store === doc.data().store);
                   Object.assign(this.products[productIndex], { category: this.category });
                 });
               });
@@ -407,11 +446,23 @@ import { createAlert } from '../services/Alerts'
           this.$refs.form.reset();
       },
       async previewImage(file){
-        console.log(file)
-        this.imageData = file;
-        this.photo = URL.createObjectURL(this.image);
-        await onUploadBatchProducts(file, this.brand, this.reference, this.color, this.material);
         
+        if(this.reference !== null && this.brand !== null && this.material !== null && this.color !== null)
+        {
+          console.log(file)
+          this.imageData = file;
+          this.photo = URL.createObjectURL(this.image);
+          await onUploadBatchProducts(file, this.brand, this.reference, this.color, this.material);
+        }
+        else
+        {
+          createAlert('Debe llenar todos los campos requeridos!', 'error');
+        }
+        
+      },
+      onCategoryChanged()
+      {
+        console.log(this.category)
       },
       onRefChanged(){
         this.brands = [];
@@ -447,12 +498,20 @@ import { createAlert } from '../services/Alerts'
         else if(this.radioGroup === 'condition')
         {
           this.conditions = ['Nuevo', 'Normal', 'Oferta', 'Fallado']
+          if(this.brand !== null || this.reference === '')
+          {
+            this.conditionDisabled = false;
+          }
+          else
+          {
+            this.conditionDisabled = true;
+          }
         }
         
       },
       onConditionChanged()
       {
-        if(this.condition === 'Oferta' || this.condition === 'Fallado')
+        if(this.condition !== null)
         {
           this.idShoes = [];
           this.stores = [];
@@ -462,24 +521,11 @@ import { createAlert } from '../services/Alerts'
             getProductsByRefBrand(this.reference, this.brand).then(snap =>{
             snap.forEach(doc => {
               this.idShoes.push(doc.data().idShoe);
-              this.stores.push(doc.data().store);
-              this.pConditions.push(doc.data().condition);
               });
             });
           this.dialog = true;
           }        
         }
-        // else if (this.condition === 'Nuevo' || this.condition === 'Normal')
-        // {
-        //   getProductsByRefBrand(this.reference, this.brand).then(snap =>{
-        //     snap.forEach(doc => {
-        //       let id = this.condition + '-' + doc.data().store + '-' + doc.data().idShoe;
-        //       updateConditionProducts(id, this.condition);
-        //       const productIndex = this.products.findIndex( item => item.idShoe ===  doc.data().idShoe && item.store === doc.data().store);
-        //       Object.assign(this.products[productIndex], { condition: this.condition });
-        //     });
-        //   });
-        // }
       },
       onMaterialChanged()
       {
@@ -492,12 +538,28 @@ import { createAlert } from '../services/Alerts'
       },
       onIdShoesChanged()
       {
-        this.stores = [];
+        this.pStores = [];
         getProductsByRefBrandIdShoe(this.reference, this.brand, this.idShoe).then(snap =>{
             snap.forEach(doc => {
-              this.stores.push(doc.data().store);
+              this.pStores.push(doc.data().store);
               });
             });
+      },
+      onPStoreChanged()// ya logramos obtener los datos para restar el stock, falta crear uno nuevo con el stock restado .
+      {
+        this.pConditions = [];
+        getProductsByIdShoeStore(this.idShoe, this.pStore).then(snap =>{
+            snap.forEach(doc => {
+                this.pConditions.push(doc.data().condition)
+              });
+            });
+      },
+      onColorChanged()
+      {
+        if(this.color !== null)
+        {
+          this.photoDisabled = false;
+        }
       },
       onRadioButtonChanged()
       {
@@ -523,7 +585,7 @@ import { createAlert } from '../services/Alerts'
           }
           else if(this.radioGroup === 'condition')
           {
-            this.conditionDisabled = false;
+            this.conditionDisabled = true;
             // if(this.brand !== null){
             // this.conditionDisabled = true;
             // }

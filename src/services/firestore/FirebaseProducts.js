@@ -1,9 +1,15 @@
 import db from '../firebase'
 import { actualDate  } from '../firebase';
-//import { onUpload } from '../firestore/FirebaseStorage';
 
+export function checkPrices(product){
+    if(product.price === null){ product.price = 0; } else { product.price = parseInt(product.price) }
+    if(product.purchasePrice === null){ product.purchasePrice = 0; } else { product.purchasePrice = parseInt(product.purchasePrice) }
+    if(product.oDisccount === null){ product.oDisccount = 0; } else { product.oDisccount = parseInt(product.oDisccount) }
+    if(product.pDisccount === null){ product.pDisccount = 0; } else { product.pDisccount = parseInt(product.pDisccount) }
+}
 export async function addProduct(product)
 {
+    checkPrices(product);
     product.due = actualDate.FieldValue.serverTimestamp();
     const incrementStock = actualDate.FieldValue.increment(parseInt(product.stock));  
     await db.collection('products').doc(product.id).get()
@@ -41,6 +47,10 @@ export async function addProduct(product)
         }
     });
     product.due = new Date().toLocaleDateString('en-US') + ' ' + new Date().toLocaleTimeString('en-US');
+    product.price = product.price.toString();
+    product.purchasePrice = product.purchasePrice.toString();
+    product.oDisccount = product.oDisccount.toString();
+    product.pDisccount = product.pDisccount.toString();
 }
 export async function addProduct1(product)
 {
@@ -181,10 +191,10 @@ export function updatePricesProducts(id, price, purchasePrice, oDisccount, pDisc
     db.collection('products').doc(id)
         .update(
             { 
-                price: price,
-                purchasePrice: purchasePrice,
-                oDisccount: oDisccount,
-                pDisccount: pDisccount,
+                price: parseInt(price),
+                purchasePrice: parseInt(purchasePrice),
+                oDisccount: parseInt(oDisccount),
+                pDisccount: parseInt(pDisccount),
                 due: actualDate.FieldValue.serverTimestamp(),
             });
 }
@@ -243,6 +253,15 @@ export async function updateProductStock(product, stock)
                         due: product.due,
                         stock: actualDate.FieldValue.increment(parseInt(stock)),
                         condition: 'Nuevo'
+                   });
+}
+export async function updateProductStockById(id, stock)
+{
+    let due = actualDate.FieldValue.serverTimestamp();
+    db.collection('products').doc(id)
+            .update({ 
+                        due: due,
+                        stock: actualDate.FieldValue.increment(parseInt(stock))
                    });
 }
 export async function getProductsByRefBrandMaterialColor(ref, brand, material, color)

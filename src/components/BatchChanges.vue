@@ -29,12 +29,12 @@
               </v-row>
             </v-radio-group>
             <v-dialog v-model="dialog" max-width="500px" persistent>
-              <v-form>
+              <v-form ref="formConditions" lazy-validation>
                 <v-card>
                   <v-card-title>
-                      <p class="text-h5 text--primary bold">
+                      
                         Calzado(s) en condición de: "{{ this.condition }}"
-                      </p>
+                      
                   </v-card-title>
                   <v-divider horizontal></v-divider>
                   <v-card-text>
@@ -45,14 +45,14 @@
                         </p>
                     </v-col>
                       <v-col cols="12" sm="6" md="6">
-                        <v-autocomplete v-model="idShoe" :items="idShoes" label="Códigos de Barra" @input="onIdShoesChanged"></v-autocomplete>
+                        <v-autocomplete v-model="idShoe" :items="idShoes" :rules="attributeRules" label="Códigos de Barra" @input="onIdShoesChanged"></v-autocomplete>
                       </v-col>
                       <v-col cols="12" sm="6" md="6">
-                        <v-autocomplete v-model="pStore" :items="pStores" label="Sucursal de origen" @input="onPStoreChanged"></v-autocomplete>
+                        <v-autocomplete v-model="pStore" :items="pStores" :rules="attributeRules" label="Sucursal de origen" @input="onPStoreChanged"></v-autocomplete>
                       </v-col>
                       <v-col cols="12" sm="6" md="6">
                         <v-spacer></v-spacer>
-                        <v-autocomplete v-model="pCondition" :items="pConditions" label="Condición"></v-autocomplete>
+                        <v-autocomplete v-model="pCondition" :items="pConditions" :rules="attributeRules" label="Condición"></v-autocomplete>
                       </v-col>
                       <v-col cols="12" sm="6" md="12">
                         <v-divider horizontal></v-divider>
@@ -61,16 +61,16 @@
                         </p>
                       </v-col>
                       <v-col cols="12" sm="6" md="6">
-                        <v-autocomplete v-model="store" :items="stores" label="Sucursal de destino"></v-autocomplete>
+                        <v-autocomplete v-model="store" :items="stores" :rules="attributeRules" label="Sucursal de destino" @input="onStoreChanged"></v-autocomplete>
                       </v-col>
                       <v-col cols="12" sm="6" md="6">
-                        <v-autocomplete v-model="condition" :items="conditions" label="Condición"></v-autocomplete>
+                        <v-autocomplete v-model="condition" :items="conditions" :rules="attributeRules" label="Condición" @input="onConditionChanged"></v-autocomplete>
                       </v-col>
                       <v-col cols="12" sm="6" md="6">
-                        <v-text-field v-model="total" label="Cantidad" placeholder="Cantidad"></v-text-field>
+                        <v-text-field v-model="total" label="Cantidad" :rules="numberRules" placeholder="Cantidad"></v-text-field>
                       </v-col>
                       <v-col cols="12" sm="6" md="12">
-                        <v-textarea rows="1" v-model="observation" label="Observación" placeholder="Observación"></v-textarea>
+                        <v-textarea rows="1" v-model="observation" :rules="attributeRules" label="Observación" placeholder="Observación"></v-textarea>
                       </v-col>
                     </v-row>
                   </v-card-text>
@@ -114,7 +114,7 @@
                     </v-row>
                     <v-row>
                         <v-col cols="12" sm="6" md="4">
-                        <v-text-field :disabled="descriptionDisabled" v-model="description" :rules="attributeRules" label="Descripcion" placeholder="Descripcion"></v-text-field>
+                        <v-textarea rows="1" :disabled="descriptionDisabled" v-model="description" :rules="attributeRules" label="Descripcion" placeholder="Descripcion"></v-textarea>
                         </v-col>
                         <v-col cols="6" sm="6" md="4">
                         <v-autocomplete :disabled="categoryDisabled" :items="categories" v-model="category" label="Categoria" placeholder="Categoria" @input="onCategoryChanged"></v-autocomplete>
@@ -192,11 +192,8 @@
   </v-container>
 </template>
 <script>
-import { /*addProductCondition,*/ getProductsByIdShoeStore, getProducts, getProductsByRef, getProductsByRefBrand, getProductsByRefBrandCondition, getProductsByRefBrandIdShoe, getProductsByRefBrandMaterial, getProductsByRefBrandNew, updateCategoryProducts/*, updateConditionProducts*/, updateDescriptionProducts, updatePricesProducts, /*updateProductStock*/ } from '../services/firestore/FirebaseProducts'
+import { getProductsByIdShoeStore, getProducts, getProductsByRef, getProductsByRefBrand, getProductsByRefBrandCondition, getProductsByRefBrandIdShoe, getProductsByRefBrandMaterial, updateCategoryProducts, updateDescriptionProducts, updatePricesProducts, getProductById, addProduct } from '../services/firestore/FirebaseProducts'
 import { onUploadBatchProducts, updateProductPhoto, getDefaultProductPhoto } from '../services/firestore/FirebaseStorage'
-//import { getBrandNames } from '../services/firestore/FirebaseBrands'
-//import { getColorNames } from '../services/firestore/FirabaseColors'
-//import { getMaterialNames } from '../services/firestore/FirebaseMaterials'
 import { getCategoryNames } from '../services/firestore/FirebaseCategories'
 import { createAlert } from '../services/Alerts'
 import { getStoresNames } from '../services/firestore/FirebaseStores'
@@ -235,7 +232,12 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
       stores: [],
       attributeRules: [
         v => !!v || 'Este campo es requerido.',
-        v => (v && v.length <= 20) || 'Este campo debe tener 20 caracteres como máximo.',
+        v => (v && v.length <= 30) || 'Este campo debe tener 30 caracteres como máximo.',
+      ],
+      numberRules: [
+        v => !!v || 'Este campo es requerido.',
+        v => (v && v.length <= 15) || 'Este campo debe tener 15 números como máximo.',
+        v => (/^\d+$/.test(v)) || 'Debe ser un numero.', 
       ],
       headers: [
         {
@@ -289,13 +291,14 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
       initialize () 
       {
         this.products = getProducts();
+        this.stores = getStoresNames();
         //this.brands = getBrandNames();
         //this.colors = getColorNames();
         //this.materials = getMaterialNames();
         this.categories = getCategoryNames();
         //this.conditions = ['Nuevo', 'Medio Viejo', 'Viejo']
         getDefaultProductPhoto().then(val => { this.photo = val; });
-        this.storesDest = getStoresNames();
+        //this.storesDest = getStoresNames();
       },
       viewItem() 
       {
@@ -317,24 +320,45 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
       },
       async saveCondition()
       {
-        // await getProductByIdShoeStore(this.pCondition, this.store, this.idShoe).then(doc => {
-        //   if(doc.exists)
-        //   {
-        //     const product = doc.data();
-        //     product.stock = '-'.concat(this.total);
-        //     updateProductStock(product, product.stock);
-        //     product.stock = null;
-        //     product.stock = this.total;
-        //     addProductCondition(product, this.condition, this.observation);
-        //   }
-        // });
-        this.dialog = false;
-        this.$refs.form.reset();
-        this.brand = null;
-        this.idShoe = null;
-        this.store = null;
-        this.total = null;
-        this.observation = null;
+        if(this.$refs.formConditions.validate())
+        {
+          let pIdShoe = this.pCondition + '-' + this.pStore + '-' + this.idShoe;
+          if((this.pCondition !== this.condition && this.pStore !== this.store) || 
+            (this.pCondition === this.condition && this.pStore !== this.store) ||
+            (this.pCondition !== this.condition && this.pStore === this.store))
+          {
+            await getProductById(pIdShoe).then(doc => 
+            {
+              const product = doc.data();
+              product.condition = this.condition;
+              product.store = this.store;
+              product.stock = this.total;
+              product.observation = this.observation;
+              product.idShoe = this.idShoe;
+              product.id = product.condition + '-' + product.store + '-' + product.idShoe;
+              addProduct(product);
+            });
+          }
+          else if(this.pCondition === this.condition && this.pStore === this.store)
+          {
+            await getProductById(pIdShoe).then(doc => 
+            {
+              const product = doc.data();
+              product.stock = this.total;
+              addProduct(product);
+            });
+            
+          }
+          this.dialog = false;
+          this.$refs.form.reset();
+          this.brand = null;
+          this.idShoe = null;
+          this.store = null;
+          this.total = null;
+          this.observation = null;
+          this.onRefChanged();
+        }
+        
       },
       async save()
       {
@@ -397,33 +421,11 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
           {
             if(this.price !== null && this.purchasePrice !== null && this.oDisccount !== null && this.pDisccount !== null)
             {
-              if(this.condition === 'Fallado' || this.condition === 'Oferta')
-              {
-                await getProductsByRefBrandCondition(this.reference, this.brand, this.condition).then(snap =>{
-                  snap.forEach(doc => {
-                    let id = this.condition +  '-' + doc.data().store + '-' + doc.data().idShoe
-                    updatePricesProducts(id, this.price, this.purchasePrice, this.oDisccount, this.pDisccount);
-                    console.log('Viejos')
-                    const productIndex = this.products.findIndex( item => item.idShoe ===  doc.data().idShoe && item.store === doc.data().store && item.condition === this.condition);
-                    console.log('index: ' + productIndex)
-                    Object.assign(this.products[productIndex], 
-                    { 
-                      price: this.price,
-                      purchasePrice: this.purchasePrice,  
-                      oDisccount: this.oDisccount,
-                      pDisccount: this.pDisccount
-                    });
-                  });
-                });
-              }
-              else if(this.condition === 'Nuevo')
-              {
-                await getProductsByRefBrandNew(this.reference, this.brand).then(snap =>{
+              await getProductsByRefBrandCondition(this.reference, this.brand, this.condition).then(snap =>{
                 snap.forEach(doc => {
-                  let id = this.condition + '-' + doc.data().store + '-' + doc.data().idShoe
+                  let id = this.condition +  '-' + doc.data().store + '-' + doc.data().idShoe
                   updatePricesProducts(id, this.price, this.purchasePrice, this.oDisccount, this.pDisccount);
-                  console.log('Nuevos')
-                  const productIndex = this.products.findIndex( item => item.idShoe ===  doc.data().idShoe && item.store === doc.data().store);
+                  const productIndex = this.products.findIndex( item => item.idShoe ===  doc.data().idShoe && item.store === doc.data().store && item.condition === this.condition);
                   Object.assign(this.products[productIndex], 
                   { 
                     price: this.price,
@@ -433,7 +435,7 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
                   });
                 });
               });
-              }
+              
             }
             else
             {
@@ -449,7 +451,6 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
         
         if(this.reference !== null && this.brand !== null && this.material !== null && this.color !== null)
         {
-          console.log(file)
           this.imageData = file;
           this.photo = URL.createObjectURL(this.image);
           await onUploadBatchProducts(file, this.brand, this.reference, this.color, this.material);
@@ -462,7 +463,7 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
       },
       onCategoryChanged()
       {
-        console.log(this.category)
+        
       },
       onRefChanged(){
         this.brands = [];
@@ -511,10 +512,9 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
       },
       onConditionChanged()
       {
-        if(this.condition !== null)
+        if(this.condition !== null && !this.dialog)
         {
           this.idShoes = [];
-          this.stores = [];
           this.pConditions = [];
           if(this.radioGroup === 'condition')
           {
@@ -524,8 +524,27 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
               });
             });
           this.dialog = true;
-          }        
+          } 
+          this.observationsConditions();       
         }
+        else if(this.condition !== null && this.dialog)
+        {
+            this.observationsConditions();          
+        }
+      },
+      onStoreChanged()
+      {
+        getProductById(this.condition + '-' + this.store  + '-' + this.idShoe).then(doc => 
+        {
+          if(doc.exists)
+          {
+            this.observation = doc.data().observation;
+          }
+          else 
+          {
+            this.observation = null;
+          }
+        });
       },
       onMaterialChanged()
       {
@@ -545,7 +564,7 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
               });
             });
       },
-      onPStoreChanged()// ya logramos obtener los datos para restar el stock, falta crear uno nuevo con el stock restado .
+      onPStoreChanged()
       {
         this.pConditions = [];
         getProductsByIdShoeStore(this.idShoe, this.pStore).then(snap =>{
@@ -586,9 +605,6 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
           else if(this.radioGroup === 'condition')
           {
             this.conditionDisabled = true;
-            // if(this.brand !== null){
-            // this.conditionDisabled = true;
-            // }
           }
           else if(this.radioGroup === 'prices')
           {
@@ -597,6 +613,27 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
           }
           this.$refs.form.reset();
           this.brand = null;
+      },
+      observationsConditions()
+      {
+        if(this.condition === 'Nuevo' || this.condition === 'Normal')
+          {
+            this.observation = 'Sin Observación';
+          }
+          else 
+          {
+            getProductById(this.condition + '-' + this.store  + '-' + this.idShoe).then(doc => 
+            {
+              if(doc.exists)
+              {
+                this.observation = doc.data().observation;
+              }
+              else 
+              {
+                this.observation = '';
+              }
+            });
+          }
       }
     },
   }

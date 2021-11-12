@@ -63,7 +63,7 @@
                       <v-autocomplete :items="categories" v-model="editedItem.category" :rules="attributeRules" label="Categoria" placeholder="Categoria"></v-autocomplete>
                     </v-col>
                     <v-col cols="4" sm="6" md="3">
-                      <v-select :items="stores" :rules="[v => !!v || 'Debe asignar una sucursal.']" label="Sucursal" v-model="editedItem.store"  @input="onStoreChanged"></v-select>
+                      <v-select :items="stores" :rules="[v => !!v || 'Debe asignar una sucursal.']" label="Sucursal" v-model="editedItem.store"></v-select>
                     </v-col>
                     <v-col cols="4" sm="6" md="3">
                       <v-select :items="conditions" v-model="editedItem.condition" :rules="attributeRules" label="Condicion" placeholder="Condicion" @input="onConditionChanged"></v-select>
@@ -80,7 +80,7 @@
                       <v-text-field v-model="editedItem.oDisccount" label="Des. Oc. %" placeholder="Desc. Oc. %"></v-text-field>
                     </v-col>
                     <v-col cols="6" sm="6" md="3">
-                      <v-text-field v-model="editedItem.pDisccount" label="Des. Lim. Bs." placeholder="Desc. Per. Bs."></v-text-field>
+                      <v-text-field v-model="editedItem.pDisccount" label="Des. Lim. Bs." placeholder="Desc. Lim. Bs."></v-text-field>
                     </v-col>
                   </v-row>
                 </v-col>
@@ -213,8 +213,8 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         size: '',
         color: '',
         material: '',
-        price: '',
-        purchasePrice: '',
+        price: null,
+        purchasePrice: null,
         stock: null,
         description: '',
         category: '',
@@ -320,25 +320,23 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
                         + 'Condición: ' + item.condition + '\n'
                         + 'Cod. Barras: ' + item.idShoe + '\n'
                         + 'Sucursal: ' + item.store + '\n'
+                        + 'Observación: ' + item.observation + '\n'
         deleteAlertWithImage(msg, description, item.photo, this.deleteItemConfirm, this.closeDelete)
       },
-      deleteItemConfirm () 
+      async deleteItemConfirm () 
       {
         let shoe = this.products[this.editedIndex]
         //deleteProduct(shoe);
-        getProductsByRefBrandMaterialColor(shoe.reference, shoe.brand, shoe.material, shoe.color).then(snap =>{
-               console.log('size: ' + snap.size)
+        await getProductsByRefBrandMaterialColor(shoe.reference, shoe.brand, shoe.material, shoe.color).then(snap =>{
                if(snap.size === 1)
                {
                  deletePhoto(shoe);
-                 console.log('Se elimino la foto.');
                }
-               console.log('No se elimino la foto.');
-               deleteProduct(shoe);
+              deleteProduct(shoe);
               });
-        //deletePhoto(shoe);
-        this.products.splice(this.editedIndex, 1)
-        this.closeDelete()
+        uploadAlert(2000, 'Eliminando producto de la base de datos.');
+        this.products.splice(this.editedIndex, 1);
+        this.closeDelete();
       },
       closeDelete () 
       {
@@ -408,8 +406,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       {
         if(this.$refs.form.validate())
         {
-          uploadAlert(4000);
-          console.log(file);
+          uploadAlert(4000, 'Subiendo imagen! Por favor espere.');
           this.image = file;
           this.editedItem.photo = URL.createObjectURL(this.image);
           await onUpload(file, this.editedItem, this.uploadValue, this.cleanDisabled);
@@ -441,13 +438,10 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
             this.editedItem.description = doc.data().description;
             this.editedItem.category = doc.data().category;
             this.editedItem.condition = doc.data().condition;
-            this.editedItem.photo = doc.data().photo;
+            //this.editedItem.photo = doc.data().photo;
             this.editedItem.brand = doc.data().brand;
           })
         })
-      },
-      onStoreChanged(){
-
       },
       onConditionChanged()
       {
@@ -463,29 +457,15 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
               this.editedItem.observation = doc.data().observation;
             }
           });
-
         }
-        // else if((this.editedItem.condition === 'Oferta' || this.editedItem.condition === 'Fallado') && this.editedItem.stock < 0)
-        // {
-        //   getProductById(this.editedItem.id).then(doc =>{
-        //     if(doc.exists)
-        //     {
-        //       this.dialogObservation = true;
-        //       this.editedItem.observation = doc.data().observation;
-        //     }
-        //   });
-        //   this.editedItem.observation = '';
-        // }
         else
         {
           this.editedItem.observation = 'Sin Observación';
         }
-        console.log(this.editedItem.observation)
       },
       closeDialog()
       {
         this.dialogObservation = false;
-        console.log('Close: ' + this.editedItem.observation)
         createAlert(this.editedItem.observation, 'succes')
       },
       cancelObservation()

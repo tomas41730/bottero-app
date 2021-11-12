@@ -78,11 +78,11 @@ export function showImage(item){
   })
 }
 
-export function uploadAlert(time)
+export function uploadAlert(time, msg)
 {
   let timerInterval;
   Swal.fire({
-    title: 'Subiendo imagen!',
+    title: msg,
     html: 'Restan <b></b> milisegundos.',
     timer: time,
     allowOutsideClick: false,

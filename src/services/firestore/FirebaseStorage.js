@@ -4,17 +4,15 @@ import 'firebase/storage'
 import { addProduct, getProductById, getProductsByRefBrandMaterialColor } from '../firestore/FirebaseProducts'
 export async function onUpload(file, product)
 {
-    console.log(file.name);
     await firebase.storage().ref('products/' + product.brand + '-' + product.reference + '-' + product.color + '-' + product.material).put(file);
     await firebase.storage().ref().child('products/' + product.brand + '-' + product.reference + '-' + product.color + '-' + product.material).getDownloadURL().then(val => {
         product.photo = val;
-        getProductById().then(doc =>{
+        getProductById(product.condition + '-' + product.store + '-' + product.idShoe).then(doc =>{
             if(doc.exists)
             {
                 addProduct(product);
             }
           });
-        //addProduct(product);
     })
     
 }
@@ -39,4 +37,10 @@ export async function updateProductPhoto(ref, brand, material, color)
 export async function deletePhoto(product)
 {
     await firebase.storage().ref().child('products/' + product.brand + '-' + product.reference + '-' + product.color + '-' + product.material).delete();
+}
+export async function getProductPhoto(product)
+{
+    const url = await firebase.storage().ref('products/' + product.brand + '-' + product.reference + '-' + product.color + '-' + product.material).exists();
+    return url;
+    
 }

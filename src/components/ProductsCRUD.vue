@@ -465,7 +465,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       },
       onConditionChanged()
       {
-        let idShoe = this.editedItem.condition + '-' + this.editedItem.store + '-' + this.editedItem.idShoe;
+        let idShoe = this.editedItem.condition + '-' + this.store + '-' + this.editedItem.idShoe;
         if((this.editedItem.condition === 'Oferta' || this.editedItem.condition === 'Fallado'))
         {
           this.dialogObservation = true;
@@ -509,8 +509,13 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       },
       closeDialogStore()
       {
+        let idShoe = this.editedItem.condition + '-' + this.store + '-' + this.editedItem.idShoe;
         if(this.store !== null)
         {
+          getProductById(idShoe).then(doc =>{
+            this.btn = (doc.exists) ? 'Actualizar' : 'Guardar';
+          });
+          this.editedItem.observation = 'Sin Observación';
           this.dialogStore = false;
         }
         else

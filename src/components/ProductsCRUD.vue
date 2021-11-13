@@ -3,26 +3,42 @@
     <v-card class="mx-auto" outlined>
       <v-card-text>
         <div>
-          <p class="text-h4 text--primary">MÓDULO DE INVENTARIO</p>
+          <p class="text-h4 text--primary">MÓDULO DE INVENTARIO - {{ this.store }}</p>
         </div>
       </v-card-text>
-      <v-dialog v-model="dialogObservation" max-width="500px">
+      <v-dialog v-model="dialogObservation" max-width="500px" persistent>
         <v-card>
           <v-card-title>
-            Reportar calzados en condición de: {{ this.editedItem.condition }}
+            Registrar calzados en condición de: {{ this.editedItem.condition }}
           </v-card-title>
           <v-card-text>
-            <v-text-field v-model="editedItem.observation" label="Observación" placeholder="Observación"></v-text-field></v-card-text>
-              <v-card-actions>
-                <v-btn color="primary" text @click="closeDialog">
-                  Continuar
-                </v-btn>
-                <v-btn color="primary" text @click="cancelObservation">
-                  Cancelar
-                </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
+            <v-textarea rows="1" v-model="editedItem.observation" label="Observación" placeholder="Observación"></v-textarea>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn color="primary" text @click="closeDialog">
+              Continuar
+            </v-btn>
+            <v-btn color="primary" text @click="cancelObservation">
+              Cancelar
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="dialogStore" max-width="350px" persistent>
+        <v-card>
+          <v-card-title>
+            ¿En qué sucursal se encuentra?
+          </v-card-title>
+          <v-card-text>
+            <v-select :items="stores" :rules="[v => !!v || 'Debe asignar una sucursal.']" label="Sucursal" @input="onStoreChanged" v-model="store"></v-select>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn color="primary" text @click="closeDialogStore">
+              Continuar
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
       <v-divider horizontal></v-divider>
       <v-row>
         <v-col>
@@ -63,7 +79,8 @@
                       <v-autocomplete :items="categories" v-model="editedItem.category" :rules="attributeRules" label="Categoria" placeholder="Categoria"></v-autocomplete>
                     </v-col>
                     <v-col cols="4" sm="6" md="3">
-                      <v-select :items="stores" :rules="[v => !!v || 'Debe asignar una sucursal.']" label="Sucursal" v-model="editedItem.store"></v-select>
+                      <!--<v-select :readonly="true" :items="stores" @click="dialogStore = true" :rules="[v => !!v || 'Debe asignar una sucursal.']" label="Sucursal" v-model="editedItem.store"></v-select>-->
+                      <v-btn outlined color="primary" @click="dialogStore = true" block> Sucursal </v-btn>
                     </v-col>
                     <v-col cols="4" sm="6" md="3">
                       <v-select :items="conditions" v-model="editedItem.condition" :rules="attributeRules" label="Condicion" placeholder="Condicion" @input="onConditionChanged"></v-select>
@@ -71,16 +88,16 @@
                   </v-row>
                   <v-row>
                     <v-col cols="6" sm="6" md="3">
-                      <v-text-field v-model="editedItem.price" label="Precio" placeholder="Precio"></v-text-field>
+                      <v-text-field suffix="Bs." v-model="editedItem.price" label="Precio de Venta" placeholder="Precio"></v-text-field>
                     </v-col>
                     <v-col cols="6" sm="6" md="3">
-                      <v-text-field v-model="editedItem.purchasePrice" label="Precio Compra" placeholder="Precio Compra"></v-text-field>
+                      <v-text-field suffix="Bs." v-model="editedItem.purchasePrice" label="Precio de Compra" placeholder="Precio Compra"></v-text-field>
                     </v-col>
                     <v-col cols="6" sm="6" md="3">
-                      <v-text-field v-model="editedItem.oDisccount" label="Des. Oc. %" placeholder="Desc. Oc. %"></v-text-field>
+                      <v-text-field suffix="%" v-model="editedItem.oDisccount" label="Desc. Ocasional %" placeholder="Desc. Oc. %"></v-text-field>
                     </v-col>
                     <v-col cols="6" sm="6" md="3">
-                      <v-text-field v-model="editedItem.pDisccount" label="Des. Lim. Bs." placeholder="Desc. Lim. Bs."></v-text-field>
+                      <v-text-field suffix="Bs." v-model="editedItem.pDisccount" label="Des. Limite Bs." placeholder="Desc. Lim. Bs."></v-text-field>
                     </v-col>
                   </v-row>
                 </v-col>
@@ -234,8 +251,8 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         size: '',
         color: '',
         material: '',
-        price: '',
-        purchasePrice: '',
+        price: null,
+        purchasePrice: null,
         stock: null,
         description: '',
         category: '',
@@ -258,13 +275,11 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         v => !!v || 'Este campo es requerido.',
         v => (v && v.length <= 200) || 'Este campo debe tener 200 caracteres como máximo.',
       ],
-      // emailRules: [
-      //   v => !!v || 'El correo electrónico es requerido.',
-      //   v => /^(([^<>()[\]\\.,;:\s@']+(\.[^<>()\\[\]\\.,;:\s@']+)*)|('.+'))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(v) || 'Debe ingresar una dirección de correo válida.',
-      // ],
       formDisabled: false,
       cleanDisabled: false,
-      dialogObservation: false
+      dialogObservation: false,
+      dialogStore: true,
+      store: null
     }),
 
     computed: 
@@ -300,7 +315,6 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       },
       viewItem(item) 
       {
-        //this.editedIndex = this.products.indexOf(item);
         item.stock = item.stock.toString();
         this.editedItem = Object.assign({}, item);
         this.cleanDisabled = true;
@@ -342,14 +356,15 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       {
         this.$nextTick(() => 
         {
-          this.editedItem = Object.assign({}, this.defaultItem)
-          this.editedIndex = -1
+          this.editedItem = Object.assign({}, this.defaultItem);
+          this.editedIndex = -1;
         })
         this.$refs.form.reset();
       },
 
       async save()
       {
+        this.editedItem.store = this.store;
         if(this.$refs.form.validate())
         {
           const product = Object.assign({},this.editedItem);
@@ -406,7 +421,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       {
         if(this.$refs.form.validate())
         {
-          uploadAlert(4000, 'Subiendo imagen! Por favor espere.');
+          uploadAlert(5000, 'Subiendo imagen! Por favor espere.');
           this.image = file;
           this.editedItem.photo = URL.createObjectURL(this.image);
           await onUpload(file, this.editedItem, this.uploadValue, this.cleanDisabled);
@@ -419,13 +434,18 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         }
         this.editedItem.stock = this.editedItem.stock.toString();
       },
-      onIdChanged(){
+      onStoreChanged()
+      {
+
+      },
+      onIdChanged()
+      {
         getProductByIdShoe(this.editedItem.idShoe).then(snap =>{
           snap.forEach(doc => {
-            if(doc.exists) this.btn = 'Actualizar';
+            //if(doc.exists) this.btn = 'Actualizar';
             this.editedItem = doc.data();
             this.editedItem.stock = '';
-            this.editedItem.store = null;
+            this.editedItem.store = this.store;
             this.editedItem.condition = null;
           });
         });
@@ -434,7 +454,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       onRefChanged(){
         getProductByRef(this.editedItem.reference).then(snap =>{
           snap.forEach(doc => {
-            if(doc.exists) this.btn = 'Actualizar';
+            //if(doc.exists) this.btn = 'Actualizar';
             this.editedItem.description = doc.data().description;
             this.editedItem.category = doc.data().category;
             this.editedItem.condition = doc.data().condition;
@@ -453,31 +473,57 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
           getProductById(idShoe).then(doc =>{
             if(doc.exists)
             {
-              this.dialogObservation = true;
+              this.btn = 'Actualizar';
               this.editedItem.observation = doc.data().observation;
+            }
+            else
+            {
+              this.btn = 'Guardar';
             }
           });
         }
         else
         {
+          getProductById(idShoe).then(doc =>{
+            this.btn = (doc.exists) ? 'Actualizar' : 'Guardar';
+          });
           this.editedItem.observation = 'Sin Observación';
         }
       },
       closeDialog()
       {
-        this.dialogObservation = false;
-        createAlert(this.editedItem.observation, 'succes')
+        console.log('Close1: ' + this.editedItem.observation)
+        if(this.editedItem.observation !== ''){
+          this.dialogObservation = false;
+          console.log('Close:2 ' + this.editedItem.observation)
+        }
+        else
+        {
+          createAlert('Debe agregar una observacion o cancelar!', 'error');
+        }
       },
       cancelObservation()
       {
         this.dialogObservation = false;
         this.editedItem.condition = null;
       },
+      closeDialogStore()
+      {
+        if(this.store !== null)
+        {
+          this.dialogStore = false;
+        }
+        else
+        {
+          createAlert('Debe elegir una sucursal!', 'error');
+        }
+      },
       clean(){
         this.formDisabled = false; 
         this.cleanDisabled = false;
         this.$refs.form.reset();
         Object.assign(this.editedItem, this.defaultItem);
+        this.editedItem.store = this.store;
       },
     },
   }

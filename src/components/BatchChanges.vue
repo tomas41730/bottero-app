@@ -125,18 +125,18 @@
                     </v-row>
                     <v-row>
                         <v-col cols="6" sm="6" md="3">
-                        <v-text-field :disabled="pricesDisabled" v-model="price" label="Precio" placeholder="Precio"></v-text-field>
+                        <v-text-field suffix="Bs." :disabled="pricesDisabled" v-model="price" label="Precio Venta" placeholder="Precio"></v-text-field>
                         </v-col>
                         <v-col cols="6" sm="6" md="3">
-                        <v-text-field :disabled="pricesDisabled" v-model="purchasePrice" label="Precio Compra" placeholder="Precio Compra"></v-text-field>
+                        <v-text-field suffix="Bs." :disabled="pricesDisabled" v-model="purchasePrice" label="Precio Compra" placeholder="Precio Compra"></v-text-field>
                         </v-col>
                         <v-col cols="6" sm="6" md="3">
-                        <v-text-field :disabled="pricesDisabled" v-model="oDisccount" label="Des. Oc. %" placeholder="Desc. Oc. %"></v-text-field>
+                        <v-text-field suffix="%" :disabled="pricesDisabled" v-model="oDisccount" label="Des. Oc. %" placeholder="Desc. Oc. %"></v-text-field>
                         </v-col>
                         <v-col cols="6" sm="6" md="3">
-                        <v-text-field :disabled="pricesDisabled" v-model="pDisccount" label="Des. Lim. Bs." placeholder="Desc. Per. Bs."></v-text-field>
+                        <v-text-field suffix="Bs." :disabled="pricesDisabled" v-model="pDisccount" label="Des. Lim. Bs." placeholder="Desc. Per. Bs."></v-text-field>
                         </v-col>
-                    </v-row>
+                      </v-row>
                     </v-col>
                 <v-col>
                   <v-card-actions>
@@ -192,10 +192,10 @@
   </v-container>
 </template>
 <script>
-import { getProductsByIdShoeStore, getProducts, getProductsByRef, getProductsByRefBrand, getProductsByRefBrandCondition, getProductsByRefBrandIdShoe, getProductsByRefBrandMaterial, updateCategoryProducts, updateDescriptionProducts, updatePricesProducts, getProductById, addProduct } from '../services/firestore/FirebaseProducts'
+import { getProductsByIdShoeStore, getProducts, getProductsByRef, getProductsByRefBrand, getProductsByRefBrandCondition, getProductsByRefBrandIdShoe, getProductsByRefBrandMaterial, updateCategoryProducts, updateDescriptionProducts, updatePricesProducts, getProductById, addProduct, updateProductStockById } from '../services/firestore/FirebaseProducts'
 import { onUploadBatchProducts, updateProductPhoto, getDefaultProductPhoto } from '../services/firestore/FirebaseStorage'
 import { getCategoryNames } from '../services/firestore/FirebaseCategories'
-import { createAlert } from '../services/Alerts'
+import { createAlert, uploadAlert } from '../services/Alerts'
 import { getStoresNames } from '../services/firestore/FirebaseStores'
   export default 
   {
@@ -330,6 +330,7 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
             await getProductById(pIdShoe).then(doc => 
             {
               const product = doc.data();
+              updateProductStockById(pIdShoe, '-'+this.total);
               product.condition = this.condition;
               product.store = this.store;
               product.stock = this.total;
@@ -451,6 +452,7 @@ import { getStoresNames } from '../services/firestore/FirebaseStores'
         
         if(this.reference !== null && this.brand !== null && this.material !== null && this.color !== null)
         {
+          uploadAlert(5000, 'Subiendo imagen.')
           this.imageData = file;
           this.photo = URL.createObjectURL(this.image);
           await onUploadBatchProducts(file, this.brand, this.reference, this.color, this.material);

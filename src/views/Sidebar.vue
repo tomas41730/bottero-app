@@ -46,11 +46,11 @@
                 </v-list-group>
         </v-list>
         <v-list dense>
-            <v-list-group color="yellow" :value="true" prepend-icon="mdi-account-circle" no-action>
+            <v-list-group color="yellow" :value="true" prepend-icon="mdi-cart" no-action>
                 <template v-slot:activator>
-                    <v-list-item-title>CUENTAS</v-list-item-title>
+                    <v-list-item-title>VENTAS</v-list-item-title>
                 </template>
-                <v-list-item v-for="item in accountItems" :key="item.title" :to="item.path" link>
+                <v-list-item v-for="item in salesItems" :key="item.title" :to="item.path" link>
                     <v-list-item-title v-text="item.title"></v-list-item-title>
                     <v-list-item-icon>
                         <v-icon v-text="item.icon"></v-icon>
@@ -59,11 +59,11 @@
             </v-list-group>
         </v-list>
         <v-list dense>
-            <v-list-group color="yellow" :value="false" prepend-icon="mdi-cart" no-action>
+            <v-list-group color="yellow" :value="true" prepend-icon="mdi-account-circle" no-action>
                 <template v-slot:activator>
-                    <v-list-item-title>VENTAS</v-list-item-title>
+                    <v-list-item-title>CUENTAS</v-list-item-title>
                 </template>
-                <v-list-item v-for="item in salesItems" :key="item.title" :to="item.path" link>
+                <v-list-item v-for="item in accountItems" :key="item.title" :to="item.path" link>
                     <v-list-item-title v-text="item.title"></v-list-item-title>
                     <v-list-item-icon>
                         <v-icon v-text="item.icon"></v-icon>
@@ -79,16 +79,6 @@
         </div>
       </template>
       </v-navigation-drawer>
-      <v-container>
-        <v-row>
-          <v-col>
-            <v-main transition="slide-x-transition">
-              <router-view></router-view>
-            </v-main>
-          </v-col>
-        </v-row>
-      </v-container>
-      
     </v-app>
   
   </div> 
@@ -96,11 +86,8 @@
 </template>
 
 <script>
-import Vuetify from 'vuetify';
 
 export default {
-  name: 'App',
-  vuetify: new Vuetify(),
 
   data: () => ({
     drawer: false,
@@ -118,6 +105,22 @@ export default {
         { title: 'VENTAS', icon: 'mdi-chart-line', path: '/'},
         { title: 'TRASPASOS', icon: 'mdi-clipboard-arrow-right-outline', path: '/'}
     ],
+
+
+
+
+
+
+
+
+    // items: [
+    //     { title: 'PRINCIPAL', icon: 'mdi-view-dashboard', path: '/'},
+    //     { title: 'SUCURSALES', icon: 'mdi-home-city', path: 'stores'},
+    //     { title: 'USUARIOS', icon: 'mdi-account-group-outline', path: '/users', items: [{ title: 'List Item' }],},
+    //     { title: 'ROLES', icon: 'mdi-shield-account', path: '/roles'},
+    //     { title: 'INVENTARIO', icon: 'mdi-shoe-heel', path: '/inventory'},
+    //     { title: 'CAMBIOS POR LOTE', icon: 'mdi-shoe-heel', path: '/batchChanges'},
+    //   ],
   }),
   created(){
   },

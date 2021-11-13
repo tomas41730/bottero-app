@@ -43,14 +43,6 @@ export function getRoleNames()
 }
 export function getIdRole(name)
 {
-    const role = db.collection("roles").where("name", "==", name).get()
-    .then((querySnapshot) => {
-      const data = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      //console.log("Roles "+name+": ", data[0]['id']);
-      return data[0]['id'];
-    });
+    const role = db.collection("roles").where("name", "==", name).get();
     return role
 }

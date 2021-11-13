@@ -10,29 +10,37 @@
         </v-list-item-avatar>
         <v-spacer></v-spacer>
       </v-app-bar>
-      <v-navigation-drawer
-        v-model="drawer"
-        absolute
-        dark
-        temporary
-      >
-        <v-list-item class="px-2">
-          <v-list-item-avatar>
-            <v-img src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
-          </v-list-item-avatar>
-  
-          <v-list-item-title class="text-h6 yellow--text">BOTTERO
-            <v-list-item-subtitle>GESTION COMERCIAL</v-list-item-subtitle>
-            <!--<span v-if="loggedIn">Online</span>
-            <span v-else>Ofline</span>-->
-          </v-list-item-title>
+      <v-navigation-drawer v-model="drawer" absolute dark temporary disable-resize-watcher app>
+        
+        <v-system-bar>
           
+          <span class="pa-17 text-center align-self-center">Sucursal</span>
+        </v-system-bar>
+        <v-list-item class="px-0">
+          <v-col>
+            <v-list-item-avatar>
+              <v-img src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
+            </v-list-item-avatar>
+          </v-col>
+         <v-col>
+            <v-row>
+              <v-list-item-title class="text-h6 yellow--text">BOTTERO
+                <v-list-item-subtitle>GESTION COMERCIAL</v-list-item-subtitle>
+              </v-list-item-title>
+              <v-divider></v-divider>
+            </v-row>
+            <v-row>
+              <v-list-item-subtitle v-if="loggedIn">ONLINE</v-list-item-subtitle>
+              <v-list-item-subtitle v-else>OFFLINE</v-list-item-subtitle>
+            </v-row>
+         </v-col>          
           <v-btn icon @click.stop="drawer = !drawer">
             <v-icon>mdi-chevron-left</v-icon>
           </v-btn>
+          
         </v-list-item>
         <v-divider></v-divider>
-        <v-list dense>
+        <v-list nav dense>
             <v-list-group color="yellow" :value="true" prepend-icon="mdi-shoe-heel" no-action>
                 <template v-slot:activator>
                     <v-list-item-title>PRODUCTOS</v-list-item-title>
@@ -45,7 +53,7 @@
                     </v-list-item>
                 </v-list-group>
         </v-list>
-        <v-list dense>
+        <v-list nav dense>
             <v-list-group color="yellow" :value="true" prepend-icon="mdi-account-circle" no-action>
                 <template v-slot:activator>
                     <v-list-item-title>CUENTAS</v-list-item-title>
@@ -58,7 +66,7 @@
                 </v-list-item>
             </v-list-group>
         </v-list>
-        <v-list dense>
+        <v-list nav dense>
             <v-list-group color="yellow" :value="false" prepend-icon="mdi-cart" no-action>
                 <template v-slot:activator>
                     <v-list-item-title>VENTAS</v-list-item-title>
@@ -72,9 +80,22 @@
             </v-list-group>
         </v-list>
         <template v-slot:append>
-        <div class="pa-2">
-          <v-btn block>
-            Logout
+          <v-divider></v-divider>
+        <div class="pa-10">
+              <v-list-item  three-line>
+                <v-list-item-content class="text-center align-self-center">
+                  <v-list-item-title class="text-h6">
+                    USUARIO
+                  </v-list-item-title>
+                  <v-list-item-title class="text-h6">
+                    SUCURSAL
+                  </v-list-item-title>
+                  <v-list-item-subtitle>e-mail</v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>  
+        
+          <v-btn block @click="signOut">
+            Cerrar Sesión
           </v-btn>
         </div>
       </template>
@@ -97,6 +118,7 @@
 
 <script>
 import Vuetify from 'vuetify';
+import { auth } from './services/firebase';
 
 export default {
   name: 'App',
@@ -118,8 +140,18 @@ export default {
         { title: 'VENTAS', icon: 'mdi-chart-line', path: '/'},
         { title: 'TRASPASOS', icon: 'mdi-clipboard-arrow-right-outline', path: '/'}
     ],
+    loggedIn: false
   }),
   created(){
+    auth.onAuthStateChanged(user => {
+      if(user){
+        this.loggedIn = true;
+      }
+      else
+      {
+        this.loggedIn = false;
+      }
+    })
   },
   watch: {
     group () {
@@ -127,7 +159,19 @@ export default {
     },
   },
   methods: {
-   
+   async signOut()
+   {
+     try
+     {
+       const data = await auth.signOut();
+       console.log(data);
+       this.$router.replace({name: 'Login'})
+     }
+     catch(err)
+     {
+       console.log(err)
+     }
+   }
   }
 };
 </script>

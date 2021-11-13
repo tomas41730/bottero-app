@@ -27,7 +27,7 @@
                             <v-divider></v-divider>
                             <v-card-actions>
                                 <v-spacer></v-spacer>
-                                <v-btn depressed color="primary" @click="login">
+                                <v-btn depressed color="primary" @click="signIn">
                                     Iniciar Sesion
                                 </v-btn>
                             </v-card-actions>
@@ -47,17 +47,18 @@ import { auth } from '../services/firebase'
     ({
         email: '',
         password: '',
+        error: '',
         dialog: true
         
     }),
 
     methods: 
     {
-       login()
+       async signIn()
        {
            auth.signInWithEmailAndPassword(this.email, this.password).then(user => {
                 console.log(user.data);
-                this.$router.replace({name: 'Inventory'});
+                this.$router.replace({name: 'Batch-Products'});
             },
             error => {
                 alert(error);

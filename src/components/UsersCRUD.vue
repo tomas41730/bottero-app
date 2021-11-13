@@ -3,7 +3,7 @@
     <v-data-table
       v-model="selected"
       :headers="headers"
-      :items="desserts"
+      :items="users"
       :search="search"
       sort-by="name"
       class="elevation-1" 
@@ -151,6 +151,7 @@ import { addUser, deleteUser, getUsers } from '../services/firestore/FirebaseUse
 import { deleteAlert, createAlert } from '../services/Alerts'
 import { getStoresNames } from '../services/firestore/FirebaseStores'
 import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
+import { auth } from '../services/firebase'
   export default 
   {
     data: () => 
@@ -179,7 +180,7 @@ import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
         { text: 'Cuenta Habilitada', value: 'account', align: 'center', },
         { text: 'Acciones', value: 'actions', sortable: false },
       ],
-      desserts: [],
+      users: [],
       editedIndex: -1,
       editedItem: {
         ci: '',
@@ -259,20 +260,20 @@ import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
     {
       initialize () 
       {
-        this.desserts = getUsers()
+        this.users = getUsers()
         this.items = getStoresNames()
       },
 
       editItem (item) 
       {
-        this.editedIndex = this.desserts.indexOf(item)
+        this.editedIndex = this.users.indexOf(item)
         this.editedItem = Object.assign({}, item)
         this.dialog = true
       },
 
       deleteItem (item) 
       {
-        this.editedIndex = this.desserts.indexOf(item);
+        this.editedIndex = this.users.indexOf(item);
         this.editedItem = Object.assign({}, item);
         let msg = 'Esta por eliminar al usuario'
         deleteAlert(msg, this.editedItem.name + ' ' + this.editedItem.lastname, this.deleteItemConfirm, this.closeDelete)
@@ -280,9 +281,9 @@ import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
 
       deleteItemConfirm () 
       {
-        let ci = this.desserts[this.editedIndex].ci
+        let ci = this.users[this.editedIndex].ci
         deleteUser(ci)
-        this.desserts.splice(this.editedIndex, 1)
+        this.users.splice(this.editedIndex, 1)
         this.closeDelete()
       },
 
@@ -307,34 +308,55 @@ import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
         })
       },
 
-      save () 
+      async save () 
       {
-        const user = Object.assign({},this.editedItem)
+        //const user = Object.assign({},this.editedItem)
         if(this.$refs.form.validate())
         {
           let msg = ''
           let fullname = this.editedItem.name + ' ' + this.editedItem.lastname
           if (this.editedIndex > -1) 
           {
-            Object.assign(this.desserts[this.editedIndex], this.editedItem)
+            Object.assign(this.users[this.editedIndex], this.editedItem)
             msg = 'El usuario "' + fullname + '" fue actualizado con exito!'
-            //console.log('Nombre Rol: ' + this.editedItem.role)
 
-            getIdRole(user.role).then(value =>{
-              //console.log('Users Crud id role => ' + value)
-              user.idRole = value
-              addUser(user)
-            })
+            getIdRole(this.editedItem.role).then(snap =>{
+            snap.forEach(doc => {
+                if(doc.exists)
+                {
+                  this.editedItem.idRole = doc.data().id;
+                  addUser(this.editedItem);
+                }
+              });
+            });
             
           } 
           else 
           {
-            this.desserts.push(user)
-            msg = 'El usuario "' + fullname + '" fue creado con exito!'
-            console.log('new user: '+ user)
+            try
+            {
+               getIdRole(this.editedItem.role).then(snap =>{
+                snap.forEach(doc => {
+                  if(doc.exists)
+                  {
+                    this.editedItem.idRole = doc.data().id;
+                    addUser(this.editedItem);
+                    auth.createUserWithEmailAndPassword(this.editedItem.email, this.editedItem.password);
+                  }
+                });
+              });
+              this.users.push(this.editedItem)
+              msg = 'El usuario "' + fullname + '" fue creado con exito!'
+              console.log('new user: '+ this.editedItem)
             //this.initialize()
+            }
+            catch(err)
+            {
+              console.log(err);
+              createAlert('No se pudo crear el usuario!', 'error');
+            }
           }
-          addUser(this.editedItem)
+          addUser(this.editedItem);
           this.close()
           createAlert(msg, 'success')
           this.$refs.form.reset()

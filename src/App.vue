@@ -14,7 +14,7 @@
         
         <v-system-bar>
           
-          <span class="pa-17 text-center align-self-center">Sucursal</span>
+          <span class="pa-17 text-center align-self-center"> {{ getStore }} </span>
         </v-system-bar>
         <v-list-item class="px-0">
           <v-col>
@@ -81,16 +81,16 @@
         </v-list>
         <template v-slot:append>
           <v-divider></v-divider>
-        <div class="pa-10">
+        <div class="pa-5">
               <v-list-item  three-line>
                 <v-list-item-content class="text-center align-self-center">
                   <v-list-item-title class="text-h6">
-                    USUARIO
+                    {{ getName }} {{ getLastname }}
                   </v-list-item-title>
                   <v-list-item-title class="text-h6">
-                    SUCURSAL
+                    {{ getStore }}
                   </v-list-item-title>
-                  <v-list-item-subtitle>e-mail</v-list-item-subtitle>
+                  <v-list-item-subtitle> {{ getRole }} </v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>  
         
@@ -151,8 +151,32 @@ export default {
       {
         this.loggedIn = false;
       }
-    })
+    });
+    //console.log(this.$store.state.userEmail)
   },
+  computed: 
+    {
+      getEmail()
+      {
+        return this.$store.state.userEmail;
+      },
+      getName()
+      {
+        return this.$store.state.userName;
+      },
+      getLastname()
+      {
+        return this.$store.state.userLastname;
+      },
+      getRole()
+      {
+        return this.$store.state.userRole;
+      },
+      getStore()
+      {
+        return this.$store.state.userStore;
+      }
+    },
   watch: {
     group () {
       this.drawer = false

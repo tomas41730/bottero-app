@@ -41,6 +41,7 @@
 
 <script>
 import { auth } from '../services/firebase'
+import { getUserByEmail } from '../services/firestore/FirebaseUsers';
   export default {
     name : 'Login',
     data: () => 
@@ -58,12 +59,22 @@ import { auth } from '../services/firebase'
        {
            auth.signInWithEmailAndPassword(this.email, this.password).then(user => {
                 console.log(user.data);
-                this.$router.replace({name: 'Batch-Products'});
+                //this.$store.dispatch('setUserInfo', this.email);
+                getUserByEmail(this.email).then(snap => {
+                    snap.forEach(doc => {
+                        this.$store.state.userEmail = doc.data().email;
+                        this.$store.state.userName = doc.data().name;
+                        this.$store.state.userLastname = doc.data().lastname;
+                        this.$store.state.userStore = doc.data().store;
+                        this.$store.state.userRole = doc.data().role;
+                    })
+                })
+                this.$router.replace({name: 'Users'});
             },
             error => {
                 alert(error);
             });
-       } 
+       }, 
     },
     mounted () 
     {

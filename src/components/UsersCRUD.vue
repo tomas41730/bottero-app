@@ -67,9 +67,9 @@
                           :items="items"
                           :rules="[v => !!v || 'Debe asignar una sucursal.']"
                           label="Sucursal"
-                          v-model="editedItem.store"
+                          v-model="editedItem.store" required
                         >
-                          <template v-slot:selection="data">
+                          <template v-slot:selection="data" >
                             <v-chip
                               :key="JSON.stringify(data.item)"
                               v-bind="data.attrs"
@@ -87,7 +87,7 @@
                           :items="roles"
                           :rules="[v => !!v || 'Debe asignar un rol.']"
                           label="Rol"
-                          v-model="editedItem.role"
+                          v-model="editedItem.role" required
                         >
                           <template v-slot:selection="data">
                             <v-chip
@@ -150,8 +150,8 @@
 import { addUser, deleteUser, getUsers } from '../services/firestore/FirebaseUsers'
 import { deleteAlert, createAlert } from '../services/Alerts'
 import { getStoresNames } from '../services/firestore/FirebaseStores'
-import { getRoleNames, getIdRole } from '../services/firestore/FirebaseRoles'
-import { auth } from '../services/firebase'
+import { getRoleNames } from '../services/firestore/FirebaseRoles'
+//import { auth } from '../services/firebase'
   export default 
   {
     data: () => 
@@ -278,7 +278,6 @@ import { auth } from '../services/firebase'
         let msg = 'Esta por eliminar al usuario'
         deleteAlert(msg, this.editedItem.name + ' ' + this.editedItem.lastname, this.deleteItemConfirm, this.closeDelete)
       },
-
       deleteItemConfirm () 
       {
         let ci = this.users[this.editedIndex].ci
@@ -286,7 +285,6 @@ import { auth } from '../services/firebase'
         this.users.splice(this.editedIndex, 1)
         this.closeDelete()
       },
-
       close () 
       {
         this.$refs.form.reset()
@@ -297,7 +295,6 @@ import { auth } from '../services/firebase'
           this.editedIndex = -1
         })
       },
-
       closeDelete () 
       {
         this.dialogDelete = false
@@ -308,59 +305,37 @@ import { auth } from '../services/firebase'
         })
       },
 
-      async save () 
+      save () 
       {
-        //const user = Object.assign({},this.editedItem)
         if(this.$refs.form.validate())
         {
           let msg = ''
-          let fullname = this.editedItem.name + ' ' + this.editedItem.lastname
-          if (this.editedIndex > -1) 
+          let fullname = this.editedItem.name + ' ' + this.editedItem.lastname;
+          console.log('1');
+          console.log(this.editedItem);
+          if(this.editedIndex > -1)
           {
+            console.log('old');
+            console.log(this.editedItem);
             Object.assign(this.users[this.editedIndex], this.editedItem)
-            msg = 'El usuario "' + fullname + '" fue actualizado con exito!'
-
-            getIdRole(this.editedItem.role).then(snap =>{
-            snap.forEach(doc => {
-                if(doc.exists)
-                {
-                  this.editedItem.idRole = doc.data().id;
-                  addUser(this.editedItem);
-                }
-              });
-            });
-            
-          } 
-          else 
-          {
-            try
-            {
-               getIdRole(this.editedItem.role).then(snap =>{
-                snap.forEach(doc => {
-                  if(doc.exists)
-                  {
-                    this.editedItem.idRole = doc.data().id;
-                    addUser(this.editedItem);
-                    auth.createUserWithEmailAndPassword(this.editedItem.email, this.editedItem.password);
-                  }
-                });
-              });
-              this.users.push(this.editedItem)
-              msg = 'El usuario "' + fullname + '" fue creado con exito!'
-              console.log('new user: '+ this.editedItem)
-            //this.initialize()
-            }
-            catch(err)
-            {
-              console.log(err);
-              createAlert('No se pudo crear el usuario!', 'error');
-            }
+            msg = 'El usuario "' + fullname + '" fue actualizado con éxito!';
           }
-          addUser(this.editedItem);
-          this.close()
-          createAlert(msg, 'success')
-          this.$refs.form.reset()
+          else
+          {
+            console.log('new');
+            console.log(this.editedItem);
+            this.users.push(Object.assign({}, this.editedItem))
+            msg = 'El usuario "' + fullname + '" fue creado con éxito!'
+          }
+          addUser(Object.assign({}, this.editedItem));
+          createAlert(msg, 'success');
+          this.close();
+          this.$refs.form.reset();
         }
+      },
+      onChange()
+      {
+        console.log(this.editedItem);
       }
     },
   }

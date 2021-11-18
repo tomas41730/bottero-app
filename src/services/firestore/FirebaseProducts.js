@@ -181,5 +181,19 @@ export async function getProductsByRefBrandMaterialColor(ref, brand, material, c
     .get()
     return products
 }
+export function getProductsByStore(store)
+{
+    const products = []
+    db.collection('products').where('store', '==', store).orderBy('idShoe', 'asc').get()
+    .then(snapshot => {
+        snapshot.docs.forEach(product => {
+            let currentID = product.id
+            let appObj = { ...product.data(), ['id']: currentID, ['due']: product.data().due && product.data().due.toDate().toLocaleDateString('en-US') +' '+ product.data().due.toDate().toLocaleTimeString('en-US') }
+            products.push(appObj)
+        })
+
+    })
+    return products
+}
 
 

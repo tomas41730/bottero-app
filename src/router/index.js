@@ -54,6 +54,12 @@ const routes = [
     component: () => import('../views/Login.vue')
   },
   {
+    path: '/sales',
+    name: 'Sales',
+    component: () => import('../views/Sales.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/sidebar',
     name: 'Sidebar',
     component: () => import('../views/Sidebar.vue'),

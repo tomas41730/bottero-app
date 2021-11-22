@@ -7,7 +7,7 @@
                         <v-card>
                             <v-card-title class="text-h5 yellow lighten-2">
                                 <v-spacer></v-spacer>
-                                    <v-img max-height="60" src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2FBottero-letras-logo.png?alt=media&token=d827a340-db0f-4dbf-bd0f-59f88752455b"></v-img>
+                                    <v-img max-height="60" src="https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2FBottero-letras-logo.png?alt=media&token=39eee5e8-3611-4bc7-aad8-8e920b73d602"></v-img>
                                 <v-spacer/>
                             </v-card-title>
                             <v-divider></v-divider>

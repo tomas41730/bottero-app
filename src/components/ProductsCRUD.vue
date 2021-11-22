@@ -260,7 +260,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         pDisccount: null,
         oDisccount: null,
         condition: '',
-        photo: 'https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e',
+        photo: 'https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2Flogo.png?alt=media&token=ec2d4d87-9102-4ae0-8328-e52154af033d',
         observation: 'Sin Observación',
       },
       url: null,

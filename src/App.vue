@@ -6,7 +6,7 @@
         <v-spacer></v-spacer>
         <v-toolbar-title class="text-h4 yellow--text"></v-toolbar-title>
         <v-list-item-avatar tile size="230">
-            <v-img src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2FBottero-letras-logo.png?alt=media&token=d827a340-db0f-4dbf-bd0f-59f88752455b"></v-img>
+            <v-img src="https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2FBottero-letras-logo.png?alt=media&token=39eee5e8-3611-4bc7-aad8-8e920b73d602"></v-img>
         </v-list-item-avatar>
         <v-spacer></v-spacer>
       </v-app-bar>
@@ -19,7 +19,7 @@
         <v-list-item class="px-0">
           <v-col>
             <v-list-item-avatar>
-              <v-img src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
+              <v-img src="https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2Flogo.png?alt=media&token=ec2d4d87-9102-4ae0-8328-e52154af033d"></v-img>
             </v-list-item-avatar>
           </v-col>
          <v-col>

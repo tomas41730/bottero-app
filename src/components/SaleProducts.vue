@@ -30,22 +30,29 @@
             </template>
             <template v-slot:default="props">
                 <v-row>
-                    <v-col v-for="item in props.items" :key="item.name" cols="12" sm="6" md="4" lg="3">
+                    <v-col v-for="item in props.items" :key="item.name" cols="6" sm="6" md="4" lg="3">
                         <v-card>
-                            <v-card-title>Código: {{ item.idShoe }} </v-card-title>
-                            <v-card-subtitle>Referencia: {{ item.reference }} </v-card-subtitle>
+                           <!--<v-card-title>Código: {{ item.idShoe }} </v-card-title>
+                            <v-card-subtitle>Referencia: {{ item.reference }} </v-card-subtitle>-->
+                            <v-card-subtitle>
+                              <div>Código: {{ item.idShoe }}</div>
+                              <div>Referencia: {{ item.reference }}</div>
+                            </v-card-subtitle>
                             <v-img :src="item.photo" aspect-ratio="1.4"></v-img>
-                            <v-card-title> {{ item.price }} Bs.</v-card-title>
+                            <v-divider></v-divider>
                             <v-card-subtitle>
                                 <div>Talla: {{ item.size }}</div>
                                 <div>Condición: {{ item.condition }}</div>
                                 <div>{{ item.color }} {{ item.material }}</div>
                                 <div>{{ item.store }}</div>
+                                <div>{{ item.price }} Bs.
+                                  <div><v-btn @click="editItem(item)" color="yellow accent-4">Añadir</v-btn></div>
+                                </div>
                             </v-card-subtitle>
-                            
+                            <v-divider></v-divider>
                             <v-card-actions>
-                                <v-spacer></v-spacer>
-                                <v-btn @click="editItem(item)" color="yellow accent-4">Add to Cart</v-btn>
+                                <!--<v-card-title> {{ item.price }} Bs.</v-card-title>-->
+                                
                             </v-card-actions>
                         </v-card>
                     </v-col>

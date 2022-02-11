@@ -49,7 +49,6 @@
                                   <div><v-btn @click="editItem(item)" color="yellow accent-4">Añadir</v-btn></div>
                                 </div>
                             </v-card-subtitle>
-                            <v-divider></v-divider>
                             <v-card-actions>
                                 <!--<v-card-title> {{ item.price }} Bs.</v-card-title>-->
                                 
@@ -70,6 +69,14 @@ import { getProductsByStore } from '../services/firestore/FirebaseProducts';
         products: getProductsByStore('Heroinas'),
         sortBy: 'idShoe',
         search: '',
+        editedItem: {
+          id: '',
+          idShoe: '',
+          date: '',
+          quantity: 0,
+          disccount: '',
+          total: ''
+          },
         keys: 
         {
             idShoe: 'Código de barras',
@@ -83,6 +90,14 @@ import { getProductsByStore } from '../services/firestore/FirebaseProducts';
             price: 'Precio',
             description: 'Descripción'
         },
+        headers: [
+        { text: 'idShoe', align: 'start', sortable: true, value: 'idShoe'},
+        { text: 'reference', value: 'reference' },
+        { text: 'cantidad', value: 'quantity' },
+        { text: 'disccount', value: 'disccount' },
+        { text: 'Acciones', value: 'actions', sortable: false },
+        ],
+      colors: [],
     }),
 
     computed: 
@@ -104,6 +119,14 @@ import { getProductsByStore } from '../services/firestore/FirebaseProducts';
     created () 
     {
       this.initialize();
+      //  window.addEventListener('beforeunload', function() {
+      //    if(this.$store.state.salesGuard === true){
+      //      this.$router.push('/sales')
+      //    }
+      //    else{
+      //      this.$router.push('/sidebar')
+      //    }
+      // })
     },
 
     methods: 

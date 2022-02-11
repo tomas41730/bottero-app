@@ -14,7 +14,7 @@
         
         <v-system-bar>
           
-          <span class="pa-17 text-center align-self-center"> {{ getStore }} </span>
+          <span class="pa-17 text-center align-self-center"> {{ getSalesGuard }} </span>
         </v-system-bar>
         <v-list-item class="px-0">
           <v-col>
@@ -175,6 +175,10 @@ export default {
       getStore()
       {
         return this.$store.state.userStore;
+      },
+      getSalesGuard()
+      {
+        return this.$store.state.salesGuard;
       }
     },
   watch: {

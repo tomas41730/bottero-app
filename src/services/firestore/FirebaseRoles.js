@@ -46,3 +46,8 @@ export function getIdRole(name)
     const role = db.collection("roles").where("name", "==", name).get();
     return role
 }
+export function getRoleById(idRole)
+{
+    const role = db.collection("roles").doc(idRole).get();
+    return role
+}

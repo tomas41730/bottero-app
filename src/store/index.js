@@ -11,7 +11,9 @@ export default new Vuex.Store({
     userStore: 'SUCURSAL',
     userName: '',
     userLastname: '',
-    userRole: 'default'
+    userRole: 'default',
+    userIdRole: '',
+    salesGuard: null
 
   },
   mutations: {

@@ -41,6 +41,7 @@
 
 <script>
 import { auth } from '../services/firebase'
+import { getRoleById } from '../services/firestore/FirebaseRoles';
 import { getUserByEmail } from '../services/firestore/FirebaseUsers';
   export default {
     name : 'Login',
@@ -67,8 +68,12 @@ import { getUserByEmail } from '../services/firestore/FirebaseUsers';
                         this.$store.state.userLastname = doc.data().lastname;
                         this.$store.state.userStore = doc.data().store;
                         this.$store.state.userRole = doc.data().role;
-                    })
-                })
+                        this.$store.state.userIdRole = doc.data().idRole;
+                        getRoleById(doc.data().idRole).then(doc => {
+                            this.$store.state.salesGuard = doc.data().sales; 
+                        });
+                    });
+                });
                 this.$router.replace({name: 'Users'});
             },
             error => {

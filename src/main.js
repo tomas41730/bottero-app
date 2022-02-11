@@ -6,6 +6,7 @@ import store from './store'
 import vuetify from './plugins/vuetify'
 import { auth } from './services/firebase'
 import { getUserByEmail } from './services/firestore/FirebaseUsers'
+import { getRoleById } from './services/firestore/FirebaseRoles'
 
 Vue.config.productionTip = false
 
@@ -31,8 +32,12 @@ auth.onAuthStateChanged( user => {
             store.state.userLastname = doc.data().lastname;
             store.state.userStore = doc.data().store;
             store.state.userRole = doc.data().role;
-        })
-    })
+            store.state.userIdRole = doc.data().idRole;
+            getRoleById(doc.data().idRole).then(doc => {
+              store.state.salesGuard = doc.data().sales; 
+            });
+        });
+      });
     }
   }
 })

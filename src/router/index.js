@@ -61,18 +61,13 @@ const routes = [
     meta: { requiresAuth: true },
     beforeEnter(to, from, next) {
       // check vuex store //
-      if (store.state.salesGuard === true) {
+      if (store.state.salesGuard === true) 
+      {
         console.log('1: ' + store.state.salesGuard)
         next()
-        
       } 
-      // else if (name === 'Sales' && store.state.salesGuard)
-      // {
-      //   console.log('2: ' + from.name + ', ' + store.state.salesGuard)
-      //   next()
-        
-      // }
-      else {
+      else 
+      {
         console.log('3: ' + from.name + ', ' + store.state.salesGuard)
         next({
           name: "Sidebar" // back to safety route //
@@ -95,13 +90,12 @@ const router = new VueRouter({
 })
 
 router.beforeEach((to, from, next)=>{
-  //const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const isAuthenticated = auth.currentUser;
   if(to.name !== 'Login' && !isAuthenticated)
   {
     next('/login');
   }
-  // else if(to.name === 'Sales'  && store.state.salesGuard === true && isAuthenticated)
+  // if(to.name === 'Sales'  && store.state.salesGuard === false && isAuthenticated)
   // {    
   //   next();
   // }

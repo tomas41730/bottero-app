@@ -138,7 +138,7 @@ export default {
     salesItems: [
         { title: 'DASHBOARD', icon: 'mdi-view-dashboard', path: '/'},
         { title: 'VENTAS', icon: 'mdi-chart-line', path: '/sales'},
-        { title: 'TRASPASOS', icon: 'mdi-clipboard-arrow-right-outline', path: '/'}
+        { title: 'TRASPASOS', icon: 'mdi-clipboard-arrow-right-outline', path: '/transfers'}
     ],
     loggedIn: false
   }),

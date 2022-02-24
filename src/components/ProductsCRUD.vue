@@ -150,9 +150,6 @@
           </v-toolbar-title>
         </v-toolbar>
       </template>
-
-     
-
       <template v-slot:[`item.actions`]="{ item }">
         <v-icon color="error" small class="mr-2" @click="deleteItem(item)">
           mdi-delete

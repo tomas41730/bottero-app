@@ -72,7 +72,6 @@ export function getProducts()
             let appObj = { ...product.data(), ['id']: currentID, ['due']: product.data().due && product.data().due.toDate().toLocaleDateString('en-US') +' '+ product.data().due.toDate().toLocaleTimeString('en-US') }
             products.push(appObj)
         })
-
     })
     return products
 }

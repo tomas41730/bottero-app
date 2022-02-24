@@ -85,10 +85,10 @@ export function createAlert(msg, type)
 
 }
 
-export function showImage(item){
+export function showImage(item, msg, description){
   Swal.fire({
-    title: item.name,
-    text: item.phone,
+    title: description,
+    text: msg,
     imageUrl: item.photo,
     imageWidth: 400,
     imageHeight: 400,

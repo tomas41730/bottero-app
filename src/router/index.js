@@ -2,7 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import { auth } from '../services/firebase'
 import Home from '../views/Home.vue'
-import store from '../store/index';
+// import store from '../store/index';
 
 Vue.use(VueRouter)
 
@@ -59,21 +59,27 @@ const routes = [
     name: 'Sales',
     component: () => import('../views/Sales.vue'),
     meta: { requiresAuth: true },
-    beforeEnter(to, from, next) {
-      // check vuex store //
-      if (store.state.salesGuard === true) 
-      {
-        console.log('1: ' + store.state.salesGuard)
-        next()
-      } 
-      else 
-      {
-        console.log('3: ' + from.name + ', ' + store.state.salesGuard)
-        next({
-          name: "Sidebar" // back to safety route //
-        });
-      }
-    }
+    // beforeEnter(to, from, next) {
+    //   // check vuex store //
+    //   if (store.state.salesGuard === true) 
+    //   {
+    //     console.log('1: ' + store.state.salesGuard)
+    //     next()
+    //   } 
+    //   else 
+    //   {
+    //     console.log('3: ' + from.name + ', ' + store.state.salesGuard)
+    //     next({
+    //       name: "Sidebar" // back to safety route //
+    //     });
+    //   }
+    // }
+  },
+  {
+    path: '/transfers',
+    name: 'Transfers',
+    component: () => import('../views/Transfers.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/sidebar',

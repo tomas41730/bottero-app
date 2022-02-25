@@ -1,5 +1,5 @@
 <template>
-    <v-container fluid>
+    <v-container fluid >
         <template>
             <v-dialog v-model="dialogInfo" max-width="500px">
                 <v-card>
@@ -52,7 +52,12 @@
                 <v-data-table :headers="headers" :items="products" :search="search" sort-by="name" class="elevation-1">
                     <template v-slot:top>
                         <v-toolbar dark color="black" class="mb-1">
-                        <v-text-field v-model="search" clearable flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Search"></v-text-field>
+                            <v-col>
+                                <v-text-field v-model="search" clearable flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Search"></v-text-field>
+                            </v-col>
+                            <v-col>
+                                <v-btn color="primary" @click="checkout">traspasos</v-btn>
+                            </v-col>
                         </v-toolbar>
                     </template>
                     <template v-slot:[`item.actions`]="{ item }">
@@ -124,10 +129,10 @@
             </div>  
         </v-col>
     </v-row>
-        <v-dialog fullscreen v-model="dialog" max-width="100%" transition="dialog-bottom-transition">
+        <v-dialog fullscreen persistent v-model="dialog" max-width="100%" transition="dialog-bottom-transition">
                     <v-card>
                         <v-row>
-                            <v-col cols="8" sm="12" md="7">
+                            <v-col cols="12" sm="12" md="7">
                                 <v-data-table :headers="headersSaleOrder" :items="saleOrder" :search="search" sort-by="name" class="elevation-1">
                                     <template v-slot:top>
                                         <v-toolbar dark color="black">
@@ -153,7 +158,7 @@
                                     </template>
                                 </v-data-table>
                             </v-col>
-                            <v-col cols="4" sm="12" md="5">
+                            <v-col cols="12" sm="12" md="5">
                                 <v-card>
                                     <v-toolbar dark color="black" class="mb-1">
                                         <v-toolbar-title>
@@ -165,7 +170,7 @@
                                             <v-list style="max-height: 650px" class="overflow-y-auto">
                                                 <v-list-item class="overflow-y-auto" three-line v-for="(item, i) in saleOrder" :key="i">
                                                     
-                                                <v-col cols="6" sm="12" md="6">
+                                                <v-col cols="6" sm="6" md="6">
                                                     <v-list-item-content>
                                                         <v-list-item-subtitle v-text="'Cod: ' + item.id"></v-list-item-subtitle>
                                                         <v-list-item-subtitle v-text="'Ref: ' +item.reference"></v-list-item-subtitle>
@@ -175,7 +180,7 @@
                                                         <v-list-item-title v-text="'Sucursal: ' + item.store" class="text-h5 mb-1"></v-list-item-title>
                                                     </v-list-item-content>
                                                 </v-col>
-                                                <v-col cols="3" sm="12" md="4" align="center" justify="center">
+                                                <v-col cols="3" sm="4" md="4" align="center" justify="center">
                                                     <v-avatar class="profile" tile size="200" color="grey"><v-img @click="viewItem(item)" :src="item.photo"></v-img></v-avatar>
                                                 </v-col>
                                                 </v-list-item>
@@ -365,16 +370,16 @@ export default
             const itemIndex = this.saleOrder.findIndex( tmp => tmp.condition ===  item.condition && tmp.idShoe ===  item.idShoe && tmp.store === item.store );
             if (item.quantity == "0")
             {
-            this.saleOrder.splice(itemIndex, 1);
+                this.saleOrder.splice(itemIndex, 1);
             }
             else
             {
-            this.total = 0;
-            item.subtotal = item.quantity * item.price;
+                this.total = 0;
+                item.subtotal = item.quantity * item.price;
             }
-            this.saleOrder.forEach( doc => {
-            this.total = this.total + doc.subtotal;
-            });
+                this.saleOrder.forEach( doc => {
+                this.total = this.total + doc.quantity;
+                });
         },
         checkout()
         {
@@ -391,6 +396,13 @@ export default
             this.products = [];
             this.products = getProducts();
         },
+        // isMobile() {
+        // if(/Android|webOS|iPhone|Opera Mini/i.test(navigator.userAgent)) {
+        //     return true
+        // } else {
+        //     return false
+        // }
+//  }
     },
 }
 </script>

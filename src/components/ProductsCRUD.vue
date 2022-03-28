@@ -168,7 +168,7 @@
   </v-container>
 </template>
 <script>
-import { addProduct, getProducts, deleteProduct, getProductByRef, getProductByIdShoe, getProductsByRefBrandMaterialColor, getProductById } from '../services/firestore/FirebaseProducts'
+import { addProduct, getProducts, deleteProduct, getProductByRef, getProductByIdShoe, getProductsByRefBrandMaterialColor, getProductById, addInventory } from '../services/firestore/FirebaseProducts'
 import { getColorNames } from '../services/firestore/FirabaseColors'
 import { createAlert, deleteAlertWithImage, uploadAlert } from '../services/Alerts'
 import { getStoresNames } from '../services/firestore/FirebaseStores'
@@ -276,7 +276,8 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       cleanDisabled: false,
       dialogObservation: false,
       dialogStore: true,
-      store: null
+      store: null,
+      date: new Date(Date.now()).toISOString().substr(0, 10),
     }),
 
     computed: 
@@ -300,6 +301,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
     {
       initialize () 
       {
+        console.log(this.date);
         this.products = getProducts();
         this.brands = getBrandNames();
         this.sizes = getSizeNames();
@@ -368,7 +370,18 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
           product.id = product.condition + '-' + product.store + '-' + product.idShoe;
           const datetime = new Date();
           const productIndex = this.products.findIndex( item => item.condition ===  product.condition && item.idShoe ===  product.idShoe && item.store === product.store);        
-          let msg = ''
+          let msg = '';
+          let appObj = {
+            date: this.date,
+            datetime: datetime.toLocaleDateString('en-US') + ' ' + datetime.toLocaleTimeString('en-US'),
+            id: this.editedItem.id,
+            idShoe: this.editedItem.idShoe,
+            reference: this.editedItem.reference,
+            stock: this.editedItem.stock,
+            condition: this.editedItem.condition,
+            store: this.editedItem.store
+          }
+          addInventory(appObj, this.date);
           if(productIndex > -1)
           {
             let actualStock = parseInt(this.products[productIndex].stock);

@@ -32,6 +32,12 @@ export default new Vuex.Store({
       });
     }
   },
+  getters: {
+    actualStore(state)
+    {
+      return state.userStore;
+    },
+  },
   modules: {
   }
 })

@@ -52,7 +52,27 @@ export async function addProduct(product)
     product.oDisccount = product.oDisccount.toString();
     product.pDisccount = product.pDisccount.toString();
 }
+export async function addInventory(product, date)
+{
+    let inventoryProds = [];
 
+    db.collection('inventory').doc(date).get().then( snap => {
+        if(snap.exists)
+        {
+            snap.data().productEntry.forEach( doc => {
+                inventoryProds.push(doc);
+            });
+            inventoryProds.push(product);
+            db.collection('inventory').doc(date).update({ productEntry: inventoryProds })
+        }
+        else
+        {
+            inventoryProds.push(product);
+            let appObj = { productEntry: inventoryProds };
+            db.collection('inventory').doc(date).set(appObj);
+        }
+    });
+}
 export function deleteProduct(product) 
 {
     //db.collection('products').doc(product.store+"-"+product.idShoe).delete();
@@ -154,7 +174,7 @@ export function updatePricesProducts(id, price, purchasePrice, oDisccount, pDisc
 export async function updateProductStock(product, stock)
 {
     product.due = actualDate.FieldValue.serverTimestamp();
-    db.collection('products').doc(product.condition + '-' + product.store + '-' + product.idShoe)
+    db.collection('products').doc(product.id)
             .update({ 
                         due: product.due,
                         stock: actualDate.FieldValue.increment(parseInt(stock)),

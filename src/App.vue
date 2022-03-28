@@ -40,8 +40,22 @@
           
         </v-list-item>
         <v-divider></v-divider>
+
         <v-list nav dense>
-            <v-list-group color="yellow" :value="true" prepend-icon="mdi-shoe-heel" no-action>
+          <v-list-item-group color="yellow">
+            <v-list-item v-for="(item, i) in items" :key="i" :to="item.path">
+              <v-list-item-icon>
+                <v-icon v-text="item.icon"></v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title v-text="item.title"></v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list-item-group>
+        </v-list>
+
+        <v-list nav dense>
+            <v-list-group color="yellow" :value="false" prepend-icon="mdi-shoe-heel" no-action>
                 <template v-slot:activator>
                     <v-list-item-title>PRODUCTOS</v-list-item-title>
                 </template>
@@ -54,7 +68,7 @@
                 </v-list-group>
         </v-list>
         <v-list nav dense>
-            <v-list-group color="yellow" :value="true" prepend-icon="mdi-account-circle" no-action>
+            <v-list-group color="yellow" :value="false" prepend-icon="mdi-account-circle" no-action>
                 <template v-slot:activator>
                     <v-list-item-title>CUENTAS</v-list-item-title>
                 </template>
@@ -72,6 +86,19 @@
                     <v-list-item-title>VENTAS</v-list-item-title>
                 </template>
                 <v-list-item v-for="item in salesItems" :key="item.title" :to="item.path" link>
+                    <v-list-item-title v-text="item.title"></v-list-item-title>
+                    <v-list-item-icon>
+                        <v-icon v-text="item.icon"></v-icon>
+                    </v-list-item-icon>
+                </v-list-item>
+            </v-list-group>
+        </v-list>
+        <v-list nav dense>
+            <v-list-group color="yellow" :value="false" prepend-icon="mdi-chart-line" no-action>
+                <template v-slot:activator>
+                    <v-list-item-title>REPORTES</v-list-item-title>
+                </template>
+                <v-list-item v-for="item in reportsItems" :key="item.title" :to="item.path" link>
                     <v-list-item-title v-text="item.title"></v-list-item-title>
                     <v-list-item-icon>
                         <v-icon v-text="item.icon"></v-icon>
@@ -129,17 +156,26 @@ export default {
     accountItems: [
         { title: 'USUARIOS', icon: 'mdi-account-group-outline', path: '/users'},
         { title: 'ROLES', icon: 'mdi-shield-account', path: '/roles'},
+        { title: 'CLIENTES', icon: 'mdi-account-group-outline', path: '/customers'},
       ],
     productItems: [
-        { title: 'INVENTARIO', icon: 'mdi-clipboard-text-multiple-outline', path: '/inventory'},
+        { title: 'REGISTRO DE PRODUCTOS', icon: 'mdi-clipboard-text-multiple-outline', path: '/inventory'},
         { title: 'CAMBIOS POR LOTE', icon: 'mdi-package-variant-closed', path: '/batchChanges'},
         { title: 'SUCURSALES', icon: 'mdi-home-city', path: '/stores'}
     ],
     salesItems: [
-        { title: 'DASHBOARD', icon: 'mdi-view-dashboard', path: '/'},
         { title: 'VENTAS', icon: 'mdi-chart-line', path: '/sales'},
-        { title: 'TRASPASOS', icon: 'mdi-clipboard-arrow-right-outline', path: '/transfers'}
+        { title: 'TRASPASOS', icon: 'mdi-clipboard-arrow-right-outline', path: '/transfers'}, 
     ],
+    reportsItems: [
+        { title: 'VENTAS', icon: 'mdi-chart-line', path: '/salesControl'},
+        { title: 'RESERVAS', icon: 'mdi-chart-line', path: '/reservesControl'},
+        { title: 'TRASPASOS', icon: 'mdi-chart-line', path: '/transfersControl'},
+    ],
+    items: [
+        { title: 'MENU PRINCIPAL', icon: 'mdi-view-dashboard', path: '/'},
+        { title: 'VENTAS DEL DIA', icon: 'mdi-cash-multiple', path: '/dailyReport' },
+      ],
     loggedIn: false
   }),
   created(){

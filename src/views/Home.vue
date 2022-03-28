@@ -2,49 +2,40 @@
 <v-col>
   <v-row>
     <v-col>
-      <v-card class="mx-auto text-center" color="blue" dark max-width="600">
-        <v-card-text>
-          <v-sheet color="rgba(0, 0, 0, .12)">
-            <v-sparkline :value="value" color="rgba(255, 255, 255, .7)" height="100" padding="24" stroke-linecap="round" smooth>
-              <template v-slot:label="item">
-                ${{ item.value }}
-              </template>
-            </v-sparkline>
-          </v-sheet>
-        </v-card-text>
-        <v-card-text>
-          <div class="text-h4 font-weight-thin">
-            Sales Last 24h
-          </div>
-        </v-card-text>
+      <v-card class="mx-auto text-center" color="green" dark max-width="300">
+            <v-icon size="200">
+              mdi-cash-multiple
+            </v-icon>
         <v-divider></v-divider>
         <v-card-actions class="justify-center">
-          <v-btn block text>
-            Go to Report
+          <v-btn block text :to="'/dailyReport'">
+            VENTAS DEL DIA
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-col>
     <v-col>
-      <v-card class="mx-auto text-center" color="green" dark max-width="600">
-        <v-card-text>
-          <v-sheet color="rgba(0, 0, 0, .12)">
-            <v-sparkline :value="value" color="rgba(255, 255, 255, .7)" height="100" padding="24" stroke-linecap="round" smooth>
-              <template v-slot:label="item">
-                ${{ item.value }}
-              </template>
-            </v-sparkline>
-          </v-sheet>
-        </v-card-text>
-        <v-card-text>
-          <div class="text-h4 font-weight-thin">
-            Sales Last 24h
-          </div>
-        </v-card-text>
+      <v-card class="mx-auto text-center" color="primary" dark max-width="300">
+            <v-icon size="200">
+              mdi-cart
+            </v-icon>
         <v-divider></v-divider>
         <v-card-actions class="justify-center">
-          <v-btn block text>
-            Go to Report
+          <v-btn block text :to="'/sales'">
+            VENTAS
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+    <v-col>
+      <v-card class="mx-auto text-center" color="success" dark max-width="300">
+            <v-icon size="200">
+              mdi-clipboard-arrow-right-outline
+            </v-icon>
+        <v-divider></v-divider>
+        <v-card-actions class="justify-center">
+          <v-btn block text :to="'/transfers'">
+            TRASPASOS
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -52,49 +43,81 @@
   </v-row>
   <v-row>
     <v-col>
-      <v-card class="mx-auto text-center" color="red" dark max-width="600">
-        <v-card-text>
-          <v-sheet color="rgba(0, 0, 0, .12)">
-            <v-sparkline :value="value" color="rgba(255, 255, 255, .7)" height="100" padding="24" stroke-linecap="round" smooth>
-              <template v-slot:label="item">
-                ${{ item.value }}
-              </template>
-            </v-sparkline>
-          </v-sheet>
-        </v-card-text>
-        <v-card-text>
-          <div class="text-h4 font-weight-thin">
-            Sales Last 24h
-          </div>
-        </v-card-text>
+      <v-card class="mx-auto text-center" color="orange" dark max-width="300">
+            <v-icon size="200">
+              mdi-shoe-heel
+            </v-icon>
         <v-divider></v-divider>
         <v-card-actions class="justify-center">
-          <v-btn block text>
-            Go to Report
+          <v-btn block text :to="'/inventory'">
+            PRODUCTOS
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-col>
     <v-col>
-      <v-card class="mx-auto text-center" color="yellow" dark max-width="600">
-        <v-card-text>
-          <v-sheet color="rgba(0, 0, 0, .12)">
-            <v-sparkline :value="value" color="rgba(255, 255, 255, .7)" height="100" padding="24" stroke-linecap="round" smooth>
-              <template v-slot:label="item">
-                ${{ item.value }}
-              </template>
-            </v-sparkline>
-          </v-sheet>
-        </v-card-text>
-        <v-card-text>
-          <div class="text-h4 font-weight-thin black--text">
-            Sales Last 24h
-          </div>
-        </v-card-text>
+      <v-card class="mx-auto text-center" color="deep-orange darken-1" dark max-width="300">
+            <v-icon size="200">
+              mdi-shield-account
+            </v-icon>
         <v-divider></v-divider>
         <v-card-actions class="justify-center">
-          <v-btn block text>
-            Go to Report
+          <v-btn block text :to="'/roles'">
+            ROLES
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+    <v-col>
+      <v-card class="mx-auto text-center" color="blue-grey lighten-1" dark max-width="300">
+            <v-icon size="200">
+              mdi-account-group-outline
+            </v-icon>
+        <v-divider></v-divider>
+        <v-card-actions class="justify-center">
+          <v-btn block text :to="'/users'">
+            USUARIOS
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+  </v-row>
+  <v-row>
+    <v-col>
+      <v-card class="mx-auto text-center" color="teal darken-1" dark max-width="300">
+            <v-icon size="200">
+              mdi-account-group-outline
+            </v-icon>
+        <v-divider></v-divider>
+        <v-card-actions class="justify-center">
+          <v-btn block text :to="'/customers'">
+            CLIENTES
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+    <v-col>
+      <v-card class="mx-auto text-center" color="indigo darken-2" dark max-width="300">
+            <v-icon size="200">
+              mdi-chart-areaspline
+            </v-icon>
+        <v-divider></v-divider>
+        <v-card-actions class="justify-center">
+          <v-btn block text :to="'/salesControl'">
+            REPORTE DE VENTAS
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+    <v-col>
+      <v-card class="mx-auto text-center" color="red lighten-2" dark max-width="300">
+            <v-icon size="200">
+              mdi-chart-areaspline
+            </v-icon>
+        <v-divider></v-divider>
+        <v-card-actions class="justify-center">
+          <v-btn block text :to="'/transfersControl'">
+            REPORTE DE TRASPASOS
           </v-btn>
         </v-card-actions>
       </v-card>

@@ -53,10 +53,10 @@
                     <template v-slot:top>
                         <v-toolbar dark color="black" class="mb-1">
                             <v-col>
-                                <v-text-field v-model="search" clearable flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Search"></v-text-field>
+                                <v-toolbar-title v-text="getStore" class="text-h3"></v-toolbar-title>
                             </v-col>
                             <v-col>
-                                <v-btn color="primary" @click="checkout">traspasos</v-btn>
+                                <v-text-field v-model="search" clearable flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Search"></v-text-field>
                             </v-col>
                         </v-toolbar>
                     </template>
@@ -212,10 +212,11 @@
     </v-container>
 </template>
 <script>
+import { createAlert } from '../services/Alerts';
 // import { showImage } from '../services/Alerts';
 import { getProducts } from '../services/firestore/FirebaseProducts';
 import { getStoresNames } from '../services/firestore/FirebaseStores';
-import { addTransfer, getTransfers } from '../services/firestore/FirebaseTransfers';
+import { addTransfer } from '../services/firestore/FirebaseTransfers';
 export default 
 {
     data: () => 
@@ -272,7 +273,8 @@ export default
         dialogInfo: false,
         dialog: false,
         itemDiscount: null,
-        totalDiscount: 0
+        totalDiscount: 0,
+        store: '',
         }),
 
     computed: 
@@ -291,40 +293,41 @@ export default
         created () 
         {
         this.initialize();
-        //  window.addEventListener('beforeunload', function() {
-        //    if(this.$store.state.salesGuard === true){
-        //      this.$router.push('/sales')
-        //    }
-        //    else{
-        //      this.$router.push('/sidebar')
-        //    }
-        // })
-            console.log(getTransfers())
+            
+
         },
 
         methods: 
         {
         initialize () 
         {
-            console.log(this.products);
+            this.store = this.$store.state.userStore;
         },
         editItem(item)
         {
-            const itemIndex = this.saleOrder.findIndex( tmp => tmp.id ===  item.id);
-            this.total = 0;
-            if (itemIndex > -1)
+            this.store = this.$store.state.userStore;
+            if(item.store != this.store)
             {
-            item.quantity = parseInt(item.quantity) + 1;
-            Object.assign(this.saleOrder[itemIndex], item);
+                const itemIndex = this.saleOrder.findIndex( tmp => tmp.id ===  item.id);
+                this.total = 0;
+                if (itemIndex > -1)
+                {
+                item.quantity = parseInt(item.quantity) + 1;
+                Object.assign(this.saleOrder[itemIndex], item);
+                }
+                else
+                {
+                item.quantity = 1;
+                this.saleOrder.push(Object.assign({}, item));
+                }
+                this.saleOrder.forEach( doc => {
+                this.total = this.total + doc.quantity;
+                });
             }
             else
             {
-            item.quantity = 1;
-            this.saleOrder.push(Object.assign({}, item));
+                createAlert('Para realizar el traspaso debes escoger una sucursal diferente a la actual (' + this.store + ').', 'error')
             }
-            this.saleOrder.forEach( doc => {
-            this.total = this.total + doc.quantity;
-            });
         },
         viewItem(item)
         {
@@ -385,10 +388,13 @@ export default
         {
             console.log(this.saleOrder)
             this.dialog = true;
+            this.store = this.$store.state.userStore;
+            this.sourceStore = this.store;
         },
         saveSale()
         {
-            addTransfer(this.saleOrder, this.destinyStore, this.sourceStore, this.total);
+            this.store = this.$store.state.userStore;
+            addTransfer(this.saleOrder, this.store, this.total);
             this.dialog = false;
             this.saleOrder = [];
             this.totalDiscount = 0;

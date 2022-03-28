@@ -40,7 +40,7 @@ export function getUsers()
     });
     return users
 }
-export function getUserByEmail(email)
+export async function getUserByEmail(email)
 {
     const product = db.collection('users').where('email', '==', email).get()
     return product

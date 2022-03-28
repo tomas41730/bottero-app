@@ -117,3 +117,24 @@ export function uploadAlert(time, msg)
     }
   });
 }
+
+export function createAlert2(msg, type)
+{
+    if(type === 'success')
+    {
+      Swal.fire({
+        icon: 'success',
+        title: msg,
+        showConfirmButton: true
+      });
+    }
+    else if(type === 'error')
+    {
+      Swal.fire({
+        icon: 'error',
+        title: msg,
+        showConfirmButton: true
+      });
+    }
+
+}

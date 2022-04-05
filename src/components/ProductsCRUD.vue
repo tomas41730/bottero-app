@@ -88,16 +88,16 @@
                   </v-row>
                   <v-row>
                     <v-col cols="6" sm="6" md="3">
+                      <v-text-field suffix="$us." v-model="editedItem.purchasePrice" label="Precio Costo" placeholder="Precio Costo"></v-text-field>
+                    </v-col>
+                    <v-col cols="6" sm="6" md="3">
                       <v-text-field suffix="Bs." v-model="editedItem.price" label="Precio de Venta" placeholder="Precio"></v-text-field>
                     </v-col>
                     <v-col cols="6" sm="6" md="3">
-                      <v-text-field suffix="Bs." v-model="editedItem.purchasePrice" label="Precio de Compra" placeholder="Precio Compra"></v-text-field>
+                      <v-text-field suffix="Bs." v-model="editedItem.pDisccount" label="Desc. Limite Bs." placeholder="Desc. Lim. Bs."></v-text-field>
                     </v-col>
                     <v-col cols="6" sm="6" md="3">
                       <v-text-field suffix="%" v-model="editedItem.oDisccount" label="Desc. Ocasional %" placeholder="Desc. Oc. %"></v-text-field>
-                    </v-col>
-                    <v-col cols="6" sm="6" md="3">
-                      <v-text-field suffix="Bs." v-model="editedItem.pDisccount" label="Des. Limite Bs." placeholder="Desc. Lim. Bs."></v-text-field>
                     </v-col>
                   </v-row>
                 </v-col>
@@ -210,11 +210,11 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         { text: 'Categoria', value: 'category' },
         { text: 'Sucursal', value: 'store' },
         { text: 'Condicion', value: 'condition' },
-        { text: 'Observacion', value: 'observation' },
+        { text: 'Precio Costo', value: 'purchasePrice' },
         { text: 'Precio', value: 'price' },
-        { text: 'Precio Comp.', value: 'purchasePrice' },
         { text: 'Des. Limite Bs.', value: 'pDisccount' },
         { text: 'Des. Ocasional %', value: 'oDisccount' },
+        { text: 'Observacion', value: 'observation' },
       ],
       products: [],
       editedIndex: -1,
@@ -277,7 +277,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       dialogObservation: false,
       dialogStore: true,
       store: null,
-      date: new Date(Date.now()).toISOString().substr(0, 10),
+      date: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10)
     }),
 
     computed: 
@@ -309,7 +309,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         this.materials = getMaterialNames();
         this.categories = getCategoryNames();
         this.stores = getStoresNames();
-        this.conditions = ['Nuevo', 'Normal', 'Oferta', 'Fallado']
+        this.conditions = ['Normal', 'Descuento', 'Oferta', 'Liquidación', 'Fallado']
         getDefaultProductPhoto().then(val => { this.editedItem.photo = val; });
       },
       viewItem(item) 
@@ -374,7 +374,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
           let appObj = {
             date: this.date,
             datetime: datetime.toLocaleDateString('en-US') + ' ' + datetime.toLocaleTimeString('en-US'),
-            id: this.editedItem.id,
+            id: this.editedItem.condition + '-' + this.editedItem.store + '-' + this.editedItem.idShoe,
             idShoe: this.editedItem.idShoe,
             reference: this.editedItem.reference,
             stock: this.editedItem.stock,
@@ -470,6 +470,10 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
             this.editedItem.condition = doc.data().condition;
             //this.editedItem.photo = doc.data().photo;
             this.editedItem.brand = doc.data().brand;
+            this.editedItem.price = doc.data().price;
+            this.editedItem.purchasePrice = doc.data().purchasePrice;
+            this.editedItem.pDisccount = doc.data().pDisccount;
+            this.editedItem.oDisccount = doc.data().oDisccount;
           })
         })
       },
@@ -540,6 +544,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         Object.assign(this.editedItem, this.defaultItem);
         this.editedItem.store = this.store;
       },
+      
     },
   }
 </script>

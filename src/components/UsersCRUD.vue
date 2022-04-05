@@ -260,8 +260,8 @@ import { getRoleNames } from '../services/firestore/FirebaseRoles'
     {
       initialize () 
       {
-        this.users = getUsers()
-        this.items = getStoresNames()
+        this.users = getUsers();
+        this.items = getStoresNames();
       },
 
       editItem (item) 

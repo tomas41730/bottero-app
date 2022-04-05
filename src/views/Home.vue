@@ -50,7 +50,7 @@
         <v-divider></v-divider>
         <v-card-actions class="justify-center">
           <v-btn block text :to="'/inventory'">
-            PRODUCTOS
+            INVENTARIO
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -97,6 +97,34 @@
       </v-card>
     </v-col>
     <v-col>
+      <v-card class="mx-auto text-center" color="blue-grey darken-4" dark max-width="300">
+            <v-icon size="200">
+              mdi-tools
+            </v-icon>
+        <v-divider></v-divider>
+        <v-card-actions class="justify-center">
+          <v-btn block text :to="'/batchChanges'">
+            Cambios por lote
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+    <v-col>
+      <v-card class="mx-auto text-center" color="red lighten-2" dark max-width="300">
+            <v-icon size="200">
+              mdi-table-edit
+            </v-icon>
+        <v-divider></v-divider>
+        <v-card-actions class="justify-center">
+          <v-btn block text :to="'/stores'">
+            Sucursales, Marcas, Colores, etc.
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+  </v-row>
+  <v-row>
+    <v-col>
       <v-card class="mx-auto text-center" color="indigo darken-2" dark max-width="300">
             <v-icon size="200">
               mdi-chart-areaspline
@@ -110,7 +138,20 @@
       </v-card>
     </v-col>
     <v-col>
-      <v-card class="mx-auto text-center" color="red lighten-2" dark max-width="300">
+      <v-card class="mx-auto text-center" color="teal darken-4" dark max-width="300">
+            <v-icon size="200">
+              mdi-chart-areaspline
+            </v-icon>
+        <v-divider></v-divider>
+        <v-card-actions class="justify-center">
+          <v-btn block text :to="'/reservesControl'">
+            REPORTE DE RESERVAS
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-col>
+    <v-col>
+      <v-card class="mx-auto text-center" color="deep-orange lighten-1" dark max-width="300">
             <v-icon size="200">
               mdi-chart-areaspline
             </v-icon>
@@ -133,15 +174,17 @@
     components: {
     },
     data: () => ({
-      value: [
-        423,
-        446,
-        675,
-        510,
-        590,
-        610,
-        760,
-      ],
+      date: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10)
     }),
+    created()
+    {
+      this.initialize();
+    },
+    methods:{
+      initialize()
+      {
+        console.log(this.date);
+      }
+    }
   }
 </script>

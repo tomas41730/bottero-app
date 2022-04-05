@@ -14,13 +14,13 @@
                             <v-card-text>
                                 <v-form>
                                     <v-row>
-                                        <v-col cols="12" sm="12" md="12"></v-col>
                                         <v-col cols="12" sm="12" md="12">
                                             <v-text-field v-model="email" id = "login" label="Usuario" name="login" type="email"/>
                                         </v-col>
                                         <v-col cols="12" sm="12" md="12">
-                                            <v-text-field v-model="password" id="password" label="Contraseña" name="password" type="password"/>
+                                            <v-text-field v-model="password" :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'" :rules="[rules.required]" :type="show1 ? 'text' : 'password'" name="input-10-1" label="Contraseña" hint="Contraseña" counter @click:append="show1 = !show1"></v-text-field>
                                         </v-col>
+                                        
                                     </v-row>
                                 </v-form>
                             </v-card-text>
@@ -50,8 +50,12 @@ import { getUserByEmail } from '../services/firestore/FirebaseUsers';
         email: '',
         password: '',
         error: '',
-        dialog: true
-        
+        dialog: true,
+        show1: false,
+        rules: {
+          required: value => !!value || 'Required.',
+          emailMatch: () => (`The email and password you entered don't match`),
+        },
     }),
 
     methods: 
@@ -74,7 +78,7 @@ import { getUserByEmail } from '../services/firestore/FirebaseUsers';
                         });
                     });
                 });
-                this.$router.replace({name: 'Users'});
+                this.$router.replace({name: 'Home'});
             },
             error => {
                 alert(error);

@@ -242,7 +242,7 @@
     </v-container>
 </template>
 <script>
-import { getDailyReportByDay, getEachCashMove, getEachSale, getTotalAmountByDay, getTotalExpensesByDay, setCashRegister } from '../services/firestore/FirebaseSales';
+import { getDailyReportByDay, getEachCashMove, getEachSaleByDateStore, getTotalAmountByDay, getTotalExpensesByDay, setCashRegister } from '../services/firestore/FirebaseSales';
 import { format, parseISO } from 'date-fns'
 import { getStoresNames } from '../services/firestore/FirebaseStores';
 import { getProductById } from '../services/firestore/FirebaseProducts';
@@ -353,7 +353,7 @@ export default {
         {
             this.store = this.$store.state.userStore;
             this.selectedStore = this.$store.state.userStore;
-            this.sales = getEachSale(this.dateStr, this.storesSelected);
+            this.sales = getEachSaleByDateStore(this.dateStr, this.storesSelected);
             this.cashRegisterMoves = getEachCashMove(this.selectedStore);
             this.stores = getStoresNames();
             this.stores.push('Todas');
@@ -394,7 +394,7 @@ export default {
             this.dateStr = format(parseISO(this.date), 'dd/M/yyyy');
             this.sales = [];
             this.selectedStore = this.store;
-            this.sales = getEachSale(this.dateStr, this.store);
+            this.sales = getEachSaleByDateStore(this.dateStr, this.store);
             this.cashRegisterMoves = getEachCashMove(this.selectedStore);       
             getDailyReportByDay(this.store).then( snap => 
             {
@@ -413,7 +413,7 @@ export default {
         },
         onStoreChanged()
         {
-            this.sales = getEachSale(this.dateStr, this.store);
+            this.sales = getEachSaleByDateStore(this.dateStr, this.store);
             this.selectedStore = this.store;
         },
         onRadioButtonChanged()

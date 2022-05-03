@@ -144,6 +144,32 @@
         </v-btn>
       </template>
     </v-data-table>
+    <!-- Provisional hasta mejorar el modulo de roles -->
+      <v-dialog v-model="getPermission" max-width="600px" persistent>
+        <v-card>
+          <v-card-title>
+            No cuenta con los permisos necesarios para esta sección
+          </v-card-title>
+          <v-col align="center" justify="center">  
+            <v-container bg fill-height grid-list-md text-xs-center>
+            <v-layout row wrap align-center>
+              <v-flex>
+                <v-list-item-avatar tile size="300">
+                  <v-img :src="imgDenied"></v-img>
+                </v-list-item-avatar>
+                <v-flex>
+              </v-flex>
+              </v-flex>
+            </v-layout>
+          </v-container>
+        </v-col>
+          <v-card-actions>
+            <v-btn color="primary" depressed block to="/">
+              Volver al menu principal
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
   </v-card>
 </template>
 <script>
@@ -156,6 +182,7 @@ import { getRoleNames } from '../services/firestore/FirebaseRoles'
   {
     data: () => 
     ({
+      imgDenied: "https://library.kissclipart.com/20180829/ute/kissclipart-user-deletion-clipart-computer-icons-user-c7234fb3b6916925.png",
       valid: true,
       dialog: false,
       dialogDelete: false,
@@ -174,7 +201,7 @@ import { getRoleNames } from '../services/firestore/FirebaseRoles'
         { text: 'Apellido', value: 'lastname' },
         { text: 'Celular', value: 'phone' },
         { text: 'Correo', value: 'email' },
-        { text: 'Contraseña', value: 'password' },
+        //{ text: 'Contraseña', value: 'password' },
         { text: 'Sucursal', value: 'store' },
         { text: 'Rol', value: 'role' },
         { text: 'Cuenta Habilitada', value: 'account', align: 'center', },
@@ -241,6 +268,10 @@ import { getRoleNames } from '../services/firestore/FirebaseRoles'
         {
           return 'Deshabilitado'
         }
+      },
+      getPermission()
+      {
+        return  this.$store.state.userRole != 'Admin';
       }
     },
 

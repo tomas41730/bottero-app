@@ -80,10 +80,22 @@ export async function updateTransfer(transfer, transferList)
 export function getTransfers()
 {
     const transfers = []
+
+
     db.collection('transfers').get()
     .then(snapshot => {
         snapshot.docs.forEach(transfer => {
-            let appObj = {...transfer.data(), ['stores']: transfer.data().tranferStores.toString(), ['date']: transfer.data().date && transfer.data().date.toDate().toLocaleDateString('es-BO') +' '+ transfer.data().date.toDate().toLocaleTimeString('es-BO') }
+            let completed = true;
+            transfer.data().transfer.forEach(element => {
+                    completed = completed && element.received
+            }) 
+
+            let appObj = 
+            {...transfer.data(), 
+                ['stores']: transfer.data().tranferStores.toString(), 
+                ['date']: transfer.data().date && transfer.data().date.toDate().toLocaleDateString('es-BO') +' '+ transfer.data().date.toDate().toLocaleTimeString('es-BO'), 
+                ['completed']: completed
+            }
             transfers.push(appObj);
         });
 

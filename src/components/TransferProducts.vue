@@ -53,7 +53,12 @@
                     <template v-slot:top>
                         <v-toolbar dark color="black" class="mb-1">
                             <v-col>
-                                <v-toolbar-title v-text="getStore" class="text-h3"></v-toolbar-title>
+                                <v-toolbar-title v-text="'Sucursal ' + getStore" class="text-h3"></v-toolbar-title>
+                            </v-col>
+                      </v-toolbar>
+                        <v-toolbar dark color="black" class="mb-1">
+                            <v-col>
+                                <v-text-field v-model="idShoe" clearable flat solo-inverted hide-details @change="filterProducts" label="Codigo de Barras"></v-text-field>
                             </v-col>
                             <v-col>
                                 <v-text-field v-model="search" clearable flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Search"></v-text-field>
@@ -189,19 +194,18 @@
                                     </v-row>
                                     <v-footer padless color="black" dark>
                                         <v-col class="text-center" cols="12">
-                                            <v-row>
-                                                <v-col>
-                                                    <v-select v-model="destinyStore" :items="stores" :rules="[v => !!v || 'Debe asignar una sucursal.']" required label="Sucursal Destino"></v-select>
-                                                </v-col>
-                                                <v-col>
-                                                    <v-select v-model="sourceStore" :items="stores" :rules="[v => !!v || 'Debe asignar una sucursal.']" required label="Sucursal a enviar solicitud"></v-select>
-                                                </v-col>
-                                            </v-row>
-                                            <h2>Total pares de calzados: </h2>
-                                            <h1><strong>{{ total - totalDiscount }}</strong></h1>
-                                            <v-btn v-if="this.total > 0" class="mx-2" x-large color="primary" @click="saveSale">
-                                                solicitar traspaso
-                                            </v-btn>
+                                            <v-form ref="form" lazy-validation>
+                                                <v-row>
+                                                    <v-col>
+                                                        <v-select v-model="store" :items="stores" label="Sucursal" :rules="[v => !!v || 'Debe asignar una sucursal.']" required :disabled="getPermission"></v-select>
+                                                    </v-col>
+                                                </v-row>
+                                                <h2>Total pares de calzados: </h2>
+                                                <h1><strong>{{ total - totalDiscount }}</strong></h1>
+                                                <v-btn v-if="this.total > 0" class="mx-2" x-large color="primary" @click="saveSale">
+                                                    solicitar traspaso
+                                                </v-btn>
+                                            </v-form>
                                         </v-col>
                                     </v-footer>
                                 </v-card>
@@ -214,7 +218,7 @@
 <script>
 import { createAlert } from '../services/Alerts';
 // import { showImage } from '../services/Alerts';
-import { getProducts } from '../services/firestore/FirebaseProducts';
+import { getPorductsByCustomFilter } from '../services/firestore/FirebaseProducts2';
 import { getStoresNames } from '../services/firestore/FirebaseStores';
 import { addTransfer } from '../services/firestore/FirebaseTransfers';
 export default 
@@ -223,10 +227,8 @@ export default
     ({
         // products: getProductsByStore('Heroinas'),
         
-        products: getProducts(),
+        products: [],
         stores: getStoresNames(),
-        destinyStore: '',
-        sourceStore: '',
         sortBy: 'idShoe',
         search: '',
         total: 0,
@@ -247,9 +249,10 @@ export default
             { text: 'Talla', value: 'size' },
             { text: 'Color', value: 'color' },
             { text: 'Material', value: 'material' },
-            { text: 'Condición', value: 'condition' },
-            { text: 'Precio', value: 'price' },
             { text: 'Sucursal', value: 'store' },
+            { text: 'Precio', value: 'price' },
+            { text: 'Condición', value: 'condition' },
+            { text: 'Union 1', value: 'customColumn' }
         ],
         headersSaleOrder: [
             // { text: 'Foto', value: 'photo' },
@@ -275,6 +278,7 @@ export default
         itemDiscount: null,
         totalDiscount: 0,
         store: '',
+        idShoe: ''
         }),
 
     computed: 
@@ -283,6 +287,10 @@ export default
         {
             return this.$store.state.userStore;
         },
+        getPermission()
+        {
+            return  this.$store.state.userRole != 'Admin';
+        }
     },
 
         watch: 
@@ -389,19 +397,26 @@ export default
             console.log(this.saleOrder)
             this.dialog = true;
             this.store = this.$store.state.userStore;
-            this.sourceStore = this.store;
         },
         saveSale()
         {
-            this.store = this.$store.state.userStore;
-            addTransfer(this.saleOrder, this.store, this.total);
-            this.dialog = false;
-            this.saleOrder = [];
-            this.totalDiscount = 0;
-            this.total = 0;
-            this.products = [];
-            this.products = getProducts();
+            if(this.$refs.form.validate())
+            {
+                //this.store = this.$store.state.userStore;
+                addTransfer(this.saleOrder, this.store, this.total);
+                this.dialog = false;
+                this.saleOrder = [];
+                this.totalDiscount = 0;
+                this.total = 0;
+                this.products = [];
+            }
         },
+        async filterProducts()
+        {
+          console.log(this.idShoe)
+          this.products = await getPorductsByCustomFilter(['idShoe','reference','color'],this.idShoe);
+          console.log('len: ' + this.products.length)
+        }
         // isMobile() {
         // if(/Android|webOS|iPhone|Opera Mini/i.test(navigator.userAgent)) {
         //     return true

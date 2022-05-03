@@ -47,6 +47,7 @@ export async function addProduct(product)
         }
     });
     product.due = new Date().toLocaleDateString('en-US') + ' ' + new Date().toLocaleTimeString('en-US');
+    product.datetime = new Date(new Date().toLocaleDateString('en-US') + ' ' + new Date().toLocaleTimeString('en-US'));
     product.price = product.price.toString();
     product.purchasePrice = product.purchasePrice.toString();
     product.oDisccount = product.oDisccount.toString();
@@ -76,10 +77,11 @@ export async function addInventory(product, date)
 export function deleteProduct(product) 
 {
     //db.collection('products').doc(product.store+"-"+product.idShoe).delete();
-    db.collection('products').doc(product.condition+"-"+product.store+"-"+product.idShoe).delete()
+    db.collection('products').doc(product.id).delete()
+    console.log(product.condition+"-"+product.store+"-"+product.idShoe);
 }
 export function deleteProductCondition(product) 
-{
+{   
     db.collection('products').doc(product.condition+"-"+product.store+"-"+product.idShoe).delete();
 }
 export function getProducts()
@@ -88,8 +90,17 @@ export function getProducts()
     db.collection('products').orderBy('due','desc').get()
     .then(snapshot => {
         snapshot.docs.forEach(product => {
-            let currentID = product.id
-            let appObj = { ...product.data(), ['id']: currentID, ['due']: product.data().due && product.data().due.toDate().toLocaleDateString('en-US') +' '+ product.data().due.toDate().toLocaleTimeString('en-US') }
+            let currentID = product.id;
+            let datetime = product.data().due && product.data().due.toDate().toLocaleDateString('en-US') +' '+ product.data().due.toDate().toLocaleTimeString('en-US');
+            let item = product.data().reference + ' ' + product.data().size + ' ' + product.data().color + ' ' + product.data().material + ' ' + product.data().store;
+            let appObj = 
+            { ...product.data(), 
+                ['id']: currentID, 
+                ['due']: datetime,
+                ['datetime']: new Date(datetime).getTime(),
+                ['customColumn']: item,
+                ['stock1']: product.data().stock.toString()
+            }
             products.push(appObj)
         })
     })
@@ -105,6 +116,35 @@ export function getProductByIdShoe(idShoe)
 {
     const product = db.collection('products').where('idShoe', '==', idShoe).where('photo', '!=', '').limit(1).get()
     return product
+}
+export function getProductsByIdShoe(idShoe)
+{
+    const products = [];
+    db.collection('products').where('idShoe', '==', idShoe).get().then(snapshot => {
+        if(snapshot.docs.length > 0)
+        {
+            snapshot.docs.forEach(product => {
+                let currentID = product.id;
+                let datetime = product.data().due && product.data().due.toDate().toLocaleDateString('en-US') +' '+ product.data().due.toDate().toLocaleTimeString('en-US');
+                let item = product.data().reference + ' ' + product.data().size + ' ' + product.data().color + ' ' + product.data().material + ' ' + product.data().store;
+                let appObj = 
+                { ...product.data(), 
+                    ['id']: currentID, 
+                    ['due']: datetime,
+                    ['datetime']: new Date(datetime).getTime(),
+                    ['customColumn']: item,
+                    ['stock1']: product.data().stock.toString()
+                }
+                products.push(appObj)
+            })
+        }
+        else
+        {
+            console.log('Hay 0!')
+        }
+    })
+    console.log('lengt: ' + products.length);
+    return products
 }
 export function getProductByRef(ref)
 {
@@ -207,7 +247,13 @@ export function getProductsByStore(store)
     .then(snapshot => {
         snapshot.docs.forEach(product => {
             let currentID = product.id
-            let appObj = { ...product.data(), ['id']: currentID, ['due']: product.data().due && product.data().due.toDate().toLocaleDateString('en-US') +' '+ product.data().due.toDate().toLocaleTimeString('en-US') }
+            let appObj = 
+            { 
+                ...product.data(), 
+                ['id']: currentID, 
+                ['due']: product.data().due && product.data().due.toDate().toLocaleDateString('en-US') +' '+ product.data().due.toDate().toLocaleTimeString('en-US'), 
+                ['diference']: 0 
+            }
             products.push(appObj)
         })
 

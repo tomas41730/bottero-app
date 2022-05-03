@@ -127,7 +127,7 @@
                                     </template> 
                                     <template v-slot:[`item.selected`]="{ item }">
                                         <v-simple-checkbox v-if="saleInfo.store == store" :disabled="item.received" v-ripple color="primary" v-model="item.selected"></v-simple-checkbox> 
-                                        <v-simple-checkbox v-else :disabled="disabledItem(item)" v-ripple color="yellow" v-model="item.selected"></v-simple-checkbox> 
+                                        <v-simple-checkbox v-else :disabled="disabledItem(item)" v-ripple color="primary" v-model="item.selected"></v-simple-checkbox> 
                                     </template>
                                 </v-data-table>
                             </v-col>
@@ -141,7 +141,7 @@
                             <v-col cols="12" sm="12" md="12">
                                 <v-card>
                                     <v-toolbar dark color="black" class="mb-1">
-                                        <v-toolbar-title class="text-h4">INFORMACIÓN DE RESERVA</v-toolbar-title>
+                                        <v-toolbar-title class="text-h4">INFORMACIÓN DE TRASPASO</v-toolbar-title>
                                     </v-toolbar>
                                     <v-col>
                                         <v-row>
@@ -211,7 +211,7 @@
 import { createAlert2 } from '../services/Alerts';
 // import { createAlert2 } from '../services/Alerts';
 import { getCustomerByCi } from '../services/firestore/FirebaseCustomers';
-import { getProductById } from '../services/firestore/FirebaseProducts';
+import { addProduct, getProductById } from '../services/firestore/FirebaseProducts';
 import { getTransfers, updateTransfer } from '../services/firestore/FirebaseTransfers';
 
 export default {
@@ -282,6 +282,10 @@ export default {
         {
           return this.$store.state.userStore;
         },
+        getPermission()
+        {
+            return  this.$store.state.userRole != 'Admin';
+        }
     },
     watch:
     {
@@ -443,6 +447,10 @@ export default {
                         doc.selected = false;
                         doc.seller = this.seller;
                     }
+                    let shoe = doc;
+                    shoe.stock = doc.quantity;
+                    shoe.store = doc.destiny;
+                    addProduct(shoe);
                 }
             });
             console.log(this.saleOrder);

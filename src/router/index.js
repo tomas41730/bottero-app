@@ -56,6 +56,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/batchChanges2',
+    name: 'Batch-Products2',
+    component: () => import('../views/BatchProducts2.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('../views/Login.vue')
@@ -109,6 +115,12 @@ const routes = [
     path: '/dailyReport',
     name: 'DailyReport',
     component: () => import('../views/DailyReport.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/subinventory',
+    name: 'Subinventory',
+    component: () => import('../views/Subinventory.vue'),
     meta: { requiresAuth: true }
   },
   {

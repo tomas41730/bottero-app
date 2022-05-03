@@ -103,7 +103,7 @@
             </v-icon>
         <v-divider></v-divider>
         <v-card-actions class="justify-center">
-          <v-btn block text :to="'/batchChanges'">
+          <v-btn block text :to="'/batchChanges2'">
             Cambios por lote
           </v-btn>
         </v-card-actions>
@@ -169,6 +169,7 @@
 </template>
 
 <script>
+// import db from '../services/firebase';
   export default {
     name: 'Home',
     components: {
@@ -184,6 +185,13 @@
       initialize()
       {
         console.log(this.date);
+        // db.collection('products').get().then( snapshot => 
+        // {
+        //   snapshot.docs.forEach( doc => 
+        //   {
+        //     db.collection('products').doc(doc.id).update( {store: doc.data().store.toString()})
+        //   })
+        // })
       }
     }
   }

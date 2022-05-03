@@ -39,6 +39,32 @@
           </v-card-actions>
         </v-card>
       </v-dialog>
+      <!-- Provisional hasta mejorar el modulo de roles -->
+      <v-dialog v-model="getPermission" max-width="600px" persistent>
+        <v-card>
+          <v-card-title>
+            No cuenta con los permisos necesarios para esta sección
+          </v-card-title>
+          <v-col align="center" justify="center">  
+            <v-container bg fill-height grid-list-md text-xs-center>
+            <v-layout row wrap align-center>
+              <v-flex>
+                <v-list-item-avatar tile size="300">
+                  <v-img :src="imgDenied"></v-img>
+                </v-list-item-avatar>
+                <v-flex>
+              </v-flex>
+              </v-flex>
+            </v-layout>
+          </v-container>
+        </v-col>
+          <v-card-actions>
+            <v-btn color="primary" depressed block to="/">
+              Volver al menu principal
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
       <v-divider horizontal></v-divider>
       <v-row>
         <v-col>
@@ -68,7 +94,7 @@
                       <v-autocomplete :items="materials" v-model="editedItem.material" :rules="attributeRules" label="Material" placeholder="Material"></v-autocomplete>
                     </v-col>
                     <v-col cols="6" sm="6" md="3">
-                      <v-text-field v-model="editedItem.stock" :rules="numberRules" label="Stock" placeholder="Stock"></v-text-field>
+                      <v-text-field v-model="editedItem.stock" label="Stock" placeholder="Stock"></v-text-field>
                     </v-col>
                   </v-row>
                   <v-row>
@@ -109,6 +135,9 @@
                     <v-btn color="primary" depressed elevation="2" @click="clean" hidden>
                       Limpiar
                     </v-btn>
+                    <v-btn color="primary" depressed elevation="2" @click="dialogProducts = true" >
+                      Listado
+                    </v-btn>
                   </v-card-actions>
                 </v-col>
               </v-list-item-content>
@@ -135,20 +164,22 @@
         </v-col>
       </v-row>
     </v-card>
-    
-    <v-card class="mx-auto" outlined>
-      <v-data-table v-model="selected" :headers="headers" :items="products" :search="search" sort-by="name" class="elevation-1">
+    <v-data-table v-model="selected" :headers="headers" :items="products" :search="search" :custom-sort="customSort" multi-sort class="elevation-1">
       <template v-slot:top>
-        
-        <v-toolbar flat>
+        <v-card>
+          <v-toolbar dark color="black" class="mb-1">
           <v-toolbar-title>
             <v-row>
-              <v-col cols="12">
-                <v-text-field v-model="search" append-icon="mdi-magnify" label="Buscar" single-line></v-text-field>
+              <v-col>
+                <v-text-field v-model="search" clearable flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Search"></v-text-field>
+              </v-col>
+              <v-col>
+                <v-toolbar-title class="text-h4">CALZADOS REGISTRADOS</v-toolbar-title>
               </v-col>
             </v-row>
           </v-toolbar-title>
         </v-toolbar>
+        </v-card>
       </template>
       <template v-slot:[`item.actions`]="{ item }">
         <v-icon color="error" small class="mr-2" @click="deleteItem(item)">
@@ -164,7 +195,53 @@
         </v-btn>
       </template>
     </v-data-table>
-  </v-card>
+    <v-card>
+      <v-dialog fullscreen persistent v-model="dialogProducts" max-width="100%" transition="dialog-bottom-transition">
+        <v-card class="mx-auto" outlined>
+          <v-data-table v-model="selected" :headers="headers" :items="products" :search="search" :custom-sort="customSort" multi-sort class="elevation-1">
+            <template v-slot:top>
+              <v-toolbar dark color="black" class="mb-1">
+                <v-row>
+                    <v-row>
+                      <v-btn icon dark @click="dialogProducts = false">
+                        <v-icon>mdi-arrow-left</v-icon>
+                      </v-btn>
+                        <v-toolbar-title class="text-h4">CALZADOS REGISTRADOS</v-toolbar-title>
+                    </v-row>
+                </v-row>
+              </v-toolbar>
+              <v-card>
+                <v-toolbar dark color="black" class="mb-1">
+                <v-toolbar-title>
+                  <v-row>
+                    <v-col>
+                      <v-text-field v-model="search" clearable flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Search"></v-text-field>
+                    </v-col>
+                    <v-col>
+                      <v-toolbar-title class="text-h4">CALZADOS REGISTRADOS</v-toolbar-title>
+                    </v-col>
+                  </v-row>
+                </v-toolbar-title>
+              </v-toolbar>
+              </v-card>
+            </template>
+            <template v-slot:[`item.actions`]="{ item }">
+              <v-icon color="error" small class="mr-2" @click="deleteItem(item)">
+                mdi-delete
+              </v-icon>
+              <v-icon color="primary" small class="mr-2" @click="viewItem(item)">
+                mdi-eye
+              </v-icon>
+            </template>
+            <template v-slot:no-data>
+              <v-btn  ref="btnReset" color="primary" @click="initialize">
+                Reset
+              </v-btn>
+            </template>
+          </v-data-table>
+        </v-card>
+      </v-dialog>
+    </v-card>
   </v-container>
 </template>
 <script>
@@ -182,6 +259,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
     data: () => 
     ({
       btn: 'Guardar',
+      imgDenied: "https://library.kissclipart.com/20180829/ute/kissclipart-user-deletion-clipart-computer-icons-user-c7234fb3b6916925.png",
       defaultImage: '',
       selected: [],
       addEdit: false,
@@ -215,6 +293,8 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         { text: 'Des. Limite Bs.', value: 'pDisccount' },
         { text: 'Des. Ocasional %', value: 'oDisccount' },
         { text: 'Observacion', value: 'observation' },
+        { text: 'Fecha para ordenar', value: 'datetime' },
+        { text: 'ID', value: 'id' },
       ],
       products: [],
       editedIndex: -1,
@@ -276,13 +356,18 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       cleanDisabled: false,
       dialogObservation: false,
       dialogStore: true,
+      dialogProducts: false,
       store: null,
-      date: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10)
+      date: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
+      permission: null
     }),
 
     computed: 
     {
-      
+      getPermission()
+      {
+        return  this.$store.state.userRole != 'Admin';
+      }
     },
 
     watch: {
@@ -301,7 +386,8 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
     {
       initialize () 
       {
-        console.log(this.date);
+        // console.log(this.date);
+        // this.checkPermission();
         this.products = getProducts();
         this.brands = getBrandNames();
         this.sizes = getSizeNames();
@@ -312,6 +398,11 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         this.conditions = ['Normal', 'Descuento', 'Oferta', 'Liquidación', 'Fallado']
         getDefaultProductPhoto().then(val => { this.editedItem.photo = val; });
       },
+      // checkPermission()
+      // {
+      //   this.permission = (this.$store.state.userRole == 'Admin');
+      //   if(this.permission == true) this.dialogStore = false;
+      // },
       viewItem(item) 
       {
         item.stock = item.stock.toString();
@@ -341,11 +432,11 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         let shoe = this.products[this.editedIndex]
         //deleteProduct(shoe);
         await getProductsByRefBrandMaterialColor(shoe.reference, shoe.brand, shoe.material, shoe.color).then(snap =>{
-               if(snap.size === 1)
-               {
-                 deletePhoto(shoe);
-               }
-              deleteProduct(shoe);
+                if(snap.size === 1)
+                {
+                  deletePhoto(shoe);
+                }
+                deleteProduct(shoe);
               });
         uploadAlert(2000, 'Eliminando producto de la base de datos.');
         this.products.splice(this.editedIndex, 1);
@@ -364,6 +455,10 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       async save()
       {
         this.editedItem.store = this.store;
+        if(this.editedItem.stock == null || this.editedItem.stock == '')
+        {
+          this.editedItem.stock = 0;
+        }
         if(this.$refs.form.validate())
         {
           const product = Object.assign({},this.editedItem);
@@ -416,6 +511,9 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
               this.succesSave(product, msg);
             }
           } 
+          this.products.sort(function(a,b){
+            return new Date(a.due) + new Date(b.due);
+          });
         }
       },
       async succesSave(product, msg)
@@ -446,7 +544,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       },
       onStoreChanged()
       {
-
+        // this.checkPermission();
       },
       onIdChanged()
       {
@@ -480,7 +578,7 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
       onConditionChanged()
       {
         let idShoe = this.editedItem.condition + '-' + this.store + '-' + this.editedItem.idShoe;
-        if((this.editedItem.condition === 'Oferta' || this.editedItem.condition === 'Fallado'))
+        if((this.editedItem.condition === 'Fallado'))
         {
           this.dialogObservation = true;
           this.editedItem.observation = '';
@@ -544,7 +642,33 @@ import { getCategoryNames } from '../services/firestore/FirebaseCategories'
         Object.assign(this.editedItem, this.defaultItem);
         this.editedItem.store = this.store;
       },
-      
+      customSort(items, index, isDesc) {
+      items.sort((a, b) => {
+          if (index[0]=='due') {
+            if (isDesc[0]) {
+                return new Date(b[index]) - new Date(a[index]);
+            } 
+            else 
+            {
+                return new Date(a[index]) - new Date(b[index]);
+            }
+          }
+          else 
+          {
+            if(typeof a[index] !== 'undefined'){
+              if (!isDesc[0]) 
+              {
+                  return a[index].toLowerCase().localeCompare(b[index].toLowerCase());
+              }
+              else 
+              {
+                  return b[index].toLowerCase().localeCompare(a[index].toLowerCase());
+              }
+            }
+          }
+      });
+      return items;
+    }
     },
   }
 </script>

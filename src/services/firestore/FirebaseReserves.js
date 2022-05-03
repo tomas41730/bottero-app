@@ -1,14 +1,19 @@
 import db from '../firebase'
 import { actualDate  } from '../firebase';
 import { updateProductStock } from './FirebaseProducts';
+import { format, parseISO } from 'date-fns';
 
-export async function addReserve(sale, customer, total, totalDiscount, totalQuantity, efective, payment, store)
+export async function addReserve(sale, customer, total, totalDiscount, totalQuantity, efective, payment, store, dateReserve)
 {
+    console.log('dateReserve1: ' + dateReserve );
+    console.log('date1: ' + new Date(dateReserve).toLocaleDateString('es-BO'));
+    console.log('time1: ' + new Date(dateReserve).toLocaleTimeString('es-BO'));
     const newDoc = db.collection('reserves').doc();
     let saleOrder = [];
     let billNumber = 0;
-    let paymentHistory = []
-    let firstPay = { date: new Date().toLocaleDateString('es-BO'), time: new Date().toLocaleTimeString('es-BO'), amount: parseInt(efective), payment: payment }
+    let paymentHistory = [];
+    let dateStr = format(parseISO(dateReserve), 'dd/M/yyyy');
+    let firstPay = { date: new Date(dateStr).toLocaleDateString('en-BO'), time: new Date(Date.now()).toLocaleTimeString('es-BO'), amount: parseInt(efective), payment: payment, store: store }
     paymentHistory.push(firstPay);
     sale.forEach( doc => {
         let product = {
@@ -23,7 +28,7 @@ export async function addReserve(sale, customer, total, totalDiscount, totalQuan
         }
         saleOrder.push(product);
     });
-    
+    let date = format(parseISO(dateReserve), 'M/d/yyyy');
     await db.collection('counters').doc('reserves').get().then( docSnapshot => 
         {           
             db.collection('reserves').doc(newDoc.id).set(
@@ -37,10 +42,10 @@ export async function addReserve(sale, customer, total, totalDiscount, totalQuan
                     total: total - totalDiscount,
                     totalDiscount: totalDiscount,
                     store: store,
-                    date: actualDate.FieldValue.serverTimestamp(),
-                    shortDate: new Date().toLocaleDateString('es-BO'),
-                    customerCi: customer.ci,
-                    lastname: customer.lastname,
+                    date: actualDate.Timestamp.fromDate(new Date(date)),
+                    shortDate: dateReserve,
+                    customerPhone: customer.phone,
+                    name: customer.name,
                     totalQuantity: totalQuantity,
                     payed: parseInt(efective),
                     balance: (total - totalDiscount) - efective,

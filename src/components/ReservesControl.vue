@@ -45,7 +45,7 @@
                 </v-card>
             </v-dialog>
         </template> 
-        <v-data-table :headers="saleHeaders" :items="this.sales" :search="search" item-key="name" class="elevation-1">
+        <v-data-table :headers="saleHeaders" :items="this.sales" :search="search" item-key="name" :custom-sort="customSort" multi-sort class="elevation-1">
             <template v-slot:top>
                 <v-toolbar dark color="black" class="mb-1">
                     <v-row>
@@ -277,8 +277,9 @@ export default {
         saleHeaders: [
             { text: 'Acciones', value: 'actions', sortable: false },
             { text: 'Fecha', align: 'start', sortable: true, value: 'date' },
-            { text: 'NIT', value: 'customerCi' },
-            { text: 'Apellido', value: 'lastname' },
+            { text: 'Sucursal', value: 'store' },
+            { text: 'Telefono', value: 'customerPhone' },
+            { text: 'Nombre', value: 'name' },
             { text: 'Pares', value: 'totalQuantity' },
             { text: 'Subtotal', value: 'subtotal' },
             { text: 'Descuentos', value: 'totalDiscount' },
@@ -415,6 +416,34 @@ export default {
             const indexSale = this.sales.indexOf(item => item.id = this.saleInfo.id);
             this.sales[indexSale] = this.saleInfo;
             this.saleInfo = {};
+        },
+        customSort(items, index, isDesc) 
+        {
+            items.sort((a, b) => {
+                if (index[0]=='date') {
+                    if (isDesc[0]) {
+                        return new Date(b[index]) - new Date(a[index]);
+                    } 
+                    else 
+                    {
+                        return new Date(a[index]) - new Date(b[index]);
+                    }
+                }
+                else 
+                {
+                    if(typeof a[index] !== 'undefined'){
+                    if (!isDesc[0]) 
+                    {
+                        return a[index].toLowerCase().localeCompare(b[index].toLowerCase());
+                    }
+                    else 
+                    {
+                        return b[index].toLowerCase().localeCompare(a[index].toLowerCase());
+                    }
+                    }
+                }
+            });
+            return items;
         }
     }
   }

@@ -160,7 +160,8 @@ export default {
       ],
     productItems: [
         { title: 'REGISTRO DE PRODUCTOS', icon: 'mdi-clipboard-text-multiple-outline', path: '/inventory'},
-        { title: 'CAMBIOS POR LOTE', icon: 'mdi-package-variant-closed', path: '/batchChanges'},
+        { title: 'SUBINVENTARIO', icon: 'mdi-clipboard-text-multiple-outline', path: '/subinventory'},
+        { title: 'CAMBIOS POR LOTE', icon: 'mdi-package-variant-closed', path: '/batchChanges2'},
         { title: 'SUCURSALES', icon: 'mdi-home-city', path: '/stores'}
     ],
     salesItems: [

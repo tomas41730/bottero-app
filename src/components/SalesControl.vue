@@ -1,5 +1,5 @@
 <template>
-    <v-container fluid>
+    <v-container fluid ma-0 pa-0 fill-height>
         <template>
             <v-dialog v-model="dialogInfo" max-width="500px">
                 <v-card>
@@ -45,7 +45,7 @@
                 </v-card>
             </v-dialog>
         </template> 
-        <v-data-table :headers="saleHeaders" :items="this.sales" :single-expand="singleExpand" :expanded.sync="expanded" :search="search" item-key="name" show-expand class="elevation-1">
+        <v-data-table :headers="saleHeaders" :items="this.sales" :search="search" item-key="id" :custom-sort="customSort" multi-sort class="elevation-1">
             <template v-slot:top>
                 <v-toolbar dark color="black" class="mb-1">
                     <v-row>
@@ -78,8 +78,9 @@
                     </v-row>
                 </v-toolbar>
             </template>
-            <template v-slot:expanded-item="{ item }">
-                <td :colspan="2"> {{ expandedProducts(item) }} </td>
+            <template v-slot:[`item.bill`]="{ item }">
+                <v-icon color="primary" v-if="item.bill">mdi-check-circle</v-icon>
+                <v-icon color="green" v-else>mdi-check-circle</v-icon>
             </template>
             <template v-slot:[`item.actions`]="{ item }">
                 <v-btn small color="primary" class="mr-2" @click="viewSale(item)">
@@ -119,7 +120,7 @@
                             </v-col>
                         </v-row>
                         <v-row>
-                            <v-col cols="12" sm="12" md="6">
+                            <v-col cols="12" sm="12" md="5">
                                 <v-card>
                                     <v-toolbar dark color="black" class="mb-1">
                                         <v-toolbar-title class="text-h4">
@@ -145,25 +146,35 @@
                                     </v-col>
                                 </v-card>
                             </v-col>
-                            <v-col cols="12" sm="12" md="6">
+                            <v-col cols="12" sm="12" md="7">
                                 <v-card>
                                     <v-toolbar dark color="black" class="mb-1">
                                         <v-toolbar-title class="text-h4">INFORMACIÓN DE VENTA</v-toolbar-title>
                                     </v-toolbar>
                                     <v-col>
                                         <v-row>
-                                            <v-col justify="center" align="right" md="6">
+                                            <v-col justify="center" align="right" md="4">
                                                 <div class="text-h4">Subtotal: </div>
                                                 <div class="text-h4">Descuentos: </div>
                                                 <div class="text-h4">Total: </div>
+                                                <div class="text-h4">Efectivo: </div>
                                                 <div class="text-h4">Cambio: </div>
                                             </v-col>
-                                            <v-divider vertical></v-divider>
-                                            <v-col justify="center" md="4">
+                                            <v-col justify="center" md="2">
                                                 <div class="text-h4">{{ saleInfo.subtotal }}</div>
                                                 <div class="text-h4">{{ saleInfo.totalDiscount }}</div>
                                                 <div class="text-h4">{{ saleInfo.total }}</div>
+                                                <div class="text-h4">{{ saleInfo.efective }}</div>
                                                 <div class="text-h4">{{ saleInfo.exchange }}</div>
+                                            </v-col>
+                                            <v-divider vertical></v-divider>
+                                            <v-col justify="center" align="right" md="3">
+                                                <div class="text-h4">Venta: </div>
+                                                <div class="text-h4">Factura: </div>
+                                            </v-col>
+                                            <v-col justify="center" md="3">
+                                                <div class="text-h4">{{ saleInfo.idSale }}</div>
+                                                <div class="text-h4">{{ saleInfo.billNumber }}</div>
                                             </v-col>
                                         </v-row>
                                     </v-col>
@@ -213,7 +224,7 @@
 <script>
 import { getCustomerByCi } from '../services/firestore/FirebaseCustomers';
 import { getProductById } from '../services/firestore/FirebaseProducts';
-import { getSales } from '../services/firestore/FirebaseSales'
+import { getEachSale } from '../services/firestore/FirebaseSales'
 export default {
     data: ()  => 
     ({
@@ -237,18 +248,24 @@ export default {
         },
         saleHeaders: [
             { text: 'Acciones', value: 'actions', sortable: false },
+            { text: '#', align: 'start', sortable: true, value: 'idSale' },
             { text: 'Fecha', align: 'start', sortable: true, value: 'date' },
+            { text: 'Codigo', value: 'idShoe' },
+            { text: 'Sucursal', value: 'store' },
             { text: 'NIT', value: 'customerCi' },
             { text: 'Apellido', value: 'lastname' },
-            { text: 'Pares', value: 'totalQuantity' },
-            { text: 'Subtotal', value: 'subtotal' },
-            { text: 'Descuentos', value: 'totalDiscount' },
-            { text: 'Total', value: 'total' },
-            { text: '', value: 'data-table-expand'},
+            { text: 'Referencia', value: 'reference' },
+            { text: 'Precio', value: 'price' },
+            { text: 'Pares', value: 'quantity' },
+            { text: 'Subtotal', value: 'individualSubtotal' },
+            { text: 'Total', value: 'individualTotal' },
+            { text: 'Descuentos', value: 'individualDiscount' },
+            { text: 'Factura', value: 'bill' },
+            
         ],
         headersSaleOrder: [
             { text: 'Foto', value: 'photo' },
-            { text: 'C. Barras', align: 'start', sortable: true, value: 'id'},
+            { text: 'C. Barras', align: 'start', sortable: true, value: 'idShoe'},
             { text: 'Referencia', value: 'reference' },
             { text: 'Talla', value: 'size' },
             { text: 'Color', value: 'color' },
@@ -280,22 +297,19 @@ export default {
     {
         initialize()
         {
-            this.sales = getSales();
+            this.sales = getEachSale();
             console.log(this.sales);
-        },
-        expandedProducts(item) 
-        {
-            let products = '';
-            item.sale.forEach( doc => {
-                products = products+ 'Cod: ' + doc.idShoe + ' * Ref: ' + doc.reference + ' * Cantidad: ' + doc.quantity + ' * Subtotal: ' + doc.subtotal + '\n';
-            });
-            return products;
         },
         viewSale(item)
         {
+            console.log(item);
             this.saleOrder = []
             this.dialog = true;
             this.saleInfo = item;
+            // this.saleInfo.subtotal = item.subtotal;
+            // this.saleInfo.totalDiscount = item.totalDiscount;
+            // this.saleInfo.total = item.total;
+            // this.saleInfo.exchange = item.exchange;
             this.saleDate = item.date;
             item.sale.forEach( prod => 
             {
@@ -303,12 +317,13 @@ export default {
                 {
                     if(doc.exists)
                     {
-                        let product = {...doc.data(), quantity: prod.quantity, discount: prod.discount, subtotal: prod.subtotal }
+                        let product = {...doc.data(), quantity: prod.quantity, discount: prod.discount, subtotal: prod.subtotal, idSale: item.idSale, billNumber: item.billNumber }
                         this.saleOrder.push(product);
                     }
                 });
                 
             });
+            this.saleInfo.exchange = item.exchange;
             getCustomerByCi(item.customerCi).then( doc => 
             {
                 if(doc.exists)
@@ -332,8 +347,36 @@ export default {
         {
             console.log("Clooooooooooooooooooseeeee");
             this.dialog = false;
+        },
+        customSort(items, index, isDesc) 
+        {
+            items.sort((a, b) => {
+                if (index[0]=='date') {
+                    if (isDesc[0]) {
+                        return new Date(b[index]) - new Date(a[index]);
+                    } 
+                    else 
+                    {
+                        return new Date(a[index]) - new Date(b[index]);
+                    }
+                }
+                else 
+                {
+                    if(typeof a[index] !== 'undefined'){
+                    if (!isDesc[0]) 
+                    {
+                        return a[index].toLowerCase().localeCompare(b[index].toLowerCase());
+                    }
+                    else 
+                    {
+                        return b[index].toLowerCase().localeCompare(a[index].toLowerCase());
+                    }
+                    }
+                }
+            });
+            return items;
         }
-    }
+    },
   }
 </script>
 <style>

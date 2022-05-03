@@ -58,15 +58,20 @@
                   <template v-slot:top>
                       <v-toolbar dark color="black" class="mb-1">
                         <v-col>
-                          <v-toolbar-title v-text="getStore" class="text-h3"></v-toolbar-title>
+                          <v-toolbar-title v-text="'Sucursal ' + getStore" class="text-h3"></v-toolbar-title>
+                        </v-col>
+                      </v-toolbar>
+                      <v-toolbar dark color="black" class="mb-1">
+                        <v-col>
+                          <v-text-field v-model="idShoe" clearable flat solo-inverted hide-details @change="filterProducts" label="Codigo de Barras"></v-text-field>
                         </v-col>
                         <v-col>
-                            <v-text-field v-model="search" clearable flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Search"></v-text-field>
+                            <v-text-field v-model="search" clearable flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Buscar"></v-text-field>
                         </v-col>
                       </v-toolbar>
                   </template>
                   <template v-slot:[`item.actions`]="{ item }">
-                      <v-icon color="success" small class="mr-2" @click="editItem(item)">
+                      <v-icon color="success" small class="mr-2" @click="addItem(item)">
                       mdi-plus-circle
                       </v-icon>
                       <v-icon color="primary" small class="mr-2" @click="viewItem(item)">
@@ -105,7 +110,7 @@
                                   <v-icon dark>mdi-minus</v-icon>
                               </v-btn>
                               <v-text-field id="input-7-2" filled dense v-model="item.quantity" class="text-center" @input="onQuantityChanged(item)" :rules="rules"></v-text-field>
-                              <v-btn class="mx-2" fab x-small dark color="green" @click="editItem(item)">
+                              <v-btn class="mx-2" fab x-small dark color="green" @click="addItem(item)">
                                   <v-icon dark>mdi-plus</v-icon>
                               </v-btn>
                           </v-row>
@@ -277,7 +282,7 @@
                                             <v-btn v-if="this.total > 0 && efective >= (total - totalDiscount)" class="mx-2" dark color="primary" @click="saveSale">
                                               Confirmar Venta
                                             </v-btn>
-                                            <v-btn v-if="this.total > 0 && efective < (total - totalDiscount)" class="mx-2" dark color="primary" @click="saveReserve">
+                                            <v-btn v-if="this.total > 10 && efective < (total - totalDiscount)" class="mx-2" dark color="primary" @click="saveReserve">
                                               Confirmar Reserva
                                             </v-btn>
                                             <v-dialog persistent v-model="saleDialog" max-width="280px">
@@ -342,6 +347,20 @@
                                                               <v-row cols="2" sm="2" md="2">
                                                                 <v-select v-model="payment" :items="['Efectivo', 'Tarjeta', 'QR']" label="Forma de Pago"></v-select>
                                                               </v-row>
+                                                              <v-row>
+                                                                <v-menu v-model="menu" :disabled="getPermission" :close-on-content-click="false" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
+                                                                  <template v-slot:activator="{ on, attrs }">
+                                                                  <v-text-field v-model="dateStr" label="Picker without buttons" prepend-icon="mdi-calendar" readonly v-bind="attrs" v-on="on"></v-text-field>
+                                                                  </template>
+                                                                  <v-date-picker v-model="dateReserve" @input="closeDate"></v-date-picker>
+                                                              </v-menu>
+                                                              </v-row>
+                                                              <v-row>
+                                                                <v-text-field v-model="customer.phone" label="Celular" :rules="[v => !!v || 'Este campo es requerido.']" required></v-text-field>
+                                                              </v-row>
+                                                              <v-row>
+                                                                <v-text-field v-model="customer.name" label="Nombre"  :rules="[v => !!v || 'Este campo es requerido.']" required></v-text-field>
+                                                              </v-row>
                                                             </v-col>
                                                           </v-radio-group>
                                                         </v-col>
@@ -366,29 +385,31 @@
 <script>
 import { createAlert } from '../services/Alerts';
 // import { showImage } from '../services/Alerts';
-import { getProducts } from '../services/firestore/FirebaseProducts';
+import { getPorductsByCustomFilter } from '../services/firestore/FirebaseProducts2';
 import { addCustomer, getCustomerByCi } from '../services/firestore/FirebaseCustomers';
 import { addSale } from '../services/firestore/FirebaseSales';
 import { addReserve } from '../services/firestore/FirebaseReserves'
+import { format, parseISO } from 'date-fns'
+// import { getStoresNames } from '../services/firestore/FirebaseStores';
 
 export default 
 {
     data: () => 
     ({
         // products: getProductsByStore('Heroinas'),
-        
-        products: getProducts(),
-        efective: 0,
+        products: [],
+        efective: 10,
         change: 0,
         sortBy: 'idShoe',
         search: '',
         total: 0,
+        // stores: [],
         customer: {
           ci: '',
-          name: null,
+          name: '',
           lastname: '',
           email: null,
-          phone: null,
+          phone: '',
           birthday: null
         },
         editedItem: {
@@ -408,9 +429,10 @@ export default
             { text: 'Talla', value: 'size' },
             { text: 'Color', value: 'color' },
             { text: 'Material', value: 'material' },
-            { text: 'Condición', value: 'condition' },
-            { text: 'Precio', value: 'price' },
             { text: 'Sucursal', value: 'store' },
+            { text: 'Precio', value: 'price' },
+            { text: 'Condición', value: 'condition' },
+            { text: 'Union 1', value: 'customColumn' }
         ],
         headersSaleOrder: [
             // { text: 'Foto', value: 'photo' },
@@ -445,9 +467,13 @@ export default
         menu2: false,
         radioGroup: 'Sin Factura',
         bill: null,
-        payment: null,
+        payment: 'Efectivo',
         saleDetail: null,
         store: '',
+        dateReserve: new Date(Date.now()).toISOString().substr(0, 10),
+        dateStr: null,
+        menu: false,
+        idShoe: '',
         }),
 
     computed: 
@@ -456,6 +482,14 @@ export default
         {
           return this.$store.state.userStore;
         },
+        computedDateFormattedDatefns () 
+        {
+            return this.dateReserve ? format(parseISO(this.dateReserve), 'dd/MM/yyyy') : ''
+        },
+        getPermission()
+        {
+          return  this.$store.state.userRole != 'Admin';
+        }
     },
 
         watch: 
@@ -465,6 +499,7 @@ export default
 
         created () 
         {
+        new Promise(resolve => setTimeout(resolve, 3000));
         this.initialize();
         },
 
@@ -472,48 +507,83 @@ export default
         {
         initialize () 
         {
-          console.log((new Date().toDateString()))
+          this.dateStr = format(parseISO(this.dateReserve), 'dd/M/yyyy');
+          // this.stores = getStoresNames();
         },
-        editItem(item)
+        addItem(item)
         {
           const itemIndex = this.saleOrder.findIndex( tmp => tmp.id ===  item.id);
           this.total = 0;
           this.itemDiscount = item.price;
-          if (itemIndex > -1)
-          {
-            if ((item.quantity + 1) <= item.stock) 
-            {
-              item.quantity = parseInt(item.quantity) + 1;
-              item.subtotal = item.quantity * item.price;
-              Object.assign(this.saleOrder[itemIndex], item);
-            }
-            else
-            {
-              createAlert('Stock insuficiente!', 'error');
-            }
-          }
-          else
-          {
-            item.discount = 0;
-            item.quantity = 1;
-            if (item.quantity <= item.stock) 
-            {
-              item.subtotal = item.quantity * item.price;
-              this.saleOrder.push(Object.assign({}, item));
-            }
-            else
-            {
-              createAlert('Stock insuficiente!', 'error');
-            }
-            
-          }
+          // if(this.store == item.store)
+          // {
+            // if (itemIndex > -1)
+            // {
+            //   if ((item.quantity + 1) <= item.stock) 
+            //   {
+            //     item.quantity = parseInt(item.quantity) + 1;
+            //     item.subtotal = item.quantity * item.price;
+            //     Object.assign(this.saleOrder[itemIndex], item);
+            //   }
+            //   else
+            //   {
+            //     createAlert('Stock insuficiente!', 'error');
+            //   }
+            // }
+            // else
+            // {
+            //   item.discount = 0;
+            //   item.quantity = 1;
+            //   if (item.quantity <= item.stock) 
+            //   {
+            //     item.subtotal = item.quantity * item.price;
+            //     this.saleOrder.push(Object.assign({}, item));
+            //   }
+            //   else
+            //   {
+            //     createAlert('Stock insuficiente!', 'error');
+            //   }
+            // }
+            this.verifyAndAddItem(itemIndex, item);
+          // }
+          // else
+          // {
+          //   createAlert('El producto debe ser de la sucursal asociada a la cuenta.', 'error');
+          // }
           this.saleOrder.forEach( doc => {
             this.total = this.total + doc.subtotal;
             // this.totalQuantity = this.totalQuantity + doc.quantity;
           });
-          console.log(this.saleOrder)
-          console.log('Stock: ' + item.stock);
-          console.log('Quantity: ' + item.quantity);
+        },
+        verifyAndAddItem(itemIndex, item)
+        {
+          if (itemIndex > -1)
+            {
+              if ((item.quantity + 1) <= item.stock) 
+              {
+                item.quantity = parseInt(item.quantity) + 1;
+                item.subtotal = item.quantity * item.price;
+                Object.assign(this.saleOrder[itemIndex], item);
+              }
+              else
+              {
+                createAlert('Stock insuficiente!', 'error');
+              }
+            }
+            else
+            {
+              item.discount = 0;
+              item.quantity = 1;
+              if (item.quantity <= item.stock) 
+              {
+                item.subtotal = item.quantity * item.price;
+                this.saleOrder.push(Object.assign({}, item));
+              }
+              else
+              {
+                createAlert('Stock insuficiente!', 'error');
+              }
+            }
         },
         viewItem(item)
         {
@@ -591,7 +661,7 @@ export default
         {
             this.dialog = false;
             this.products = [];
-            this.products = getProducts();
+            // this.products = getProducts();
             if(this.radioGroup == 'op1')
             {
               this.bill = true;
@@ -611,10 +681,10 @@ export default
             console.log(this.saleOrder);
             createAlert('Venta realizada con Éxito!', 'success');
 
-            this.saleOrder.forEach( doc => {
-              const productIndex = this.products.findIndex( item => item.id ===  doc.id);
-              this.products[productIndex].stock = this.products[productIndex].stock - doc.quatity;
-            });
+            // this.saleOrder.forEach( doc => {
+            //   const productIndex = this.products.findIndex( item => item.id ===  doc.id);
+            //   this.products[productIndex].stock = this.products[productIndex].stock - doc.quatity;
+            // });
 
             this.saleOrder = [];
             this.payment = '';
@@ -625,26 +695,26 @@ export default
         },
         saveReserve()
         {
-          if(this.customer.ci == '' || this.customer.lastname == '')
+          if(parseInt(this.efective) < 10)
           {
-            createAlert('La reserva requiere el CI y apellido del cliente', 'error');
+            createAlert('El monto minimo para reservar es de 10 Bs.', 'error');
           }
           else
-          {
-            getCustomerByCi(this.customer.ci).then( snap =>
-            {
-              if(snap.exists)
-              {
-                if(snap.data().phone == null)
-                {
-                  this.customerDialog = true;
-                }
-              }
-              else
-              {
-                this.customerDialog = true;
-              }
-            });
+          {// se comento esto para no pedir ci al cliente cuando haga una reserva
+            // getCustomerByCi(this.customer.ci).then( snap =>
+            // {
+            //   if(snap.exists)
+            //   {
+            //     if(snap.data().phone == null)
+            //     {
+            //       this.customerDialog = true;
+            //     }
+            //   }
+            //   else
+            //   {
+            //     this.customerDialog = true;
+            //   }
+            // });
             this.reserveDialog = true;
           }
           this.store = this.$store.state.userStore;
@@ -655,8 +725,9 @@ export default
         },
         finalizeReserve()
         {
-          
-          addReserve(this.saleOrder, this.customer, this.total, this.totalDiscount, this.totalQuantity, this.efective, this.payment, this.store);
+          this.dateStr = format(parseISO(this.dateReserve), 'dd/M/yyyy');
+          this.dateStr = format(parseISO(this.dateReserve), 'd/M/yyyy');
+          addReserve(this.saleOrder, this.customer, this.total, this.totalDiscount, this.totalQuantity, this.efective, this.payment, this.store, this.dateReserve);
 
           this.dialog = false;
           this.saleOrder = [];
@@ -738,6 +809,22 @@ export default
         onRadioButtonChanged()
         {
           console.log('radioBtn: ' + this.radioGroup)
+        },
+        closeDate()
+        {
+          this.dateStr = format(parseISO(this.dateReserve), 'dd/M/yyyy');
+          // console.log(format(parseISO(this.dateReserve), 'd/M/yyyy'));
+          // console.log('dateReserve: ' + this.dateReserve );
+          // console.log('date: ' + new Date(this.dateStr).toLocaleDateString('en-BO'));
+          // console.log('time: ' + new Date(Date.now()).toLocaleTimeString('es-BO'));
+          this.dateStr = format(parseISO(this.dateReserve), 'd/M/yyyy');
+          this.menu = false;
+        },
+        async filterProducts()
+        {
+          console.log(this.idShoe)
+          this.products = await getPorductsByCustomFilter(['idShoe','reference','color'],this.idShoe);
+          console.log('len: ' + this.products.length)
         }
     },
 }

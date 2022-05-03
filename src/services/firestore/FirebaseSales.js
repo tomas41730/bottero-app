@@ -115,7 +115,7 @@ export function getTotalExpensesByDay(date,store)
     console.log('sales: ' + expenses)
     return expenses;
 }
-export function getEachSale(date, store)
+export function getEachSaleByDateStore(date, store)
 {
     const sales = [];
     db.collection('sales').where('shortDate', '==', date).where('store', '==', store).get()
@@ -139,6 +139,48 @@ export function getEachSale(date, store)
                 appObj.price = doc.price;
                 appObj.reference = doc.reference;
                 appObj.quantity = doc.quantity;
+                sales.push(appObj);
+                appObj = {};
+            });
+        });
+    });
+    return sales;
+}
+export function getEachSale()
+{
+    const sales = [];
+    db.collection('sales').get()
+    .then(snapshot => 
+    {
+        snapshot.docs.forEach( sale => 
+        {
+            let appObj = {};
+            appObj.efective = sale.data().efective;
+            appObj.exchange = sale.data().exchange;
+            appObj.subtotal = sale.data().subtotal; 
+            appObj.payment = sale.data().payment; 
+            appObj.total = sale.data().total;  
+            appObj.totalDiscount = sale.data().totalDiscount;
+            appObj.bill = sale.data().bill;
+            sale.data().sale.forEach( doc => 
+            {
+                appObj.id = sale.data().id;
+                appObj.store = sale.data().store;
+                appObj.date = sale.data().date && sale.data().date.toDate().toLocaleDateString('es-BO') +' '+ sale.data().date.toDate().toLocaleTimeString('en-US');
+                appObj.shortDate = sale.data().date && sale.data().date.toDate().toLocaleDateString('es-BO');
+                appObj.customerCi = sale.data().customerCi;
+                appObj.lastname = sale.data().lastname;
+                appObj.idShoe = doc.idShoe;
+                appObj.idShoeFull = doc.id;
+                appObj.individualDiscount = doc.discount;
+                appObj.individualSubtotal = doc.subtotal;
+                appObj.individualTotal = doc.subtotal - doc.discount; 
+                appObj.price = doc.price;
+                appObj.reference = doc.reference;
+                appObj.quantity = doc.quantity;
+                appObj.sale = sale.data().sale;
+                appObj.idSale = sale.data().idSale.toString();
+                appObj.billNumber = sale.data().billNumber.toString();  
                 sales.push(appObj);
                 appObj = {};
             });

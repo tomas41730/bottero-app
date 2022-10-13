@@ -7,7 +7,7 @@
                         <v-btn icon dark @click="dialogInfo = false; discountClick = true">
                             <v-icon>mdi-close</v-icon>
                         </v-btn>
-                        Venta realizada el dia: {{ editedItem.id }}
+                        ID del Producto: {{ editedItem.id }}
                         <v-spacer></v-spacer>
                         <v-list-item-avatar  max-width="70px">
                         <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
@@ -45,93 +45,11 @@
                 </v-card>
             </v-dialog>
         </template>
-        <template>
-            <v-dialog v-model="dialogCashRegister" max-width="1000px" persistent>
-                <v-card>
-                    <v-toolbar color="black" dark class="mb-4"> 
-                        <v-btn icon dark @click="dialogCashRegister = false">
-                            <v-icon>mdi-close</v-icon>
-                        </v-btn>
-                        <v-toolbar-title>
-                            {{ selectedStore }} - Dinero en Caja: {{ getTotalTitleDialog }} Bs.
-                        </v-toolbar-title>
-                        <v-spacer></v-spacer>
-                        <v-list-item-avatar  max-width="70px">
-                        <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
-                        </v-list-item-avatar>
-                    </v-toolbar>
-                    <v-card-text>
-                        <v-container>
-                            <v-row>
-                                <v-col cols="12" sm="12" md="4">
-                                    <v-row>
-                                        <v-col>
-                                            <v-radio-group v-model="radioOption" row mandatory>
-                                                <v-col>
-                                                    <v-row cols="2" sm="2" md="2" class="mb-1">
-                                                        <v-radio x-large label="Ingresar Dinero" value="Ingreso" @click="onRadioButtonChanged"></v-radio>
-                                                    </v-row>
-                                                    <v-row x-large cols="2" sm="2" md="3" class="mb-1">
-                                                        <v-radio label="Retirar Dinero" value="Retiro" @click="onRadioButtonChanged"></v-radio>
-                                                    </v-row>
-                                                    <v-row class="mb-1">
-                                                        <v-col>
-                                                            <v-select x-large flat v-model="selectedStore" :items="getStoresList" placeholder="Sucursal" label="Sucursal" @click="onCashStoreChanged"></v-select>
-                                                        </v-col>
-                                                        <v-col>
-                                                            <v-text-field x-large flat v-model="cashRegister" placeholder="Monto" label="Monto"></v-text-field>
-                                                        </v-col>
-                                                    </v-row>
-                                                    <v-row cols="2" sm="2" md="3" class="mb-1">
-                                                        <v-textarea x-large  rows="1" flat v-model="cashDescription" placeholder="Descripcion" label="Descripcion"></v-textarea>
-                                                    </v-row>
-                                                    <v-row class="mb-1">
-                                                        <v-btn block color="primary" @click="saveCashRegister">Guardar</v-btn>
-                                                    </v-row>
-                                                </v-col>
-                                            </v-radio-group>
-                                        </v-col>
-                                    </v-row>
-                                </v-col>
-                                <v-col class="justify-center" cols="12" sm="12" md="8">
-                                    <v-data-table :headers="cashHeaders" :items="cashRegisterMoves" :search="searchCashMoves" item-key="name" class="elevation-1">
-                                        <template v-slot:top>
-                                            <v-toolbar dark color="black" class="mb-1">
-                                                <v-row>
-                                                    <!--
-                                                    <v-col>
-                                                        <v-menu v-model="menu" :close-on-content-click="false" max-width="290">
-                                                            <template v-slot:activator="{ on, attrs }"> 
-                                                                <v-text-field small clearable flat solo-inverted hide-details :value="computedDateFormattedDatefns" prepend-inner-icon="mdi-calendar" label="Fecha" readonly v-bind="attrs" v-on="on" @click:clear="date = null"></v-text-field>
-                                                            </template>
-                                                            <v-date-picker v-model="date" @change="closeDate1"></v-date-picker>
-                                                        </v-menu>
-                                                    </v-col> 
-                                                    -->
-                                                    <v-col>
-                                                        <v-text-field v-model="searchCashMoves" clearable flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Search"></v-text-field>
-                                                    </v-col>
-                                                </v-row>
-                                            </v-toolbar>
-                                        </template>
-                                        <template v-slot:no-data>
-                                            <v-btn color="primary" @click="initialize">
-                                            Reset
-                                            </v-btn>
-                                        </template>
-                                    </v-data-table>
-                                </v-col>  
-                            </v-row>
-                        </v-container>
-                    </v-card-text>
-                </v-card>
-            </v-dialog>
-        </template>
         <v-row>
             <v-toolbar dark color="black" class="mb-2">
                 <v-row>
                     <v-col>
-                        <v-toolbar-title v-text="'VENTAS DEL DIA: ' + dateStr" class="text-h3">VENTAS</v-toolbar-title>
+                        <v-toolbar-title v-text="'VENTAS DEL DIA: ' + dateStr" class="text-h3"></v-toolbar-title>
                     </v-col>
                 </v-row>
             </v-toolbar>
@@ -149,7 +67,7 @@
                     </v-row>
                     <v-row class="justify-center">
                         <h1>
-                            {{ getIncomeTitle }} Bs.
+                            {{ totalAmount.toString() }} Bs.
                         </h1>
                     </v-row>
                 </v-card>
@@ -166,7 +84,7 @@
                     </v-row>
                     <v-row class="justify-center">
                         <h1>
-                            {{ getExpensesTitle }} Bs.
+                            0 Bs.
                         </h1>
                     </v-row>
                     
@@ -184,7 +102,7 @@
                     </v-row>
                     <v-row class="justify-center">
                         <h1>
-                            {{ dailyReport.cash }} Bs.
+                            0 Bs.
                         </h1>
                     </v-row>
                 </v-card>
@@ -198,7 +116,7 @@
                     </v-row>
                     <v-row class="justify-center">
                         <h1>
-                            {{ getTotalTitle }} Bs.
+                            0 Bs.
                         </h1>
                     </v-row>
                 </v-card>
@@ -210,14 +128,14 @@
                     <v-toolbar dark color="black" class="mb-1">
                         <v-row>
                             <v-col>
-                                <v-select small flat solo-inverted hide-details @change="closeDate1" v-model="store" :items="stores" label="Sucursal"></v-select>
+                                <v-select small flat solo-inverted hide-details @change="onStoreChanged" v-model="store" :items="stores" :readonly="getPermission" label="Sucursal"></v-select>
                             </v-col>
                             <v-col>
                                 <v-menu v-model="menu" :close-on-content-click="false" max-width="290">
                                     <template v-slot:activator="{ on, attrs }"> 
-                                        <v-text-field small clearable flat solo-inverted hide-details :value="computedDateFormattedDatefns" prepend-inner-icon="mdi-calendar" label="Fecha" readonly v-bind="attrs" v-on="on" @click:clear="date = null"></v-text-field>
+                                        <v-text-field small flat solo-inverted hide-details :value="computedDateFormattedDatefns" prepend-inner-icon="mdi-calendar" label="Fecha" readonly v-bind="attrs" v-on="on" @click:clear="date = null"></v-text-field>
                                     </template>
-                                    <v-date-picker v-model="date" @change="closeDate1"></v-date-picker>
+                                    <v-date-picker v-model="date" @change="onDateChanged" :readonly="getPermission"></v-date-picker>
                                 </v-menu>
                             </v-col>
                             <v-col>
@@ -242,10 +160,10 @@
     </v-container>
 </template>
 <script>
-import { getDailyReportByDay, getEachCashMove, getEachSaleByDateStore, getTotalAmountByDay, getTotalExpensesByDay, setCashRegister } from '../services/firestore/FirebaseSales';
-import { format, parseISO } from 'date-fns'
 import { getStoresNames } from '../services/firestore/FirebaseStores';
-import { getProductById } from '../services/firestore/FirebaseProducts';
+import { getEachSale1, getTotalAmountByDay } from '../services/firestore/FirebaseSales';
+import { getProductByIdShoeAndStore } from '../services/firestore/FirebaseProducts2';
+import { format, parseISO } from 'date-fns';
 
 export default {
     data: ()  => 
@@ -254,8 +172,6 @@ export default {
         singleExpand: false,
         sales: [],
         stores: [],
-        cashRegisterMoves: [],
-        storesSelected: [''],
         store: '',
         saleOrder: [],
         dialog: false,
@@ -282,13 +198,12 @@ export default {
             { text: 'Fecha', align: 'start', sortable: true, value: 'date' },
             { text: 'NIT', value: 'customerCi' },
             { text: 'Apellido', value: 'lastname' },
-            { text: 'Codigo', value: 'id' },
+            { text: 'Codigo', value: 'idSale' },
             { text: 'Referencia', value: 'reference' },
-            { text: 'Precio', value: 'price' },
-            { text: 'Pares', value: 'quantity' },
-            { text: 'Subtotal', value: 'subtotal' },
-            { text: 'Total', value: 'total' },
-            { text: 'Descuentos', value: 'discount' },
+            { text: 'Precio', value: 'itemPrice' },
+            { text: 'Pares', value: 'itemQuantity' },
+            { text: 'Descuentos', value: 'itemDiscount' },
+            { text: 'Total', value: 'finalPrice' },
         ],
         cashHeaders: [
             { text: 'Fecha', align: 'start', sortable: true, value: 'date' },
@@ -306,7 +221,10 @@ export default {
         selectedStore: '',
         cashRegister: null,
         radioOption: 'Ingreso',
-        cashDescription: ''
+        cashDescription: '',
+
+        // nuevas variables
+        totalAmount: 0,
     }),
     computed:
     {
@@ -318,26 +236,18 @@ export default {
         {
             return this.$store.state.userStore;
         },
-        getIncomeTitle()
+        getPermission()
         {
-            return this.dailySales.reduce((partialSum, a) => partialSum + a, 0);
-        },
-        getTotalTitle()
-        {
-            return (parseInt(this.dailySales.reduce((partialSum, a) => partialSum + a, 0)) + parseInt(this.dailyReport.cash) - parseInt(this.dailyExpenses.reduce((partialSum, a) => partialSum + a, 0))).toString();
-        },
-        getTotalTitleDialog()
-        {
-            return (parseInt(this.dailySalesDialog.reduce((partialSum, a) => partialSum + a, 0)) + parseInt(this.dailySalesDialog.cash) - parseInt(this.dailyExpensesDialog.reduce((partialSum, a) => partialSum + a, 0))).toString();
-        },
-        getExpensesTitle()
-        {
-            return parseInt(this.dailyExpenses.reduce((partialSum, a) => partialSum + a, 0));
-        },
-        getStoresList()
-        {
-            return getStoresNames();
+            return  this.$store.state.userRole != 'Admin';
         }
+        // getIncomeTitle()
+        // {
+        //     return this.dailySales.reduce((partialSum, a) => partialSum + a, 0);
+        // },
+        // getTotalTitle()
+        // {
+        //     return (parseInt(this.dailySales.reduce((partialSum, a) => partialSum + a, 0)) + parseInt(this.dailyReport.cash) - parseInt(this.dailyExpenses.reduce((partialSum, a) => partialSum + a, 0))).toString();
+        // },
     },
     watch:
     {
@@ -352,97 +262,92 @@ export default {
         initialize()
         {
             this.store = this.$store.state.userStore;
-            this.selectedStore = this.$store.state.userStore;
-            this.sales = getEachSaleByDateStore(this.dateStr, this.storesSelected);
-            this.cashRegisterMoves = getEachCashMove(this.selectedStore);
             this.stores = getStoresNames();
-            this.stores.push('Todas');
-            this.dailySales = getTotalAmountByDay(this.dateStr, this.store);
-            this.dailySalesDialog = getTotalAmountByDay(this.dateStr, this.store);
-            this.dailyExpenses = getTotalExpensesByDay(this.dateStr, this.store);
-            this.dailyExpensesDialog = getTotalExpensesByDay(this.dateStr, this.selectedStore);
-            getDailyReportByDay(this.store).then( snap => 
+            this.sales = getEachSale1(this.store, this.dateStr);
+            // this.dailySales = getTotalAmountByDay(this.store, this.dateStr);
+            // getDailyReportByDay(this.store).then( snap => 
+            // {
+            //     if(snap.exists)
+            //     {
+            //         this.dailyReport = snap.data();
+            //     }
+            //     else
+            //     {
+            //         this.dailyReport = {};
+            //     }
+            // });
+            getTotalAmountByDay(this.store, this.dateStr).then( snap => 
             {
-                if(snap.exists)
+                if(!snap.empty)
                 {
-                    this.dailyReport = snap.data();
-                }
-                else
-                {
-                    this.dailyReport = {};
+                    snap.docs.forEach( doc => 
+                    {
+                        this.totalAmount += doc.data().total;
+                        // console.log(doc.data().total);
+                    });
                 }
             });
         },
-        getTotalAmout()
-        {
-        },
-        viewSale(item)
+        async viewSale(item)
         {
             this.dialogInfo = true;
-            getProductById(item.id).then( doc => 
+            console.log(item.idShoe);
+            await getProductByIdShoeAndStore(item.idShoe, item.store).then( doc => 
             {
                 if(doc.exists)
                 {
-                    this.editedItem = doc.data();
-                }
-            });
-                
-        },
-        closeDate1()
-        {
-            this.menu = false;
-            this.dateStr = format(parseISO(this.date), 'dd/M/yyyy');
-            this.sales = [];
-            this.selectedStore = this.store;
-            this.sales = getEachSaleByDateStore(this.dateStr, this.store);
-            this.cashRegisterMoves = getEachCashMove(this.selectedStore);       
-            getDailyReportByDay(this.store).then( snap => 
-            {
-                if(snap.exists)
-                {
-                    this.dailyReport = snap.data();
+                    Object.assign(this.editedItem, doc.data());
                 }
                 else
                 {
-                    this.dailyReport = {};
+                    console.log('No existe');
                 }
             });
-            this.dailySales = getTotalAmountByDay(this.dateStr,this.store);
-            this.dailySalesDialog = getTotalAmountByDay(this.dateStr,this.selectedStore);
-            this.dailyExpenses = getTotalExpensesByDay(this.dateStr,this.store);
         },
         onStoreChanged()
         {
-            this.sales = getEachSaleByDateStore(this.dateStr, this.store);
-            this.selectedStore = this.store;
-        },
-        onRadioButtonChanged()
-        {
-            // setCashRegister(this.storesSelected)
-        },
-        onCashStoreChanged()
-        {
-            this.cashRegisterMoves = getEachCashMove(this.selectedStore);
-            getDailyReportByDay(this.selectedStore).then( snap => 
+            let dateAux = this.date ? format(parseISO(this.date), 'd/M/yyyy') : '';
+            this.sales = getEachSale1(this.store, dateAux);
+            getTotalAmountByDay(this.store, dateAux).then( snap => 
             {
-                if(snap.exists)
+                if(!snap.empty)
                 {
-                    this.dailyReportDialog = snap.data();
+                    snap.docs.forEach( doc => 
+                    {
+                        this.totalAmount += doc.data().total;
+                        console.log(this.totalAmount);
+                    });
                 }
                 else
                 {
-                    this.dailyReportDialog = {};
+                    console.log("No existen ventas")
                 }
-            }); 
-            this.dailySalesDialog = getTotalAmountByDay(this.dateStr,this.selectedStore);
+            });
         },
-        saveCashRegister()
+        onDateChanged()
         {
-            console.log(this.cashRegister);
-            console.log(this.cashDescription);
-            console.log(this.radioOption);
-            setCashRegister(this.store, this.cashRegister, this.cashDescription, this.radioOption);
-        }
+            let dateAux = this.date ? format(parseISO(this.date), 'd/M/yyyy') : '';
+            this.sales = getEachSale1(this.store, dateAux);
+            getTotalAmountByDay(this.store, dateAux).then( snap => 
+            {
+                if(!snap.empty)
+                {
+                    snap.docs.forEach( doc => 
+                    {
+                        this.totalAmount += doc.data().total;
+                        console.log(this.totalAmount);
+                    });
+                }
+                else
+                {
+                    console.log("No existen ventas")
+                }
+            });
+        },
+        onRadioButtonChanged()
+        {
+
+        },
     }
 }
 </script>

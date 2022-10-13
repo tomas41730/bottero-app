@@ -1,6 +1,7 @@
 import db from '../firebase'
 import { actualDate  } from '../firebase';
-import { updateProductStock } from './FirebaseProducts';
+import { getProductById, updateProductStock } from './FirebaseProducts';
+import { getProductByIdShoeAndStore } from './FirebaseProducts2';
 
 export async function addSale(sale, customer, total, totalDiscount, totalQuantity, efective, bill, payment, store)
 {
@@ -85,14 +86,17 @@ export function getSales()
     console.log(sales);
     return sales;
 }
-
-export function getTotalAmountByDay(date,store)
+export function getTotalAmountByDay(store, date)
+{
+    return db.collection('sales').where('store', '==', store).where('shortDate', '==', date).orderBy('date', 'desc').get();
+}
+export function getTotalAmountByDay1(date,store)
 {
     const sales = []
     db.collection('sales').where('shortDate', '==', date).where('store', '==', store).get()
     .then(snapshot => {
-        snapshot.docs.forEach(sale => {
-            // let appObj = { total: sale.data().total }
+        snapshot.docs.forEach(sale => 
+        {
             let appObj = sale.data().total;
             sales.push(appObj);
         });
@@ -146,10 +150,10 @@ export function getEachSaleByDateStore(date, store)
     });
     return sales;
 }
-export function getEachSale()
+export function getEachSale2()
 {
     const sales = [];
-    db.collection('sales').get()
+    db.collection('sales').orderBy('date','desc').get()
     .then(snapshot => 
     {
         snapshot.docs.forEach( sale => 
@@ -164,27 +168,164 @@ export function getEachSale()
             appObj.bill = sale.data().bill;
             sale.data().sale.forEach( doc => 
             {
-                appObj.id = sale.data().id;
-                appObj.store = sale.data().store;
-                appObj.date = sale.data().date && sale.data().date.toDate().toLocaleDateString('es-BO') +' '+ sale.data().date.toDate().toLocaleTimeString('en-US');
-                appObj.shortDate = sale.data().date && sale.data().date.toDate().toLocaleDateString('es-BO');
-                appObj.customerCi = sale.data().customerCi;
-                appObj.lastname = sale.data().lastname;
-                appObj.idShoe = doc.idShoe;
-                appObj.idShoeFull = doc.id;
-                appObj.individualDiscount = doc.discount;
-                appObj.individualSubtotal = doc.subtotal;
-                appObj.individualTotal = doc.subtotal - doc.discount; 
-                appObj.price = doc.price;
-                appObj.reference = doc.reference;
-                appObj.quantity = doc.quantity;
-                appObj.sale = sale.data().sale;
-                appObj.idSale = sale.data().idSale.toString();
-                appObj.billNumber = sale.data().billNumber.toString();  
-                sales.push(appObj);
-                appObj = {};
+                getProductById(doc.id).then( snap => 
+                {
+                    if(snap.exists)
+                    {
+                        appObj.id = sale.data().id;
+                        appObj.size = snap.data().size;
+                        appObj.color = snap.data().color;
+                        appObj.material = snap.data().material;
+                        
+                        appObj.store = sale.data().store;
+                        appObj.date = sale.data().date && sale.data().date.toDate().toLocaleDateString('es-BO') +' '+ sale.data().date.toDate().toLocaleTimeString('en-US');
+                        appObj.shortDate = sale.data().date && sale.data().date.toDate().toLocaleDateString('es-BO');
+                        appObj.customerCi = sale.data().customerCi;
+                        appObj.lastname = sale.data().lastname;
+                        appObj.idShoe = doc.idShoe;
+                        appObj.idShoeFull = doc.id;
+                        appObj.individualDiscount = doc.discount;
+                        appObj.individualSubtotal = doc.subtotal;
+                        appObj.individualTotal = doc.subtotal - doc.discount; 
+                        appObj.price = doc.price;
+                        appObj.reference = doc.reference;
+                        appObj.quantity = doc.quantity;
+                        appObj.sale = sale.data().sale;
+                        appObj.idSale = sale.data().idSale.toString();
+                        appObj.billNumber = sale.data().billNumber.toString();  
+                        sales.push(appObj);
+                        appObj = {};
+                    }
+                });
             });
         });
+    });
+    return sales;
+}
+// By Store and date
+export function getEachSale1(store, date)
+{
+    const sales = [];
+    db.collection('sales').where('store', '==', store).where('shortDate', '==', date).orderBy('date', 'desc').get().then( snap => 
+    {
+        if(!snap.empty)
+        {
+            snap.docs.forEach( doc => 
+            {
+                doc.data().sale.forEach( item => 
+                {   
+                    let obj = {};
+                    obj = doc.data();
+                    obj.date = doc.data().date && doc.data().date.toDate().toLocaleDateString('es-BO') +' '+ doc.data().date.toDate().toLocaleTimeString('en-US');
+                    obj.itemId = item.id;
+                    obj.idShoe = item.idShoe;
+                    obj.itemPrice = item.price;
+                    obj.itemDiscount = item.discount;
+                    obj.finalPrice = item.price - item.discount;
+                    obj.itemQuantity = item.quantity;
+                    getProductByIdShoeAndStore(item.idShoe, item.store).then( prod => 
+                    {
+                        if(prod.exists)
+                        {
+                            obj.reference = prod.data().reference; 
+                            sales.push(obj);
+                        }
+                        else
+                        {
+                            console.log('El producto no existe.');
+                        }
+                    });
+                });
+            });
+        }
+    });
+    return sales;
+}
+export function getEachSale(store)
+{
+    const sales = [];
+    db.collection('sales').where('store', '==', store).orderBy('date', 'desc').get().then( snap => 
+    {
+        if(!snap.empty)
+        {
+            let cnt = 0;
+            snap.docs.forEach( doc => 
+            {
+                doc.data().sale.forEach( item => 
+                {   
+                    let obj = {};
+                    
+                    obj = doc.data();
+                    obj.date = doc.data().date && doc.data().date.toDate().toLocaleDateString('es-BO') +' '+ doc.data().date.toDate().toLocaleTimeString('en-US');
+                    obj.itemId = item.id;
+                    obj.idShoe = item.idShoe;
+                    obj.itemPrice = item.price;
+                    obj.itemDiscount = item.discount;
+                    obj.finalPrice = item.price - item.discount;
+                    obj.itemQuantity = item.quantity;
+                    
+                    getProductByIdShoeAndStore(item.idShoe, store).then( prod => 
+                    {
+                        
+                        if(prod.exists)
+                        {
+                            // console.log(prod.data());
+                            obj.cnt = parseInt(cnt++);
+                            obj.reference = prod.data().reference; 
+                            sales.push(obj);
+                        }
+                        else
+                        {
+                            console.log('El producto no existe.');
+                        }
+                    });
+                });
+            });
+        }
+    });
+    return sales;
+}
+export function getEachSaleByID(id)
+{
+    const sales = [];
+    db.collection('sales').where('id', '==', id).orderBy('date', 'desc').get().then( snap => 
+    {
+        if(!snap.empty)
+        {
+            let cnt = 0;
+            snap.docs.forEach( doc => 
+            {
+                doc.data().sale.forEach( item => 
+                {   
+                    let obj = {};
+                    
+                    obj = doc.data();
+                    obj.date = doc.data().date && doc.data().date.toDate().toLocaleDateString('es-BO') +' '+ doc.data().date.toDate().toLocaleTimeString('en-US');
+                    obj.itemId = item.id;
+                    obj.idShoe = item.idShoe;
+                    obj.itemPrice = item.price;
+                    obj.itemDiscount = item.discount;
+                    obj.finalPrice = item.price - item.discount;
+                    obj.itemQuantity = item.quantity;
+                    
+                    getProductByIdShoeAndStore(item.idShoe, item.store).then( prod => 
+                    {
+                        
+                        if(prod.exists)
+                        {
+                            // console.log(prod.data());
+                            obj.cnt = parseInt(cnt++);
+                            obj.reference = prod.data().reference; 
+                            sales.push(obj);
+                        }
+                        else
+                        {
+                            console.log('El producto no existe.');
+                        }
+                    });
+                });
+            });
+        }
     });
     return sales;
 }

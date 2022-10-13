@@ -120,7 +120,7 @@
                           </v-col>
                       </v-card-actions>
                       </v-row>
-                      <v-list-item-title v-text="item.price + ' Bs.'" class="text-h5 mb-1"> <p>Bs.</p></v-list-item-title>
+                      <v-list-item-title v-text="item.price + ' Bs.'" class="text-h5 mb-1"></v-list-item-title>
                   </v-list-item-content>
                   <v-avatar class="profile" tile size="120" color="grey"><v-img @click="viewItem(item)" :src="item.photo"></v-img></v-avatar>
 
@@ -390,6 +390,8 @@ import { addCustomer, getCustomerByCi } from '../services/firestore/FirebaseCust
 import { addSale } from '../services/firestore/FirebaseSales';
 import { addReserve } from '../services/firestore/FirebaseReserves'
 import { format, parseISO } from 'date-fns'
+import { getStoreByName } from '../services/firestore/FirebaseStores';
+// import { getStoreByName } from '../services/firestore/FirebaseStores';
 // import { getStoresNames } from '../services/firestore/FirebaseStores';
 
 export default 
@@ -470,6 +472,7 @@ export default
         payment: 'Efectivo',
         saleDetail: null,
         store: '',
+        direction:'',
         dateReserve: new Date(Date.now()).toISOString().substr(0, 10),
         dateStr: null,
         menu: false,
@@ -481,6 +484,10 @@ export default
         getStore()
         {
           return this.$store.state.userStore;
+        },
+        getDirection()
+        {
+          return this.$store.state.storeDirection;
         },
         computedDateFormattedDatefns () 
         {
@@ -512,78 +519,78 @@ export default
         },
         addItem(item)
         {
+          this.store = this.$store.state.userStore;
+          this.direction = this.$store.state.storeDirection;
           const itemIndex = this.saleOrder.findIndex( tmp => tmp.id ===  item.id);
           this.total = 0;
           this.itemDiscount = item.price;
-          // if(this.store == item.store)
-          // {
-            // if (itemIndex > -1)
-            // {
-            //   if ((item.quantity + 1) <= item.stock) 
-            //   {
-            //     item.quantity = parseInt(item.quantity) + 1;
-            //     item.subtotal = item.quantity * item.price;
-            //     Object.assign(this.saleOrder[itemIndex], item);
-            //   }
-            //   else
-            //   {
-            //     createAlert('Stock insuficiente!', 'error');
-            //   }
-            // }
-            // else
-            // {
-            //   item.discount = 0;
-            //   item.quantity = 1;
-            //   if (item.quantity <= item.stock) 
-            //   {
-            //     item.subtotal = item.quantity * item.price;
-            //     this.saleOrder.push(Object.assign({}, item));
-            //   }
-            //   else
-            //   {
-            //     createAlert('Stock insuficiente!', 'error');
-            //   }
-            // }
-            this.verifyAndAddItem(itemIndex, item);
-          // }
-          // else
-          // {
-          //   createAlert('El producto debe ser de la sucursal asociada a la cuenta.', 'error');
-          // }
-          this.saleOrder.forEach( doc => {
-            this.total = this.total + doc.subtotal;
-            // this.totalQuantity = this.totalQuantity + doc.quantity;
-          });
-        },
-        verifyAndAddItem(itemIndex, item)
-        {
-          if (itemIndex > -1)
+
+          getStoreByName(item.store).then( snap => 
+          {
+            if(!snap.empty)
             {
-              if ((item.quantity + 1) <= item.stock) 
+              snap.docs.forEach(doc => 
               {
-                item.quantity = parseInt(item.quantity) + 1;
-                item.subtotal = item.quantity * item.price;
-                Object.assign(this.saleOrder[itemIndex], item);
-              }
-              else
-              {
-                createAlert('Stock insuficiente!', 'error');
-              }
+                console.log(doc.data().direction + " - " + this.direction)
+                if (this.direction == doc.data().direction)
+                {
+                  this.verifyAndAddItem(itemIndex, item);
+                  this.saleOrder.forEach( doc => 
+                  {
+                    this.total = this.total + doc.subtotal;
+                  });
+                }
+                else
+                {
+                  createAlert('Sucursal Incorrecta', 'error')
+                }
+              });
             }
             else
             {
-              item.discount = 0;
-              item.quantity = 1;
-              if (item.quantity <= item.stock) 
-              {
-                item.subtotal = item.quantity * item.price;
-                this.saleOrder.push(Object.assign({}, item));
-              }
-              else
-              {
-                createAlert('Stock insuficiente!', 'error');
-              }
+              console.log('Error al consultar sucursal.');
             }
+          });
+          
+          // getStoreByName(this.store).then( snap => 
+          // {
+          //   if (snap.docs.length > 0)
+          //   {
+
+          //   }
+          // });
+        },
+        verifyAndAddItem(itemIndex, item)
+        {
+          
+          
+          if (itemIndex > -1)
+          {
+            if ((item.quantity + 1) <= item.stock) 
+            {
+              item.quantity = parseInt(item.quantity) + 1;
+              item.subtotal = item.quantity * item.price;
+              Object.assign(this.saleOrder[itemIndex], item);
+            }
+            else
+            {
+              createAlert('Stock insuficiente!', 'error');
+            }
+          }
+          else
+          {
+            item.discount = 0;
+            item.quantity = 1;
+            if (item.quantity <= item.stock) 
+            {
+              item.subtotal = item.quantity * item.price;
+              this.saleOrder.push(Object.assign({}, item));
+            }
+            else
+            {
+              createAlert('Stock insuficiente!', 'error');
+            }
+          }
         },
         viewItem(item)
         {
@@ -598,19 +605,19 @@ export default
             this.total = 0;
             if (itemIndex > -1)
             {
-            item.quantity = item.quantity - 1;
-            item.subtotal = item.quantity * item.price;
-            if (item.quantity < 1)
-            {
+              item.quantity = item.quantity - 1;
+              item.subtotal = item.quantity * item.price;
+              if (item.quantity < 1)
+              {
                 this.saleOrder.splice(itemIndex, 1);
-            }
-            else
-            {
+              }
+              else
+              {
                 Object.assign(this.saleOrder[itemIndex], item);
-            }
-            this.saleOrder.forEach( doc => {
-              this.total = this.total + doc.subtotal;
-            });
+              }
+              this.saleOrder.forEach( doc => {
+                this.total = this.total + doc.subtotal;
+              });
             }
         },
         onQuantityChanged(item)
@@ -651,6 +658,7 @@ export default
             this.customer.lastname = 'Sin Nombre';
           }
           this.store = this.$store.state.userStore;
+          this.direction = this.$store.state.storeDirection;
           this.saleDialog = true;
           this.saleOrder.forEach( doc => 
             {
@@ -718,6 +726,7 @@ export default
             this.reserveDialog = true;
           }
           this.store = this.$store.state.userStore;
+          this.direction = this.$store.state.storeDirection;
           this.saleOrder.forEach( doc => 
             {
               this.totalQuantity = this.totalQuantity + doc.quantity;
@@ -749,7 +758,7 @@ export default
         {
           const itemIndex = this.saleOrder.findIndex( tmp => tmp.id ===  this.editedItem.id );
           this.totalDiscount = 0;
-          let limitDiscount = this.editedItem.pDisccount * this.editedItem.quantity;
+          let limitDiscount = this.editedItem.pDiscount * this.editedItem.quantity;
           if (limitDiscount < (this.editedItem.subtotal - this.itemDiscount))
           {
             createAlert('El descuento no puede pasar de ' + limitDiscount + ' Bs.', 'error');
@@ -823,8 +832,7 @@ export default
         async filterProducts()
         {
           console.log(this.idShoe)
-          this.products = await getPorductsByCustomFilter(['idShoe','reference','color'],this.idShoe);
-          console.log('len: ' + this.products.length)
+          this.products = await getPorductsByCustomFilter(['idShoe','reference','brand','store'],this.idShoe);
         }
     },
 }

@@ -45,7 +45,7 @@
                 </v-card>
             </v-dialog>
         </template> 
-        <v-data-table :headers="saleHeaders" :items="this.sales" :search="search" item-key="name" class="elevation-1">
+        <v-data-table :headers="transferHeaders" :sort-by="['transferId']" :sort-desc="[true]" :items="this.transfers" :search="search" item-key="name" class="elevation-1">
             <template v-slot:top>
                 <v-toolbar dark color="black" class="mb-1">
                     <v-row>
@@ -56,34 +56,22 @@
                 </v-toolbar>
                 <v-toolbar dark color="black" class="mb-1">
                     <v-row>
-                        <v-col>
-                            <v-menu v-model="menu2" :close-on-content-click="true" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-text-field small clearable flat solo-inverted hide-details label="Desde" prepend-inner-icon="mdi-calendar" readonly v-bind="attrs" v-on="on"></v-text-field>
-                                </template>
-                                <v-date-picker locale="es-BO" v-model="search" @input="menu2 = false"></v-date-picker>
-                            </v-menu>
-                        </v-col>
-                        <v-col>
-                            <v-menu v-model="menu2" :close-on-content-click="true" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-text-field small clearable flat solo-inverted hide-details label="Hasta" prepend-inner-icon="mdi-calendar" readonly v-bind="attrs" v-on="on"></v-text-field>
-                                </template>
-                                <v-date-picker locale="es-BO" v-model="search" @input="menu2 = false"></v-date-picker>
-                            </v-menu>
-                        </v-col>
-                        <v-col>
+                        <v-col cols="12" sm="4" md="4">
                             <v-text-field v-model="search" clearable flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Search"></v-text-field>
                         </v-col>
                     </v-row>
                 </v-toolbar>
             </template>
-            <template v-slot:[`item.completed`]="{ item }">
-                <v-icon color="green" v-if="item.completed">mdi-check-circle</v-icon> 
+            <template v-slot:[`item.sent`]="{ item }">
+                <v-icon color="green" v-if="item.sent">mdi-check-circle</v-icon> 
+                <v-icon color="red" v-else>mdi-close-circle</v-icon>
+            </template> 
+            <template v-slot:[`item.received`]="{ item }">
+                <v-icon color="green" v-if="item.received">mdi-check-circle</v-icon> 
                 <v-icon color="red" v-else>mdi-close-circle</v-icon>
             </template> 
             <template v-slot:[`item.actions`]="{ item }">
-                <v-btn small color="primary" class="mr-2" @click="viewSale(item)">
+                <v-btn small color="primary" class="mr-2" @click="viewTransfer(item)">
                     ver 
                     <v-icon small>mdi-eye</v-icon>
                 </v-btn>
@@ -91,15 +79,15 @@
                     <v-card>
                         <v-row>
                             <v-col align="center" justify="center" cols="12" sm="12" md="12">
-                                <v-data-table locale="es-BO" :items-per-page="5" :headers="headersSaleOrder" :items="saleOrder" :search="search" sort-by="name" class="elevation-1">
+                                <v-data-table locale="es-BO" :items-per-page="5" :headers="headersTransferOrder" :items="transferOrder" :search="search" sort-by="name" class="elevation-1">
                                     <template v-slot:top>
                                         <v-card>
                                             <v-toolbar dark color="black">
-                                                <v-btn icon dark @click="closeDialog">
+                                                <v-btn icon dark @click="dialog = false">
                                                 <v-icon>mdi-close</v-icon>
                                                 </v-btn>
-                                                <v-toolbar-title class="text-h4" v-text="'Traspaso solicitado el día: ' + saleDate"></v-toolbar-title>
-                                                <v-icon color="green" v-if="saleInfo.completed">mdi-check-circle</v-icon> 
+                                                <v-toolbar-title class="text-h4" v-text="'Traspaso #' + transferInfo.transferId +' solicitado el día: ' + transferDate"></v-toolbar-title>
+                                                <v-icon color="green" v-if="transferInfo.finished">mdi-check-circle</v-icon> 
                                                 <v-icon color="red" v-else>mdi-close-circle</v-icon>
                                             </v-toolbar>
                                             <v-divider></v-divider>
@@ -126,16 +114,16 @@
                                         <v-icon color="red" v-else>mdi-close-circle</v-icon>
                                     </template> 
                                     <template v-slot:[`item.selected`]="{ item }">
-                                        <v-simple-checkbox v-if="saleInfo.store == store" :disabled="item.received" v-ripple color="primary" v-model="item.selected"></v-simple-checkbox> 
-                                        <v-simple-checkbox v-else :disabled="disabledItem(item)" v-ripple color="primary" v-model="item.selected"></v-simple-checkbox> 
+                                        <v-simple-checkbox v-if="transferInfo.destiny == store" :disabled="item.received" v-ripple color="primary" v-model="item.selected"></v-simple-checkbox> 
+                                        <v-simple-checkbox v-else :disabled="item.sent" v-ripple color="primary" v-model="item.selected"></v-simple-checkbox> 
                                     </template>
                                 </v-data-table>
                             </v-col>
                         </v-row>
                         <v-row>
-                            <v-btn v-if="saleInfo.store == store" block color="primary" @click="receiveSelectedProducts"> Recibir productos seleccionados </v-btn>
+                            <v-btn v-if="transferInfo.destiny == store" block color="primary" @click="receiveSelectedProducts"> Recibir productos seleccionados </v-btn>
                             <v-btn v-else block color="primary" @click="sendSelectedProducts"> Enviar productos seleccionados </v-btn>
-                            
+                            <!-- <v-btn block color="primary" @click="selectAll"> Seleccionar todos </v-btn> -->
                         </v-row>
                         <v-row>
                             <v-col cols="12" sm="12" md="12">
@@ -153,10 +141,10 @@
                                             </v-col>
                                             <v-divider vertical></v-divider>
                                             <v-col justify="center" md="3">
-                                                <div class="text-h4">{{ saleInfo.stores }}</div>
-                                                <div class="text-h4">{{ saleInfo.store }}</div>
-                                                <div class="text-h4">{{ saleInfo.quantity }}</div>
-                                                <v-icon color="green" v-if="item.completed">mdi-check-circle</v-icon> 
+                                                <div class="text-h4">{{ transferInfo.transferStores }}</div>
+                                                <div class="text-h4">{{ transferInfo.destiny }}</div>
+                                                <div class="text-h4">{{ transferInfo.quantity }}</div>
+                                                <v-icon color="green" v-if="transferInfo.finished">mdi-check-circle</v-icon> 
                                                 <v-icon color="red" v-else>mdi-close-circle</v-icon>
                                             </v-col>
                                         </v-row>
@@ -187,7 +175,7 @@
                                                 <v-text-field v-model="seller" label="Encargado"></v-text-field>
                                             </v-row>
                                             <v-row>
-                                                <v-btn v-if="saleInfo.store == store" @click="confirmReceive" dark color="primary">Confirmar Recepcion</v-btn>
+                                                <v-btn v-if="transferInfo.store == store" @click="confirmReceive" dark color="primary">Confirmar Recepcion</v-btn>
                                                 <v-btn v-else @click="confirmSent" dark color="primary">Realizar Traspaso</v-btn>
                                             </v-row>
                                         </v-col>
@@ -209,72 +197,54 @@
 </template>
 <script>
 import { createAlert2 } from '../services/Alerts';
-// import { createAlert2 } from '../services/Alerts';
-import { getCustomerByCi } from '../services/firestore/FirebaseCustomers';
-import { addProduct, getProductById } from '../services/firestore/FirebaseProducts';
-import { getTransfers, updateTransfer } from '../services/firestore/FirebaseTransfers';
+import { addProduct, getProductByIdShoeAndStore } from '../services/firestore/FirebaseProducts2';
+import { getEachTransfer1, getEachTransferByID, updateFinishedTransfer, updateTransfer } from '../services/firestore/FirebaseTransfers';
 
 export default {
     data: ()  => 
     ({
-        expanded: [],
-        singleExpand: false,
-        sales: [],
-        saleOrder: [],
-        dialog: false,
-        dialogInfo: false,
-        search: '',
-        saleDate: '//',
+        transfers: [],
+        transferOrder: [],
         editedItem: {},
-        saleInfo: {},
-        customer: {
-            ci: '',
-            name: '',
-            lastname: '',
-            email: '',
-            phone: '',
-            birthday: ''
-        },
-        saleHeaders: [
-            { text: 'Acciones', value: 'actions', sortable: false },
-            { text: 'Fecha', align: 'start', sortable: true, value: 'date' },
-            { text: 'Destino', value: 'store' },
-            { text: 'Sucursales', value: 'tranferStores' },
-            { text: 'Total de Pares', value: 'quantity' },
-            { text: 'Completado', value: 'completed' },
-            
-        ],
-        headersSaleOrder: [
-            { text: 'Foto', value: 'photo' },
-            { text: 'C. Barras', align: 'start', sortable: true, value: 'id'},
-            { text: 'Referencia', value: 'reference' },
+        transferInfo: {},
+        store: '',
+        transferHeaders: [
+            { text: 'Acciones', value: 'actions' },
+            { text: 'ID', value: 'transferId' },
+            { text: 'Fecha', value: 'date' },
+            { text: 'Procedencia', value: 'store' },
+            { text: 'Destino', value: 'destiny' },
+            { text: 'Codigo de Barras', value: 'idShoe' },
+            { text: 'Referencia', value: 'reference' }, 
             { text: 'Talla', value: 'size' },
             { text: 'Color', value: 'color' },
-            { text: 'Material', value: 'material' },
-            { text: 'Condición', value: 'condition' },
-            { text: 'Sucursal', value: 'store' },
+            { text: 'Material', value: 'material' },    
+            { text: 'Pares', value: 'itemQuantity' },
+            { text: 'Enviado', value: 'sent' },
+            { text: 'Recibido', value: 'received' },
+        ],
+        headersTransferOrder: [
+            { text: 'Acciones', value: 'actions' },
+            { text: 'Fecha', value: 'date' },
+            { text: 'Procedencia', value: 'store' },
             { text: 'Destino', value: 'destiny' },
-            { text: 'Cantidad', value: 'quantity' },
-            { text: 'Cod. Traspaso', value: 'transferId' },
+            { text: 'Codigo de Barras', value: 'idShoe' },
+            { text: 'Referencia', value: 'reference' }, 
+            { text: 'Talla', value: 'size' },
+            { text: 'Color', value: 'color' },
+            { text: 'Material', value: 'material' },    
+            { text: 'Pares', value: 'quantity' },
             { text: 'Enviado', value: 'sent' },
             { text: 'Recibido', value: 'received' },
             { text: '', value: 'selected' },
-            // { text: 'ID', value: 'id' }
         ],
-        payHistoryHeaders: [
-            { text: 'Fecha', value: 'date' },
-            { text: 'Hora', value: 'time' },
-            { text: 'Sucursal', value: 'store'},
-            { text: 'Monto', value: 'amount'},
-            { text: 'Forma de pago', value: 'payment' },
-        ],
-        itemsPerPage: 5,
-        menu2: false,
-        radioGroup: '',
-        payment: '',
+        dialog: false,
+        dialogInfo: false,
         payDialog: false,
-        store: '',
-        seller: null
+        search: '',
+        transferDate: '//',
+        seller: null,
+        counter: 0,
     }),
     computed:
     {
@@ -299,189 +269,142 @@ export default {
     {
         initialize()
         {
-            this.sales = getTransfers();
-            console.log(this.sales);
+            this.transfers = getEachTransfer1();
+            this.store = this.$store.state.userStore;
         },
-        
-        viewSale(item)
+        viewTransfer(item)
         {
-            this.saleOrder = []
+            this.store = this.$store.state.userStore;
+            this.transferInfo = item;
+            console.log(this.transferInfo);
+            console.log(this.store);
+            this.transferDate = item.date;
             this.dialog = true;
-            this.saleInfo = item;
-            this.saleDate = item.date;
-            item.transfer.forEach( prod => 
+            this.search = item.date;
+            this.transferOrder = getEachTransferByID(item.id);
+            console.log(this.transferOrder.destiny == this.store);
+        },
+        disabledButton()
+        {
+            this.transferOrder.forEach( doc => 
             {
-                getProductById(prod.id).then( doc => 
+                if(doc.selected)
                 {
-                    if(doc.exists)
-                    {
-                        let product = {...doc.data(), 
-                        quantity: prod.quantity, 
-                        destiny: prod.destiny, 
-                        transferId: item.transferId, 
-                        sent: prod.sent, 
-                        received: prod.received, 
-                        selected: prod.selected,
-                        dateSent: prod.dateSent,
-                        timeSent: prod.timeSent,
-                        dateReceived: prod.dateReceived,
-                        timeReceived: prod.timeReceived,
-                        seller: prod.seller,
-                        receivedBy: prod.receivedBy,
-                         }
-                        this.saleOrder.push(product);
-                    }
-                });
-                
-            });
-            getCustomerByCi(item.customerCi).then( doc => 
-            {
-                if(doc.exists)
-                {
-                    this.customer = doc.data();
-                }
-                else
-                {
-                    this.customer.lastname = 'Sin Nombre';
-                    this.customer.ci = 0;
+                    this.counter++;
                 }
             });
-            console.log(this.saleOrder);
-        },
-        viewItem(item)
-        {
-            this.editedItem = item;
-            this.dialogInfo = true;
-            console.log(item);
-        },
-        disabledItem(item)
-        {
-            this.store = this.$store.state.userStore;
-            if(item.store == this.store && item.sent == false)
-            {
-                return false;
-            } 
-            return true;
-        },
-        closeDialog()
-        {
-            console.log("Clooooooooooooooooooseeeee");
-            this.dialog = false;
-        },
-        sendSelectedProducts()
-        {
-            let isAllSent = this.isAllSent()
-            this.store = this.$store.state.userStore;
-            if(isAllSent)
-            {
-                createAlert2('Ya enviaste todos los productos posibles para este traspaso.', 'success');
-            }
-            else
-            {
-                this.payDialog = true;
-            }
-           
-        },
-        receiveSelectedProducts()
-        {
-            let isAllReceived = this.isAllReceived()
-            this.store = this.$store.state.userStore;
-            if(isAllReceived)
-            {
-                createAlert2('Ya recibiste todos los productos posibles para este traspaso.', 'success');
-            }
-            else
-            {
-                this.payDialog = true;
-            }
-            console.log(this.saleOrder);
-        },
-        isAllSent()
-        {
-            this.store = this.$store.state.userStore;
-            let isAllSent = true;
-            this.saleOrder.forEach( doc => {
-                if(doc.store == this.store)
-                {
-                    isAllSent = isAllSent && doc.sent;
-                }
-            });
-            console.log('isAllSent: ' + isAllSent)
-            return isAllSent;
-        },
-        isAllReceived()
-        {
-            let isAllReceived = true;
-            this.saleOrder.forEach( doc => {
-                if(doc.sent)
-                {
-                    isAllReceived = isAllReceived && doc.received;
-                }
-            });
-            console.log('isAllSent: ' + isAllReceived)
-            return isAllReceived;
+            return this.counter;
         },
         confirmSent()
         {
-            
-            // let pay = { date: new Date().toLocaleDateString('es-BO'), time: new Date().toLocaleTimeString('es-BO'), seller: this.seller, payment: this.payment, store: this.store }
-            // this.saleInfo.paymentHistory.push(pay);
-            this.payDialog = false;
-            
-            // this.saleInfo = {};
 
-            this.saleOrder.forEach( doc => {
-                if(!doc.sent)
+        },
+        sendSelectedProducts()
+        {
+            // this.payDialog = true;
+            console.log(this.disabledButton());
+            if(this.disabledButton() >= 1)
+            {
+                this.transferOrder.forEach( doc => 
                 {
-                    doc.dateSent = null;
-                    doc.timeSent = null;
-                    doc.seller = null;
-                    doc.dateReceived = null;
-                    doc.timeReceived = null;
-                    doc.receivedBy = null;
-                    if(doc.selected )
+                    console.log(doc);
+                    if(!doc.sent)
                     {
-                        doc.sent = true;
-                        doc.dateSent = new Date().toLocaleDateString('es-BO');
-                        doc.timeSent = new Date().toLocaleTimeString('es-BO');
-                        doc.selected = false;
-                        doc.seller = this.seller;
+                        doc.dateSent = null;
+                        doc.timeSent = null;
+                        doc.seller = null;
+                        doc.dateReceived = null;
+                        doc.timeReceived = null;
+                        doc.receivedBy = null;
+                        doc.sent = false;
+                        if(doc.selected )
+                        {
+                            doc.sent = true;
+                            doc.dateSent = new Date().toLocaleDateString('es-BO');
+                            doc.timeSent = new Date().toLocaleTimeString('es-BO');
+                            doc.selected = false;
+                            doc.seller = this.seller;
+                        }
+                        
+                        getProductByIdShoeAndStore(doc.idShoe, doc.store).then( snap => 
+                        {
+                            if(snap.exists)
+                            {
+                                let shoe = snap.data();
+                                shoe.stock = doc.quantity;
+                                shoe.store = doc.destiny;
+                                shoe.id = shoe.store + '-' + doc.idShoe;//Consultar si se debe restar el stock al momento de hacer el traspaso o si al momento de enviar el calzado
+                                addProduct(shoe);
+                            }
+                            else
+                            {
+                                console.log('Producto no encontrado.')
+                            }
+                        });
                     }
-                    let shoe = doc;
-                    shoe.stock = doc.quantity;
-                    shoe.store = doc.destiny;
-                    addProduct(shoe);
-                }
-            });
-            console.log(this.saleOrder);
-            updateTransfer(this.saleInfo, this.saleOrder);
-            this.saleInfo.transfer = this.saleOrder;
-            const indexSale = this.sales.indexOf(item => item.id = this.saleInfo.id);
-            this.sales[indexSale] = this.saleInfo;
+                });
+                console.log(this.transferOrder);
+                updateTransfer(this.transferInfo, this.transferOrder);
+                
+                this.transfers.filter(item => item.id == this.transferInfo.id).forEach( doc => 
+                {
+                    this.transferOrder.filter(doc1 => doc1.idShoe == doc.idShoe).forEach( prod => 
+                    {
+                        doc.sent = prod.sent;
+                    });
+                });
+            }
+            else
+            {
+                createAlert2('Debe seleccionar al menos un producto para enviar.', 'error');
+            }
+        },
+        receiveSelectedProducts()
+        {
+            if(this.disabledButton() >= 1)
+            {
+                this.transferOrder.forEach( doc => 
+                {
+                    if(doc.sent && doc.selected)
+                    {
+                        doc.received = true;
+                        doc.dateReceived = new Date().toLocaleDateString('es-BO');
+                        doc.timeReceived = new Date().toLocaleTimeString('es-BO');
+                        doc.selected = false;
+                        doc.receivedBy = 'worker';
+                    }
+                    this.transferInfo.finished =  this.transferInfo.finished + doc.received;
+                    updateFinishedTransfer(this.transferInfo.id, this.transferInfo.finished);
+                });
+                console.log('component:');
+                console.log(this.transferOrder);
+                updateTransfer(this.transferInfo, this.transferOrder);
+                this.transfers.filter(item => item.id == this.transferInfo.id).forEach( doc => 
+                {
+                    this.transferOrder.filter(doc1 => doc1.idShoe == doc.idShoe).forEach( prod => 
+                    {
+                        doc.received = prod.received;
+                    });
+                });
+            }
+            else
+            {
+                createAlert2('Debe seleccionar al menos un producto para recibir.', 'error');
+            }
         },
         confirmReceive()
         {
-            
-            this.payDialog = false;
-            this.saleOrder.forEach( doc => {
-                if(doc.sent && doc.selected)
-                {
-                    doc.received = true;
-                    doc.dateReceived = new Date().toLocaleDateString('es-BO');
-                    doc.timeReceived = new Date().toLocaleTimeString('es-BO');
-                    doc.selected = false;
-                    doc.receivedBy = this.seller;
-                    console.log(doc)
-                }
 
+        },
+        selectAll()
+        {
+            this.transferOrder.forEach( doc => 
+            {
+                console.log(doc)
+                doc.selected = true;
             });
-            console.log(this.saleOrder);
-            updateTransfer(this.saleInfo, this.saleOrder)
-            this.saleInfo.transfer = this.saleOrder;
-            const indexSale = this.sales.indexOf(item => item.id = this.saleInfo.id);
-            this.sales[indexSale] = this.saleInfo;
         }
-    }
+    }   
   }
 </script>
 <style>

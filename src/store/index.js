@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import { getNotifications } from '../services/firestore/FirebaseNotifications'
 import { getUserByEmail } from '../services/firestore/FirebaseUsers'
 
 Vue.use(Vuex)
@@ -13,8 +14,9 @@ export default new Vuex.Store({
     userLastname: '',
     userRole: 'default',
     userIdRole: '',
-    salesGuard: null
-
+    salesGuard: null,
+    storeDirection: '',
+    notifications: getNotifications(),
   },
   mutations: {
   },

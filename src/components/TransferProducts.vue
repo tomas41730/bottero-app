@@ -66,7 +66,7 @@
                         </v-toolbar>
                     </template>
                     <template v-slot:[`item.actions`]="{ item }">
-                        <v-icon color="success" small class="mr-2" @click="editItem(item)">
+                        <v-icon color="success" small class="mr-2" @click="addItem(item)">
                         mdi-plus-circle
                         </v-icon>
                         <v-icon color="primary" small class="mr-2" @click="viewItem(item)">
@@ -98,21 +98,21 @@
                         <v-list-item-title v-text="'Color: ' + item.material + ' ' + item.color" class="text-h5 mb-1"></v-list-item-title>
                         <v-list-item-title v-text="'Talla: ' + item.size" class="text-h5 mb-1"></v-list-item-title>
                         <v-row cols="1" sm="1" md="1" lg="1">
-                        <v-card-actions>
-                            <v-col cols="12" sm="12" md="12" lg="12">
-                            <v-row>
-                                <v-btn class="mx-2" fab x-small dark color="red" @click="deleteItem(item)">
-                                    <v-icon dark>mdi-minus</v-icon>
-                                </v-btn>
-                                <v-text-field id="input-7-2" filled dense v-model="item.quantity" class="text-center" @input="onQuantityChanged(item)" :rules="rules"></v-text-field>
-                                <v-btn class="mx-2" fab x-small dark color="green" @click="editItem(item)">
-                                    <v-icon dark>mdi-plus</v-icon>
-                                </v-btn>
-                            </v-row>
-                            </v-col>
-                        </v-card-actions>
+                            <v-card-actions>
+                                <v-col cols="12" sm="12" md="12" lg="12">
+                                <v-row>
+                                    <v-btn class="mx-2" fab x-small dark color="red" @click="deleteItem(item)">
+                                        <v-icon dark>mdi-minus</v-icon>
+                                    </v-btn>
+                                    <v-text-field id="input-7-2" filled dense v-model="item.quantity" class="text-center" @input="onQuantityChanged(item)" :rules="rules"></v-text-field>
+                                    <v-btn class="mx-2" fab x-small dark color="green" @click="addItem(item)">
+                                        <v-icon dark>mdi-plus</v-icon>
+                                    </v-btn>
+                                </v-row>
+                                </v-col>
+                            </v-card-actions>
                         </v-row>
-                        <v-list-item-title v-text="item.price + ' Bs.'" class="text-h5 mb-1"> <p>Bs.</p></v-list-item-title>
+                        <v-list-item-title class="text-h5 mb-1"> <p> {{ item.price + ' Bs.'}} </p></v-list-item-title>
                     </v-list-item-content>
                     <v-avatar class="profile" tile size="120" color="grey"><v-img :src="item.photo"></v-img></v-avatar>
 
@@ -251,6 +251,7 @@ export default
             { text: 'Material', value: 'material' },
             { text: 'Sucursal', value: 'store' },
             { text: 'Precio', value: 'price' },
+            { text: 'Marca', value: 'brand' },
             { text: 'Condición', value: 'condition' },
             { text: 'Union 1', value: 'customColumn' }
         ],
@@ -311,30 +312,49 @@ export default
         {
             this.store = this.$store.state.userStore;
         },
-        editItem(item)
+        addItem(item)
         {
             this.store = this.$store.state.userStore;
             if(item.store != this.store)
             {
                 const itemIndex = this.saleOrder.findIndex( tmp => tmp.id ===  item.id);
                 this.total = 0;
-                if (itemIndex > -1)
+                this.verifyAndAddItem(itemIndex, item);
+                this.saleOrder.forEach( doc => 
                 {
-                item.quantity = parseInt(item.quantity) + 1;
-                Object.assign(this.saleOrder[itemIndex], item);
-                }
-                else
-                {
-                item.quantity = 1;
-                this.saleOrder.push(Object.assign({}, item));
-                }
-                this.saleOrder.forEach( doc => {
-                this.total = this.total + doc.quantity;
+                    this.total = this.total + doc.quantity;
                 });
             }
             else
             {
                 createAlert('Para realizar el traspaso debes escoger una sucursal diferente a la actual (' + this.store + ').', 'error')
+            }
+        },
+        verifyAndAddItem(itemIndex, item)
+        {
+            if (itemIndex > -1)
+            {
+                if ((item.quantity + 1) <= item.stock) 
+                {
+                    item.quantity = parseInt(item.quantity) + 1;
+                    Object.assign(this.saleOrder[itemIndex], item);
+                }
+                else
+                {
+                    createAlert('Stock insuficiente!', 'error');
+                }
+            }
+            else
+            {
+                item.quantity = 1;
+                if (item.quantity <= item.stock) 
+                {
+                    this.saleOrder.push(Object.assign({}, item));
+                }
+                else
+                {
+                    createAlert('Stock insuficiente!', 'error');
+                }
             }
         },
         viewItem(item)
@@ -353,7 +373,6 @@ export default
             // showImage(item, msg, description);
             this.dialogInfo = true;
             console.log(Object.assign(this.editedItem, item));
-
             console.log(item);
         },
         deleteItem(item)
@@ -378,19 +397,28 @@ export default
         },
         onQuantityChanged(item)
         {
-            const itemIndex = this.saleOrder.findIndex( tmp => tmp.condition ===  item.condition && tmp.idShoe ===  item.idShoe && tmp.store === item.store );
-            if (item.quantity == "0")
+            const itemIndex = this.saleOrder.findIndex( tmp => tmp.id ===  item.id );
+            if(item.quantity <= item.stock)
             {
-                this.saleOrder.splice(itemIndex, 1);
+              if (item.quantity == "0")
+              {
+                  this.saleOrder.splice(itemIndex, 1);
+              }
+              else
+              {
+                  this.total = 0;
+                  item.subtotal = item.quantity * item.price;
+              }
+              this.saleOrder.forEach( doc => 
+              {
+                this.total = this.total + doc.subtotal;
+              });
             }
             else
             {
-                this.total = 0;
-                item.subtotal = item.quantity * item.price;
+              createAlert('Stock insuficiente! Solicitaste ' + item.quantity + ' pero solo tenemos ' + item.stock + ' en stock.' , 'error');
+              item.quantity = '-';
             }
-                this.saleOrder.forEach( doc => {
-                this.total = this.total + doc.quantity;
-                });
         },
         checkout()
         {
@@ -414,8 +442,7 @@ export default
         async filterProducts()
         {
           console.log(this.idShoe)
-          this.products = await getPorductsByCustomFilter(['idShoe','reference','color'],this.idShoe);
-          console.log('len: ' + this.products.length)
+          this.products = await getPorductsByCustomFilter(['idShoe','reference','brand','store'],this.idShoe);
         }
         // isMobile() {
         // if(/Android|webOS|iPhone|Opera Mini/i.test(navigator.userAgent)) {

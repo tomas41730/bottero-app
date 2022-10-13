@@ -45,7 +45,7 @@
                 </v-card>
             </v-dialog>
         </template> 
-        <v-data-table :headers="saleHeaders" :items="this.sales" :search="search" item-key="id" :custom-sort="customSort" multi-sort class="elevation-1">
+        <v-data-table :headers="saleHeaders" :items="this.sales" :search="search" :custom-sort="customSort" multi-sort item-key="cnt" class="elevation-1">
             <template v-slot:top>
                 <v-toolbar dark color="black" class="mb-1">
                     <v-row>
@@ -56,6 +56,12 @@
                 </v-toolbar>
                 <v-toolbar dark color="black" class="mb-1">
                     <v-row>
+                        <v-col cols="3" sm="3" md="3">
+                            <v-select small flat solo-inverted hide-details @change="onStoreChanged" v-model="store" :items="stores" :readonly="getPermission" label="Sucursal"></v-select>
+                        </v-col>
+                        <v-col>
+                            <v-text-field v-model="search" clearable flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Search"></v-text-field>
+                        </v-col>
                         <v-col>
                             <v-menu v-model="menu2" :close-on-content-click="true" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
                                 <template v-slot:activator="{ on, attrs }">
@@ -63,17 +69,6 @@
                                 </template>
                                 <v-date-picker locale="es-BO" v-model="search" @input="menu2 = false"></v-date-picker>
                             </v-menu>
-                        </v-col>
-                        <v-col>
-                            <v-menu v-model="menu2" :close-on-content-click="true" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-text-field small clearable flat solo-inverted hide-details label="Hasta" prepend-inner-icon="mdi-calendar" readonly v-bind="attrs" v-on="on"></v-text-field>
-                                </template>
-                                <v-date-picker locale="es-BO" v-model="search" @input="menu2 = false"></v-date-picker>
-                            </v-menu>
-                        </v-col>
-                        <v-col>
-                            <v-text-field v-model="search" clearable flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Search"></v-text-field>
                         </v-col>
                     </v-row>
                 </v-toolbar>
@@ -223,8 +218,8 @@
 </template>
 <script>
 import { getCustomerByCi } from '../services/firestore/FirebaseCustomers';
-import { getProductById } from '../services/firestore/FirebaseProducts';
-import { getEachSale } from '../services/firestore/FirebaseSales'
+import { getEachSale, getEachSaleByID } from '../services/firestore/FirebaseSales'
+import { getStoresNames } from '../services/firestore/FirebaseStores';
 export default {
     data: ()  => 
     ({
@@ -248,10 +243,27 @@ export default {
         },
         saleHeaders: [
             { text: 'Acciones', value: 'actions', sortable: false },
+            { text: '#', align: 'start', value: 'cnt' },
+            { text: 'Sucursal', align: 'start', sortable: true, value: 'store' },
+            { text: 'Fecha', align: 'start', sortable: true, value: 'date' },
+            { text: 'NIT', value: 'customerCi' },
+            { text: 'Apellido', value: 'lastname' },
+            { text: 'Codigo', value: 'idSale' },
+            { text: 'Referencia', value: 'reference' },
+            { text: 'Precio', value: 'itemPrice' },
+            { text: 'Pares', value: 'itemQuantity' },
+            { text: 'Descuentos', value: 'itemDiscount' },
+            { text: 'Total', value: 'finalPrice' },
+        ],
+        saleHeaders1: [
+            { text: 'Acciones', value: 'actions', sortable: false },
             { text: '#', align: 'start', sortable: true, value: 'idSale' },
             { text: 'Fecha', align: 'start', sortable: true, value: 'date' },
-            { text: 'Codigo', value: 'idShoe' },
             { text: 'Sucursal', value: 'store' },
+            { text: 'ID', value: 'itemId' },
+            { text: 'Talla', value: 'size' },
+            { text: 'Color', value: 'color' },
+            { text: 'Material', value: 'material' },
             { text: 'NIT', value: 'customerCi' },
             { text: 'Apellido', value: 'lastname' },
             { text: 'Referencia', value: 'reference' },
@@ -266,7 +278,7 @@ export default {
         headersSaleOrder: [
             { text: 'Foto', value: 'photo' },
             { text: 'C. Barras', align: 'start', sortable: true, value: 'idShoe'},
-            { text: 'Referencia', value: 'reference' },
+            { text: 'Referencia', value: 'referece' },
             { text: 'Talla', value: 'size' },
             { text: 'Color', value: 'color' },
             { text: 'Material', value: 'material' },
@@ -280,10 +292,19 @@ export default {
         ],
         itemsPerPage: 5,
         menu2: false,
+        stores: [],
+        store: ''
     }),
     computed:
     {
-
+        getStore()
+        {
+            return this.$store.state.userStore;
+        },
+        getPermission()
+        {
+            return  this.$store.state.userRole != 'Admin';
+        }
     },
     watch:
     {
@@ -297,13 +318,16 @@ export default {
     {
         initialize()
         {
-            this.sales = getEachSale();
+            this.stores = getStoresNames();
+            this.store = this.$store.state.userStore;
+            this.sales = getEachSale(this.store);
             console.log(this.sales);
         },
         viewSale(item)
         {
             console.log(item);
             this.saleOrder = []
+            this.store = this.$store.state.userStore;
             this.dialog = true;
             this.saleInfo = item;
             // this.saleInfo.subtotal = item.subtotal;
@@ -311,18 +335,7 @@ export default {
             // this.saleInfo.total = item.total;
             // this.saleInfo.exchange = item.exchange;
             this.saleDate = item.date;
-            item.sale.forEach( prod => 
-            {
-                getProductById(prod.id).then( doc => 
-                {
-                    if(doc.exists)
-                    {
-                        let product = {...doc.data(), quantity: prod.quantity, discount: prod.discount, subtotal: prod.subtotal, idSale: item.idSale, billNumber: item.billNumber }
-                        this.saleOrder.push(product);
-                    }
-                });
-                
-            });
+            this.saleOrder = getEachSaleByID(item.id);
             this.saleInfo.exchange = item.exchange;
             getCustomerByCi(item.customerCi).then( doc => 
             {
@@ -342,6 +355,10 @@ export default {
         {
             this.editedItem = item;
             this.dialogInfo = true;
+        },
+        onStoreChanged()
+        {
+            this.sales = getEachSale(this.store);
         },
         closeDialog()
         {

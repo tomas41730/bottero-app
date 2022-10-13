@@ -251,7 +251,7 @@
 import { createAlert2 } from '../services/Alerts';
 import { getCustomerByCi } from '../services/firestore/FirebaseCustomers';
 import { getProductById } from '../services/firestore/FirebaseProducts';
-import { getReserves, updateReservePays } from '../services/firestore/FirebaseReserves';
+import { getEachReserve, updateReservePays } from '../services/firestore/FirebaseReserves';
 
 export default {
     data: ()  => 
@@ -276,11 +276,15 @@ export default {
         },
         saleHeaders: [
             { text: 'Acciones', value: 'actions', sortable: false },
+            { text: '#', value: 'idReserve' },
             { text: 'Fecha', align: 'start', sortable: true, value: 'date' },
             { text: 'Sucursal', value: 'store' },
+            { text: 'Referencia', value: 'reference' },
+            { text: 'Talla', value: 'size' },
+            { text: 'Color', value: 'color' },
+            { text: 'Material', value: 'material' },
             { text: 'Telefono', value: 'customerPhone' },
             { text: 'Nombre', value: 'name' },
-            { text: 'Pares', value: 'totalQuantity' },
             { text: 'Subtotal', value: 'subtotal' },
             { text: 'Descuentos', value: 'totalDiscount' },
             { text: 'Total', value: 'total' },
@@ -338,7 +342,7 @@ export default {
     {
         initialize()
         {
-            this.sales = getReserves();
+            this.sales = getEachReserve();
             console.log(this.sales);
         },
         expandedProducts(item) 
@@ -420,7 +424,7 @@ export default {
         customSort(items, index, isDesc) 
         {
             items.sort((a, b) => {
-                if (index[0]=='date') {
+                if (index[0]=='due') {
                     if (isDesc[0]) {
                         return new Date(b[index]) - new Date(a[index]);
                     } 

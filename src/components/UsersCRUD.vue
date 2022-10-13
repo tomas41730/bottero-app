@@ -359,6 +359,7 @@ import { getRoleNames } from '../services/firestore/FirebaseRoles'
             msg = 'El usuario "' + fullname + '" fue creado con éxito!'
           }
           addUser(Object.assign({}, this.editedItem));
+          // this.$store.state.userStore = this.editedItem.store;
           createAlert(msg, 'success');
           this.close();
           this.$refs.form.reset();

@@ -7,6 +7,7 @@ import vuetify from './plugins/vuetify'
 import { auth } from './services/firebase'
 import { getUserByEmail } from './services/firestore/FirebaseUsers'
 import { getRoleById } from './services/firestore/FirebaseRoles'
+import { getStoreByName } from './services/firestore/FirebaseStores'
 
 Vue.config.productionTip = false
 
@@ -36,11 +37,19 @@ auth.onAuthStateChanged( user => {
             getRoleById(doc.data().idRole).then(doc => {
               store.state.salesGuard = doc.data().sales; 
             });
+            getStoreByName(doc.data().store).then( snap => 
+            {
+              snap.docs.forEach( doc => 
+              {
+                store.state.storeDirection = doc.data().direction;
+              });
+            });
         });
       });
     }
   }
 })
+
 //to here, below is the original code
 
 // new Vue({

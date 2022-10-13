@@ -108,7 +108,7 @@ export function getProducts()
 }
 export function getProductById(id)
 {
-    const product = db.collection('products').doc(id).get();
+    const product = db.collection('productsAux').doc(id).get();
 
     return product
 }
@@ -148,7 +148,7 @@ export function getProductsByIdShoe(idShoe)
 }
 export function getProductByRef(ref)
 {
-    const product = db.collection('products').where('reference', '==', ref).where('photo', '!=', '').limit(1).get()
+    const product = db.collection('productsAux').where('reference', '==', ref).where('photo', '!=', '').limit(1).get()
     return product
 }
 export function getProductsByRef(ref)
@@ -214,11 +214,10 @@ export function updatePricesProducts(id, price, purchasePrice, oDisccount, pDisc
 export async function updateProductStock(product, stock)
 {
     product.due = actualDate.FieldValue.serverTimestamp();
-    db.collection('products').doc(product.id)
+    db.collection('productsAux').doc(product.id)
             .update({ 
                         due: product.due,
-                        stock: actualDate.FieldValue.increment(parseInt(stock)),
-                        condition: 'Nuevo'
+                        stock: actualDate.FieldValue.increment(parseInt(stock))
                    });
 }
 export async function updateProductStockById(id, stock)

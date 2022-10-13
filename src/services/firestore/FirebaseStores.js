@@ -38,3 +38,7 @@ export function getStoresNames()
     });
     return stores;
 }
+export function getStoreByName(store)
+{
+    return db.collection('stores').where('name', '==', store).get();
+}

@@ -1,4 +1,5 @@
 <template>
+  
   <div id="app">
     <v-app id="inspire">
       <v-app-bar color="yellow" app dark>
@@ -6,9 +7,10 @@
         <v-spacer></v-spacer>
         <v-toolbar-title class="text-h4 yellow--text"></v-toolbar-title>
         <v-list-item-avatar tile size="230">
-            <v-img src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2FBottero-letras-logo.png?alt=media&token=d827a340-db0f-4dbf-bd0f-59f88752455b"></v-img>
+            <v-img src="https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2FBottero-letras-logo.png?alt=media&token=39eee5e8-3611-4bc7-aad8-8e920b73d602"></v-img>
         </v-list-item-avatar>
         <v-spacer></v-spacer>
+        
       </v-app-bar>
       <v-navigation-drawer v-model="drawer" absolute dark temporary disable-resize-watcher app>
         
@@ -19,10 +21,10 @@
         <v-list-item class="px-0">
           <v-col>
             <v-list-item-avatar>
-              <v-img src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
+              <v-img src="https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2Flogo.png?alt=media&token=ec2d4d87-9102-4ae0-8328-e52154af033d"></v-img>
             </v-list-item-avatar>
           </v-col>
-         <v-col>
+        <v-col>
             <v-row>
               <v-list-item-title class="text-h6 yellow--text">BOTTERO
                 <v-list-item-subtitle>GESTION COMERCIAL</v-list-item-subtitle>
@@ -33,7 +35,7 @@
               <v-list-item-subtitle v-if="loggedIn">ONLINE</v-list-item-subtitle>
               <v-list-item-subtitle v-else>OFFLINE</v-list-item-subtitle>
             </v-row>
-         </v-col>          
+        </v-col>          
           <v-btn icon @click.stop="drawer = !drawer">
             <v-icon>mdi-chevron-left</v-icon>
           </v-btn>
@@ -136,16 +138,15 @@
           </v-col>
         </v-row>
       </v-container>
-      
     </v-app>
-  
   </div> 
-     
 </template>
+    
 
 <script>
 import Vuetify from 'vuetify';
 import { auth } from './services/firebase';
+// import { getNotifications1 } from './services/firestore/FirebaseNotifications';
 
 export default {
   name: 'App',
@@ -159,7 +160,7 @@ export default {
         { title: 'CLIENTES', icon: 'mdi-account-group-outline', path: '/customers'},
       ],
     productItems: [
-        { title: 'REGISTRO DE PRODUCTOS', icon: 'mdi-clipboard-text-multiple-outline', path: '/inventory'},
+        { title: 'REGISTRO DE PRODUCTOS', icon: 'mdi-clipboard-text-multiple-outline', path: '/inventory2'},
         { title: 'SUBINVENTARIO', icon: 'mdi-clipboard-text-multiple-outline', path: '/subinventory'},
         { title: 'CAMBIOS POR LOTE', icon: 'mdi-package-variant-closed', path: '/batchChanges2'},
         { title: 'SUCURSALES', icon: 'mdi-home-city', path: '/stores'}
@@ -177,12 +178,26 @@ export default {
         { title: 'MENU PRINCIPAL', icon: 'mdi-view-dashboard', path: '/'},
         { title: 'VENTAS DEL DIA', icon: 'mdi-cash-multiple', path: '/dailyReport' },
       ],
-    loggedIn: false
+    loggedIn: false,
+    dialogNtfs: false,
+    notifications: [],
+    headers: [
+            { text: 'Acciones', value: 'actions', sortable: false },
+            { text: 'Fecha', align: 'start', sortable: true, value: 'date'},
+            { text: 'Solicitante', value: 'destiny' },
+            { text: 'Sucursal Solicitada', value: 'store' },
+            { text: 'Traspaso #', value: 'transferId' },
+            { text: 'Tipo', value: 'type' },
+            { text: 'Visto', value: 'seen' }
+          ],
+    search: ''
   }),
   created(){
+    // this.initialize();
     auth.onAuthStateChanged(user => {
       if(user){
         this.loggedIn = true;
+        // this.initialize();
       }
       else
       {
@@ -223,20 +238,29 @@ export default {
       this.drawer = false
     },
   },
-  methods: {
-   async signOut()
-   {
-     try
-     {
-       const data = await auth.signOut();
-       console.log(data);
-       this.$router.replace({name: 'Login'})
-     }
-     catch(err)
-     {
-       console.log(err)
-     }
-   }
+  methods: 
+  {
+    async signOut()
+    {
+      try
+      {
+        const data = await auth.signOut();
+        console.log(data);
+        this.$router.replace({name: 'Login'})
+      }
+      catch(err)
+      {
+        console.log(err)
+      }
+    },
+    initialize()
+    {
+      // this.notifications = getNotifications1();
+    },
+    setNotificationState(item)
+    {
+      console.log(item);
+    }
   }
 };
 </script>

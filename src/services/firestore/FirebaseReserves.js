@@ -1,6 +1,6 @@
 import db from '../firebase'
 import { actualDate  } from '../firebase';
-import { updateProductStock } from './FirebaseProducts';
+import { getProductById, updateProductStock } from './FirebaseProducts';
 import { format, parseISO } from 'date-fns';
 
 export async function addReserve(sale, customer, total, totalDiscount, totalQuantity, efective, payment, store, dateReserve)
@@ -84,6 +84,57 @@ export function getReserves()
     });
     console.log(sales);
     return sales;
+}
+
+export function getEachReserve()
+{
+    const reserves = [];
+    db.collection('reserves').orderBy('date','desc').get()
+    .then(snapshot => 
+    {
+        snapshot.docs.forEach( sale => 
+        {
+            let appObj = {...sale.data()};
+            appObj.totalQuantity = sale.data().totalQuantity.toString();
+            // appObj.payed = sale.data().payed; 
+            // appObj.subtotal = sale.data().subtotal; 
+            // appObj.total = sale.data().total;  
+            // appObj.totalDiscount = sale.data().totalDiscount;
+            // appObj.bill = sale.data().bill;
+            sale.data().sale.forEach( doc => 
+            {
+                appObj.idShoe = doc.id;
+                getProductById(doc.id).then( snap => 
+                {
+                    if(snap.exists)
+                    {
+                        appObj.size = snap.data().size;
+                        appObj.color = snap.data().color;
+                        appObj.material = snap.data().material;
+
+                        appObj.store = sale.data().store;
+                        appObj.date = sale.data().date && sale.data().date.toDate().toLocaleDateString('es-BO') +' '+ sale.data().date.toDate().toLocaleTimeString('en-US');
+                        appObj.shortDate = sale.data().date && sale.data().date.toDate().toLocaleDateString('es-BO');
+                        appObj.customerCi = sale.data().customerCi;
+                        appObj.name = sale.data().name;
+                        appObj.individualDiscount = doc.discount;
+                        appObj.individualSubtotal = doc.subtotal;
+                        appObj.individualTotal = doc.subtotal - doc.discount; 
+                        appObj.price = doc.price;
+                        appObj.reference = doc.reference;
+                        appObj.quantity = doc.quantity;
+                        appObj.sale = sale.data().sale;
+                        appObj.idReserve = sale.data().idReserve.toString();
+                        appObj.billNumber = sale.data().billNumber.toString();  
+                        reserves.push(appObj);
+                        appObj = {};
+                    }
+                });
+                
+            });
+        });
+    });
+    return reserves;
 }
 
 

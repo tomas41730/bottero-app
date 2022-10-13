@@ -118,14 +118,15 @@ export function uploadAlert(time, msg)
   });
 }
 
-export function createAlert2(msg, type)
+export async function createAlert2(msg, type)
 {
     if(type === 'success')
     {
       Swal.fire({
         icon: 'success',
         title: msg,
-        showConfirmButton: true
+        showConfirmButton: true,
+        allowOutsideClick: false
       });
     }
     else if(type === 'error')
@@ -133,8 +134,42 @@ export function createAlert2(msg, type)
       Swal.fire({
         icon: 'error',
         title: msg,
-        showConfirmButton: true
+        showConfirmButton: true,
+        allowOutsideClick: false
       });
     }
 
+}
+
+export async function notification(url)
+{
+  //'http://freesoundeffect.net/sites/default/files/ding-collect-01-sound-effect-88180542.mp3'
+  Swal.fire({
+    icon: 'error',
+    title: 'Producto no registrado',
+    showConfirmButton: true,
+    didOpen: function() {
+      var zippi = new Audio(url)
+      zippi.play();
+    }
+  })
+}
+
+export function confirmAlert(msg, description, icon, callback1) 
+{
+    Swal.fire({
+        title: msg,
+        icon: icon,
+        text: description,
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Guardar Cambios',
+        cancelButtonText: 'Cancelar',
+      }).then((result) => {
+        if (result.isConfirmed) {
+            createAlert('Eliminacion realizada con exito.')
+              callback1()
+        }
+      })
 }

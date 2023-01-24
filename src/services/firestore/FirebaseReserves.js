@@ -1,19 +1,18 @@
 import db from '../firebase'
 import { actualDate  } from '../firebase';
 import { getProductById, updateProductStock } from './FirebaseProducts';
-import { format, parseISO } from 'date-fns';
+import { getProductByIdShoeAndStore } from './FirebaseProducts2';
 
 export async function addReserve(sale, customer, total, totalDiscount, totalQuantity, efective, payment, store, dateReserve)
 {
     console.log('dateReserve1: ' + dateReserve );
-    console.log('date1: ' + new Date(dateReserve).toLocaleDateString('es-BO'));
-    console.log('time1: ' + new Date(dateReserve).toLocaleTimeString('es-BO'));
+    console.log('date1: ' + new Date(Date.now).toLocaleDateString('es-BO'));
+    console.log('time1: ' + new Date(Date.now).toLocaleTimeString('es-BO'));
     const newDoc = db.collection('reserves').doc();
     let saleOrder = [];
     let billNumber = 0;
     let paymentHistory = [];
-    let dateStr = format(parseISO(dateReserve), 'dd/M/yyyy');
-    let firstPay = { date: new Date(dateStr).toLocaleDateString('en-BO'), time: new Date(Date.now()).toLocaleTimeString('es-BO'), amount: parseInt(efective), payment: payment, store: store }
+    let firstPay = { date: new Date(Date.now()).toLocaleDateString('es-BO'), time: new Date(Date.now()).toLocaleTimeString('es-BO'), amount: parseInt(efective), payment: payment, store: store }
     paymentHistory.push(firstPay);
     sale.forEach( doc => {
         let product = {
@@ -28,7 +27,6 @@ export async function addReserve(sale, customer, total, totalDiscount, totalQuan
         }
         saleOrder.push(product);
     });
-    let date = format(parseISO(dateReserve), 'M/d/yyyy');
     await db.collection('counters').doc('reserves').get().then( docSnapshot => 
         {           
             db.collection('reserves').doc(newDoc.id).set(
@@ -42,8 +40,9 @@ export async function addReserve(sale, customer, total, totalDiscount, totalQuan
                     total: total - totalDiscount,
                     totalDiscount: totalDiscount,
                     store: store,
-                    date: actualDate.Timestamp.fromDate(new Date(date)),
-                    shortDate: dateReserve,
+                    date: actualDate.FieldValue.serverTimestamp(),
+                    shortDate: new Date(Date.now).toLocaleDateString('es-BO'),
+                    time: new Date(Date.now).toLocaleTimeString('es-BO'),
                     customerPhone: customer.phone,
                     name: customer.name,
                     totalQuantity: totalQuantity,
@@ -86,7 +85,7 @@ export function getReserves()
     return sales;
 }
 
-export function getEachReserve()
+export function getEachReserve1()
 {
     const reserves = [];
     db.collection('reserves').orderBy('date','desc').get()
@@ -136,6 +135,160 @@ export function getEachReserve()
     });
     return reserves;
 }
+export function getEachReserve()
+{
+    const sales = [];
+    db.collection('reserves').orderBy('date', 'desc').orderBy('idReserve', 'desc').get().then( snap => 
+    {
+        if(!snap.empty)
+        {
+            let cnt = 0;
+            snap.docs.forEach( doc => 
+            {
+                doc.data().sale.forEach( item => 
+                {   
+                    let obj = {};
+                    obj = doc.data();
+                    obj.idReserve = parseInt(doc.data().idReserve);
+                    obj.idReserve2 = 'R' + doc.data().idReserve;
+                    obj.date = doc.data().date && doc.data().date.toDate().toLocaleDateString('es-BO') +' '+ doc.data().date.toDate().toLocaleTimeString('en-US');
+                    obj.itemId = item.id;
+                    obj.idShoe = item.idShoe;
+                    obj.itemPrice = item.price;
+                    obj.itemDiscount = item.discount;
+                    obj.finalPrice = item.price - item.discount;
+                    obj.itemQuantity = item.quantity;
+                    obj.isCompleted = obj.payed == obj.total;
+                    
+                    getProductByIdShoeAndStore(item.idShoe, item.store).then( prod => 
+                    {
+                        
+                        if(prod.exists)
+                        {
+                            // console.log(prod.data());
+                            obj.cnt = parseInt(cnt++);
+                            obj.store = prod.data().store;
+                            obj.reference = prod.data().reference;
+                            obj.size = prod.data().size;
+                            obj.color = prod.data().color;
+                            obj.material = prod.data().material; 
+                            obj.condition = prod.data().condition; 
+                            obj.photo = prod.data().photo;
+                            sales.push(obj);
+                        }
+                        else
+                        {
+                            console.log('El producto no existe.');
+                        }
+                    });
+                });
+            });
+        }
+    });
+    return sales;
+}
+export function getEachReserveByStore(store)
+{
+    const sales = [];
+    db.collection('reserves').where('store', '==', store).orderBy('date', 'desc').orderBy('idReserve', 'desc').get().then( snap => 
+    {
+        if(!snap.empty)
+        {
+            let cnt = 0;
+            snap.docs.forEach( doc => 
+            {
+                doc.data().sale.forEach( item => 
+                {   
+                    let obj = {};
+                    obj = doc.data();
+                    obj.idReserve = parseInt(doc.data().idReserve);
+                    obj.idReserve2 = 'R' + doc.data().idReserve;
+                    obj.date = doc.data().date && doc.data().date.toDate().toLocaleDateString('es-BO') +' '+ doc.data().date.toDate().toLocaleTimeString('en-US');
+                    obj.itemId = item.id;
+                    obj.idShoe = item.idShoe;
+                    obj.itemPrice = item.price;
+                    obj.itemDiscount = item.discount;
+                    obj.finalPrice = (item.price - item.discount) * item.quantity;
+                    obj.itemQuantity = item.quantity;
+                    obj.isCompleted = obj.payed == obj.total;
+                    
+                    getProductByIdShoeAndStore(item.idShoe, item.store).then( prod => 
+                    {
+                        
+                        if(prod.exists)
+                        {
+                            obj.cnt = parseInt(cnt++);
+                            obj.store = prod.data().store;
+                            obj.reference = prod.data().reference;
+                            obj.size = prod.data().size;
+                            obj.color = prod.data().color;
+                            obj.material = prod.data().material;
+                            obj.condition = prod.data().condition; 
+                            obj.photo = prod.data().photo;
+                            sales.push(obj);
+                        }
+                        else
+                        {
+                            console.log('El producto no existe.');
+                        }
+                    });
+                });
+            });
+        }
+    });
+    return sales;
+}
 
+export function getEachReserveById(id)
+{
+    const sales = [];
+    db.collection('reserves').where('id', '==', id).orderBy('idReserve', 'desc').get().then( snap => 
+    {
+        if(!snap.empty)
+        {
+            let cnt = 0;
+            snap.docs.forEach( doc => 
+            {
+                doc.data().sale.forEach( item => 
+                {   
+                    let obj = {};
+                    obj = doc.data();
+                    obj.idReserve = parseInt(doc.data().idReserve);
+                    obj.idReserve2 = 'R' + doc.data().idReserve;
+                    obj.date = doc.data().date && doc.data().date.toDate().toLocaleDateString('es-BO') +' '+ doc.data().date.toDate().toLocaleTimeString('en-US');
+                    obj.itemId = item.id;
+                    obj.idShoe = item.idShoe;
+                    obj.itemPrice = item.price;
+                    obj.itemDiscount = item.discount;
+                    obj.finalPrice = (item.price - item.discount) * item.quantity;
+                    obj.itemQuantity = item.quantity;
+                    obj.isCompleted = obj.payed == obj.total;
+                    
+                    getProductByIdShoeAndStore(item.idShoe, item.store).then( prod => 
+                    {
+                        
+                        if(prod.exists)
+                        {
+                            obj.cnt = parseInt(cnt++);
+                            obj.store = prod.data().store;
+                            obj.reference = prod.data().reference;
+                            obj.size = prod.data().size;
+                            obj.color = prod.data().color;
+                            obj.material = prod.data().material;
+                            obj.condition = prod.data().condition; 
+                            obj.photo = prod.data().photo;
+                            sales.push(obj);
+                        }
+                        else
+                        {
+                            console.log('El producto no existe.');
+                        }
+                    });
+                });
+            });
+        }
+    });
+    return sales;
+}
 
 

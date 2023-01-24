@@ -10,7 +10,7 @@
                         ID del Producto: {{ editedItem.id }}
                         <v-spacer></v-spacer>
                         <v-list-item-avatar  max-width="70px">
-                        <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
+                        <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2Flogo.png?alt=media&token=ec2d4d87-9102-4ae0-8328-e52154af033d"></v-img>
                         </v-list-item-avatar>
                     </v-toolbar>
                     
@@ -200,6 +200,9 @@ export default {
             { text: 'Apellido', value: 'lastname' },
             { text: 'Codigo', value: 'idSale' },
             { text: 'Referencia', value: 'reference' },
+            { text: 'Talla', value: 'size' },
+            { text: 'Color', value: 'color' },
+            { text: 'Material', value: 'material' },
             { text: 'Precio', value: 'itemPrice' },
             { text: 'Pares', value: 'itemQuantity' },
             { text: 'Descuentos', value: 'itemDiscount' },
@@ -306,6 +309,7 @@ export default {
         },
         onStoreChanged()
         {
+            this.totalAmount = 0;
             let dateAux = this.date ? format(parseISO(this.date), 'd/M/yyyy') : '';
             this.sales = getEachSale1(this.store, dateAux);
             getTotalAmountByDay(this.store, dateAux).then( snap => 
@@ -326,6 +330,7 @@ export default {
         },
         onDateChanged()
         {
+            this.totalAmount = 0;
             let dateAux = this.date ? format(parseISO(this.date), 'd/M/yyyy') : '';
             this.sales = getEachSale1(this.store, dateAux);
             getTotalAmountByDay(this.store, dateAux).then( snap => 

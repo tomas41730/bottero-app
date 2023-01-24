@@ -173,6 +173,7 @@
 
 
 <script>
+// import db from '../services/firebase';
 
   export default {
     name: 'Home',
@@ -189,7 +190,16 @@
     methods:{
       initialize()
       {
-        
+        // db.collection('productsAux').where('store', '==', 'Heroinas').get().then( snap =>
+        // {
+        //   if(!snap.empty)
+        //   {
+        //     snap.forEach( doc => 
+        //     {
+        //       db.collection('productsAux').doc(doc.id).update({stock: 0})
+        //     })
+        //   }
+        // });
       }
     }
   }

@@ -228,6 +228,9 @@ export function getEachSale1(store, date)
                         if(prod.exists)
                         {
                             obj.reference = prod.data().reference; 
+                            obj.material = prod.data().material;
+                            obj.color = prod.data().color;
+                            obj.size = prod.data().size;
                             sales.push(obj);
                         }
                         else
@@ -248,7 +251,7 @@ export function getEachSale(store)
     {
         if(!snap.empty)
         {
-            let cnt = 0;
+            let cnt = 1;
             snap.docs.forEach( doc => 
             {
                 doc.data().sale.forEach( item => 
@@ -263,7 +266,8 @@ export function getEachSale(store)
                     obj.itemDiscount = item.discount;
                     obj.finalPrice = item.price - item.discount;
                     obj.itemQuantity = item.quantity;
-                    
+                    obj.idSale = parseInt(doc.data().idSale);
+                    obj.idSaleStr = 'V' + doc.data().idSale;
                     getProductByIdShoeAndStore(item.idShoe, store).then( prod => 
                     {
                         
@@ -272,6 +276,11 @@ export function getEachSale(store)
                             // console.log(prod.data());
                             obj.cnt = parseInt(cnt++);
                             obj.reference = prod.data().reference; 
+                            obj.material = prod.data().material;
+                            obj.color = prod.data().color;
+                            obj.size = prod.data().size;
+                            obj.condition = prod.data().condition;
+                            obj.photo = prod.data().photo;
                             sales.push(obj);
                         }
                         else

@@ -1,5 +1,30 @@
 <template>
     <v-container grid-list-md fluid>
+        <v-dialog v-model="getPermission" max-width="600px" persistent>
+            <v-card>
+            <v-card-title>
+                No cuenta con los permisos necesarios para esta sección
+            </v-card-title>
+            <v-col align="center" justify="center">  
+                <v-container bg fill-height grid-list-md text-xs-center>
+                <v-layout row wrap align-center>
+                <v-flex>
+                    <v-list-item-avatar tile size="300">
+                    <v-img :src="imgDenied"></v-img>
+                    </v-list-item-avatar>
+                    <v-flex>
+                </v-flex>
+                </v-flex>
+                </v-layout>
+            </v-container>
+            </v-col>
+            <v-card-actions>
+                <v-btn color="primary" depressed block to="/">
+                Volver al menu principal
+                </v-btn>
+            </v-card-actions>
+            </v-card>
+        </v-dialog>
         <v-card class="mx-auto" outlined>
             <v-toolbar dark color="black" class="mb-1">
                 <v-row>
@@ -9,7 +34,7 @@
             <v-row>
                 <v-col align="center" justify="center">
                     <v-toolbar dark color="black">
-                        <v-radio-group v-model="radioGroup" row mandatory>
+                        <v-radio-group v-model="radioGroup" @change="columnConfig" row mandatory>
                             <v-row>
                                 <v-radio label="Todo" value="all" @click="onRadioButtonChanged"></v-radio>
                                 <v-radio label="Stocks" value="stock" @click="onRadioButtonChanged"></v-radio>
@@ -50,15 +75,22 @@
             <v-row>
                 <v-col>
                     <v-card class="mx-auto" outlined>
-                        <v-data-table :headers="headers" :items="products" :search="search" sort-by="name" class="elevation-1">
+                        <v-data-table v-model="selected" :headers="headers" :items="products" :search="search" item-key="id" class="elevation-1" show-select checkbox-color="primary">
                         <template v-slot:top>
                             <v-toolbar dark color="black" class="mb-1">
                                 <v-col>
                                     <v-toolbar-title>
-                                        <v-btn v-if="radioGroup == 'all'" :disabled="btnEditProducts" color="primary" depressed elevation="2" @click="changeDialog = true" hidden>Editar Informacion de los calzados</v-btn>
+                                        <v-row v-if="radioGroup == 'all'">
+                                            <v-col>
+                                                <v-text-field v-model="idShoeSearch" clearable flat solo-inverted hide-details @input="onIdShoeChanged2" label="Codigo de Barras"></v-text-field>
+                                            </v-col>
+                                            <v-col>
+                                                <v-btn :disabled="btnEditProducts" color="primary" depressed elevation="2" @click="showChangeDialog" hidden>Editar Informacion de los calzados</v-btn>
+                                            </v-col>
+                                        </v-row>
                                         <v-row v-else-if="radioGroup == 'stock'">
                                             <v-col>
-                                                <v-text-field v-model="idShoeSearch" clearable flat solo-inverted hide-details @input="onIdShoeChanged" label="Codigo de Barras"></v-text-field>
+                                                <v-text-field v-model="idShoeSearch" clearable flat solo-inverted hide-details @input="onIdShoeChanged1" label="Codigo de Barras"></v-text-field>
                                             </v-col>
                                             <v-col>
                                                 <v-menu :disabled="btnEditProducts || conditionSearch == 'Todas'" bottom right>
@@ -94,18 +126,18 @@
                             Reset
                             </v-btn>
                         </template>
-                        <template v-slot:[`item.actions`]="{ item }">
-                        <v-btn fab dark x-small color="error" @click="removeOneProductStock(item)">
-                            <v-icon dark>
-                                mdi-minus
-                            </v-icon>
-                        </v-btn>
-                        <v-btn fab dark x-small color="success" @click="addProductBtn(item)">
-                            <v-icon dark>
-                                mdi-plus
-                            </v-icon>
-                        </v-btn>
-                    </template>
+                        <template v-if="radioGroup == 'stock'" v-slot:[`item.actions`]="{ item }">
+                            <v-btn fab dark x-small color="error" @click="removeOneProductStock(item)">
+                                <v-icon dark>
+                                    mdi-minus
+                                </v-icon>
+                            </v-btn>
+                            <v-btn fab dark x-small color="success" @click="addProductBtn(item)">
+                                <v-icon dark>
+                                    mdi-plus
+                                </v-icon>
+                            </v-btn>
+                        </template>
                         </v-data-table>
                     </v-card>
                 </v-col>     
@@ -140,8 +172,36 @@
                                     <v-text-field v-model="editedItem.pDiscount" label="Descuento Límite" suffix="Bs."></v-text-field>
                                 </v-col>
                             </v-row>
+                            <template>
+                                <v-container class="px-0" fluid>
+                                    <v-row>
+                                        <v-col cols="12" sm="4" md="4">
+                                            <v-switch v-model="swColor" :label="`Color: ${swColor ? 'On' : 'Off'}`"></v-switch>
+                                        </v-col>
+                                        <v-col cols="12" sm="8" md="8">
+                                            <v-text-field v-if="swColor" v-model="tfColor" label="Color"></v-text-field>
+                                        </v-col>
+                                    </v-row>
+                                    <v-row>
+                                        <v-col cols="12" sm="4" md="4">
+                                            <v-switch v-model="swMaterial" :label="`Material: ${swMaterial ? 'On' : 'Off'}`"></v-switch>
+                                        </v-col>
+                                        <v-col cols="12" sm="8" md="8">
+                                            <v-text-field v-if="swMaterial" v-model="tfMaterial" label="Material"></v-text-field>
+                                        </v-col>
+                                    </v-row>
+                                    <v-row>
+                                        <v-col cols="12" sm="4" md="4">
+                                            <v-switch v-model="swSize" :label="`Talla: ${swSize ? 'On' : 'Off'}`"></v-switch>
+                                        </v-col>
+                                        <v-col cols="12" sm="8" md="8">
+                                            <v-text-field v-if="swSize" v-model="tfSize" label="Talla"></v-text-field>
+                                        </v-col>
+                                    </v-row>
+                                </v-container>
+                            </template>
                             <v-card-actions>
-                                <v-btn color="primary" depressed elevation="2" @click="saveGeneralChanges">
+                                <v-btn color="primary" depressed elevation="2" @click="saveGeneralChanges1">
                                 Guardar
                                 </v-btn>
                             </v-card-actions>
@@ -159,7 +219,7 @@
                                 {{ editedItem.reference + ' - ' + editedItem.brand + ' - ' + editedItem.color + ' - ' + editedItem.material }}
                             <v-spacer></v-spacer>
                             <v-list-item-avatar  max-width="70px">
-                                <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
+                                <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2Flogo.png?alt=media&token=ec2d4d87-9102-4ae0-8328-e52154af033d"></v-img>
                             </v-list-item-avatar>
                         </v-toolbar>
                         <v-col cols="12" sm="12" md="12">
@@ -208,6 +268,7 @@ export default
         brands: [],
         colors: [],
         materials: [],
+        selected: [],
         radioGroup: 'all',
         loader: null,
         loading: false,
@@ -268,7 +329,7 @@ export default
             photo: '',
             observation: 'Sin Observación'
         },
-        headers: [
+        headersAux: [
             { text: 'Acciones', value: 'actions' },
             { text: 'Stock', value: 'stock' },
             { text: 'Codigo de Barras', value: 'id' },
@@ -286,10 +347,22 @@ export default
             { text: 'Des. Ocasional %', value: 'oDiscount' },
             { text: 'Condicion', value: 'condition' },
         ],
+        headers: [],
+        swMaterial: false,
+        swColor: false,
+        swSize: false,
+        tfColor: '',
+        tfMaterial: '',
+        tfSize: '',
+        imgDenied: "https://library.kissclipart.com/20180829/ute/kissclipart-user-deletion-clipart-computer-icons-user-c7234fb3b6916925.png",
     }),
 
     computed: 
     {
+        getPermission()
+        {
+            return  this.$store.state.userRole != 'Admin';
+        }
     },
 
     watch: 
@@ -314,6 +387,7 @@ export default
         initialize () 
         {
             console.log(this.radioGroup);   
+            this.columnConfig();
         },
         onRadioButtonChanged()
         {
@@ -357,7 +431,7 @@ export default
                 }
             });
         },
-        onIdShoeChanged()
+        onIdShoeChanged1()
         {
             console.log(this.idShoeSearch);
             const productIndex = this.products.findIndex( item => item.idShoe === this.idShoeSearch);
@@ -365,6 +439,19 @@ export default
             {
                 this.addProduct(this.products[productIndex]);
                 this.idShoeSearch = '';
+            }
+        },
+        onIdShoeChanged2()
+        {
+            console.log(this.idShoeSearch);
+            const productIndex = this.products.findIndex( item => item.idShoe === this.idShoeSearch);
+            if(productIndex > -1)
+            {
+                const selectedIndex = this.selected.findIndex( item => item.idShoe === this.idShoeSearch);
+                if(selectedIndex < 0)
+                {
+                    this.selected.push(this.products[productIndex]);
+                }
             }
         },
         searchForGeneralChanges()
@@ -453,6 +540,26 @@ export default
                     }
                 });
             }
+            this.changeDialog = false;
+        },
+        async saveGeneralChanges1()
+        {
+            
+            this.selected.forEach( item => 
+            {
+                
+                this.setEditedItem(item);
+                console.log(item.id);
+                console.log(this.editedItem.id);
+                updateProductBC1(item);
+                // this.searchForGeneralChanges();
+            });
+            this.swColor = false;
+            this.swMaterial = false;
+            this.swSize = false;
+            this.tfColor = '';
+            this.tfMaterial = '';
+            this.tfSize = '';
             this.changeDialog = false;
         },
         async savePhotoChanges()
@@ -547,6 +654,48 @@ export default
         resetStocks()
         {
             this.products.forEach(item => item.stock = 0);
+        },
+        columnConfig()
+        {
+            if(this.radioGroup == 'all' || this.radioGroup == 'photo')
+            {
+                this.headers = this.headersAux.filter( elem => elem.text != 'Acciones');
+            }
+            else
+            {
+               this.headers = this.headersAux;
+            }
+        },
+        showChangeDialog()
+        {
+            this.changeDialog = true; 
+            console.log(this.selected);
+        },
+        setEditedItem(item)
+        {
+            item.reference = this.editedItem.reference;
+            item.category = this.editedItem.category;
+            item.brand = this.editedItem.brand;
+            item.description = this.editedItem.description;
+            item.price = this.editedItem.price;
+            item.purchasePrice = this.editedItem.purchasePrice;
+            item.oDiscount = this.editedItem.oDiscount;
+            item.pDiscount = this.editedItem.pDiscount;
+            if(this.swColor)
+            {
+                item.color = this.tfColor;
+                console.log('on');
+            }
+            if(this.swMaterial)
+            {
+                item.material = this.tfMaterial; 
+                console.log('on');
+            }
+            if(this.swSize)
+            {
+                item.size = this.tfSize;
+                console.log('on');
+            }
         }
     },
   }

@@ -10,7 +10,7 @@
                         Informacion del producto: {{ editedItem.id }}
                         <v-spacer></v-spacer>
                         <v-list-item-avatar  max-width="70px">
-                        <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
+                        <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2Flogo.png?alt=media&token=ec2d4d87-9102-4ae0-8328-e52154af033d"></v-img>
                         </v-list-item-avatar>
                     </v-toolbar>
                     
@@ -45,7 +45,7 @@
                 </v-card>
             </v-dialog>
         </template> 
-        <v-data-table :headers="saleHeaders" :items="this.sales" :search="search" :custom-sort="customSort" multi-sort item-key="cnt" class="elevation-1">
+        <v-data-table :headers="saleHeaders" :items="this.sales" :search="search" multi-sort item-key="cnt" class="elevation-1">
             <template v-slot:top>
                 <v-toolbar dark color="black" class="mb-1">
                     <v-row>
@@ -86,7 +86,7 @@
                     <v-card>
                         <v-row>
                             <v-col align="center" justify="center" cols="12" sm="12" md="12">
-                                <v-data-table locale="es-BO" :items-per-page="5" :headers="headersSaleOrder" :items="saleOrder" :search="search" sort-by="name" class="elevation-1">
+                                <v-data-table locale="es-BO" :items-per-page="5" :headers="headersSaleOrder" :items="saleOrder" sort-by="name" item-key="cnt" class="elevation-1">
                                     <template v-slot:top>
                                         <v-card>
                                             <v-toolbar dark color="black">
@@ -218,7 +218,7 @@
 </template>
 <script>
 import { getCustomerByCi } from '../services/firestore/FirebaseCustomers';
-import { getEachSale, getEachSaleByID } from '../services/firestore/FirebaseSales'
+import { getEachSale } from '../services/firestore/FirebaseSales'
 import { getStoresNames } from '../services/firestore/FirebaseStores';
 export default {
     data: ()  => 
@@ -243,17 +243,21 @@ export default {
         },
         saleHeaders: [
             { text: 'Acciones', value: 'actions', sortable: false },
-            { text: '#', align: 'start', value: 'cnt' },
+            // { text: '#', align: 'start', value: 'cnt' },
+            { text: 'Codigo', value: 'idSale' },
             { text: 'Sucursal', align: 'start', sortable: true, value: 'store' },
             { text: 'Fecha', align: 'start', sortable: true, value: 'date' },
             { text: 'NIT', value: 'customerCi' },
             { text: 'Apellido', value: 'lastname' },
-            { text: 'Codigo', value: 'idSale' },
             { text: 'Referencia', value: 'reference' },
+            { text: 'Talla', value: 'size' },
+            { text: 'Color', value: 'color' },
+            { text: 'Material', value: 'material' },
             { text: 'Precio', value: 'itemPrice' },
             { text: 'Pares', value: 'itemQuantity' },
             { text: 'Descuentos', value: 'itemDiscount' },
             { text: 'Total', value: 'finalPrice' },
+            { text: 'Codigo', value: 'idSaleStr' },
         ],
         saleHeaders1: [
             { text: 'Acciones', value: 'actions', sortable: false },
@@ -278,16 +282,16 @@ export default {
         headersSaleOrder: [
             { text: 'Foto', value: 'photo' },
             { text: 'C. Barras', align: 'start', sortable: true, value: 'idShoe'},
-            { text: 'Referencia', value: 'referece' },
+            { text: 'Referencia', value: 'reference' },
             { text: 'Talla', value: 'size' },
             { text: 'Color', value: 'color' },
             { text: 'Material', value: 'material' },
             { text: 'Condición', value: 'condition' },
             { text: 'Sucursal', value: 'store' },
-            { text: 'Precio', value: 'price' },
-            { text: 'Cantidad', value: 'quantity' },
-            { text: 'Descuento', value: 'discount' },
-            { text: 'Monto', value: 'subtotal' },
+            { text: 'Precio', value: 'itemPrice' },
+            { text: 'Cantidad', value: 'itemQuantity' },
+            { text: 'Descuento', value: 'itemDiscount' },
+            { text: 'Monto', value: 'finalPrice' },
             // { text: 'ID', value: 'id' }
         ],
         itemsPerPage: 5,
@@ -298,7 +302,7 @@ export default {
     computed:
     {
         getStore()
-        {
+        { 
             return this.$store.state.userStore;
         },
         getPermission()
@@ -335,7 +339,7 @@ export default {
             // this.saleInfo.total = item.total;
             // this.saleInfo.exchange = item.exchange;
             this.saleDate = item.date;
-            this.saleOrder = getEachSaleByID(item.id);
+            this.saleOrder = this.sales.filter( doc => doc.id == item.id);
             this.saleInfo.exchange = item.exchange;
             getCustomerByCi(item.customerCi).then( doc => 
             {
@@ -365,34 +369,6 @@ export default {
             console.log("Clooooooooooooooooooseeeee");
             this.dialog = false;
         },
-        customSort(items, index, isDesc) 
-        {
-            items.sort((a, b) => {
-                if (index[0]=='date') {
-                    if (isDesc[0]) {
-                        return new Date(b[index]) - new Date(a[index]);
-                    } 
-                    else 
-                    {
-                        return new Date(a[index]) - new Date(b[index]);
-                    }
-                }
-                else 
-                {
-                    if(typeof a[index] !== 'undefined'){
-                    if (!isDesc[0]) 
-                    {
-                        return a[index].toLowerCase().localeCompare(b[index].toLowerCase());
-                    }
-                    else 
-                    {
-                        return b[index].toLowerCase().localeCompare(a[index].toLowerCase());
-                    }
-                    }
-                }
-            });
-            return items;
-        }
     },
   }
 </script>

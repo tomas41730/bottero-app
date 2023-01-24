@@ -234,23 +234,30 @@ export async function getProductsByRefBrandColorMaterial(ref, brand, color, mate
     return products
 }
 // Updates
-export async function updateProductBC1(id, product)
+export async function updateProductBC1(product)
 {
-    await db.collection('productsAux').doc(id).get().then( doc => 
+    await db.collection('productsAux').doc(product.id).get().then( doc => 
     {
         if(doc.exists)
         {
-            db.collection('productsAux').doc(id).update(
+            db.collection('productsAux').doc(product.id).update(
             {
                 reference: product.reference,
                 category: product.category,
-                color: product.color,
+                brand: product.brand,
                 description: product.description,
                 price: product.price,
                 purchasePrice: product.purchasePrice,
                 oDiscount: product.oDiscount,
                 pDiscount: product.pDiscount,
-                material: product.material
+                material: product.material,
+                color: product.color,
+                size: product.size
+            })
+            .catch(function(error) 
+            {
+                console.error("Error saving product: ", error);
+                createAlert('Error al registrar','error');
             });
         }
         else

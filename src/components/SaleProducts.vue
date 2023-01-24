@@ -10,7 +10,7 @@
             Informacion del producto: {{ editedItem.id }}
             <v-spacer></v-spacer>
             <v-list-item-avatar  max-width="70px">
-              <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
+              <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2Flogo.png?alt=media&token=ec2d4d87-9102-4ae0-8328-e52154af033d"></v-img>
             </v-list-item-avatar>
           </v-toolbar>
           <v-card-text>
@@ -199,7 +199,7 @@
                                         Informacion del Cliente: {{ customer.name + " " + customer.lastname }}
                                         <v-spacer></v-spacer>
                                         <v-list-item-avatar  max-width="70px">
-                                          <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
+                                          <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2Flogo.png?alt=media&token=ec2d4d87-9102-4ae0-8328-e52154af033d"></v-img>
                                         </v-list-item-avatar>
                                       </v-toolbar>
                                       <v-card-text>
@@ -294,7 +294,7 @@
                                                     FACTURACIÓN - {{ this.store }}
                                                   <v-spacer></v-spacer>
                                                   <v-list-item-avatar  max-width="70px">
-                                                    <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
+                                                    <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2Flogo.png?alt=media&token=ec2d4d87-9102-4ae0-8328-e52154af033d"></v-img>
                                                   </v-list-item-avatar>
                                                 </v-toolbar>
                                                 <v-card-text>
@@ -334,7 +334,7 @@
                                                     Reservas - {{ this.store }}
                                                   <v-spacer></v-spacer>
                                                   <v-list-item-avatar  max-width="70px">
-                                                    <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
+                                                    <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2Flogo.png?alt=media&token=ec2d4d87-9102-4ae0-8328-e52154af033d"></v-img>
                                                   </v-list-item-avatar>
                                                 </v-toolbar>
                                                 <v-card-text>

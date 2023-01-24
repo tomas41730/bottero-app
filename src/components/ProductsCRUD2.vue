@@ -10,7 +10,7 @@
                     Informacion del producto: {{ editedItem.id }}
                     <v-spacer></v-spacer>
                     <v-list-item-avatar  max-width="70px">
-                    <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
+                    <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2Flogo.png?alt=media&token=ec2d4d87-9102-4ae0-8328-e52154af033d"></v-img>
                     </v-list-item-avatar>
                 </v-toolbar>
                 <v-card-text>
@@ -56,7 +56,7 @@
                     MÓDULO DE INVENTARIO
                     <v-spacer></v-spacer>
                     <v-list-item-avatar  max-width="70px">
-                    <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
+                    <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2Flogo.png?alt=media&token=ec2d4d87-9102-4ae0-8328-e52154af033d"></v-img>
                     </v-list-item-avatar>
                 </v-toolbar>
                 <v-card>
@@ -291,12 +291,39 @@
                         </v-data-table>
                     </v-card>
                 </v-tab-item>
+                <v-tab-item>
+                    <v-col>
+                        <v-row>
+                            <v-btn color="primary" @click="getQuantitiesByStore" block>
+                                Actualizar
+                            </v-btn>
+                        </v-row>
+                        <v-row>
+                            <v-col justify="center" align="right" md="6">
+                                <div class="text-h4">Heroinas: </div>
+                                <div class="text-h4">144: </div>
+                                <div class="text-h4">151: </div>
+                                <div class="text-h4">Quillacollo: </div>
+                                <div class="text-h4">Deposito: </div>
+                            </v-col>
+                            <v-divider vertical></v-divider>
+                            <v-col justify="center" md="3">
+                                <div class="text-h4">{{ storeInfo.heroinas }}</div>
+                                <div class="text-h4">{{ storeInfo.c144 }}</div>
+                                <div class="text-h4">{{ storeInfo.c151 }}</div>
+                                <div class="text-h4">{{ storeInfo.quillacollo }}</div>
+                                <div class="text-h4">{{ storeInfo.deposito }}</div>
+                            </v-col>
+                        </v-row>
+                    </v-col>
+                </v-tab-item>
             </v-tabs-items>
     </v-card>
     </v-container>  
 </template>
 <script>
 import { createAlert2 } from '../services/Alerts';
+import db from '../services/firebase';
 import { getColorNames } from '../services/firestore/FirabaseColors';
 import { getBrandNames } from '../services/firestore/FirebaseBrands';
 import { getCategoryNames } from '../services/firestore/FirebaseCategories';
@@ -311,7 +338,7 @@ export default
     data: () => 
     ({
         tab: null,
-        items: ['Registrar Producto', 'Cambios Recientes','General'],
+        items: ['Registrar Producto', 'Cambios Recientes','General', 'Calzados por Sucursal'],
         text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
         image: null,
         imgDenied: "https://library.kissclipart.com/20180829/ute/kissclipart-user-deletion-clipart-computer-icons-user-c7234fb3b6916925.png",
@@ -365,7 +392,7 @@ export default
             pDiscount: null,
             oDiscount: 0,
             condition: '',
-            photo: 'https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e',
+            photo: 'https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2Flogo.png?alt=media&token=ec2d4d87-9102-4ae0-8328-e52154af033d',
             observation: 'Sin Observación',
         },
         headers: [
@@ -406,7 +433,8 @@ export default
         productsChanges: [],
         dialogInfo: false,
         clickDelete: false,
-        auxStock: 0
+        auxStock: 0,
+        storeInfo: {}
     }),
 
     computed: 
@@ -439,6 +467,7 @@ export default
         initialize()
         {
             this.reset();
+            this.getQuantitiesByStore();
         },
         viewItem(item)
         {
@@ -653,6 +682,43 @@ export default
             });
             return items;
         },
+        getQuantitiesByStore()
+        {
+            this.storeInfo = { heroinas: 0, c144: 0, c151: 0, quillacollo: 0, deposito: 0};
+            db.collection('productsAux').get().then( snap => 
+            {
+            if(!snap.empty)
+            {
+                snap.docs.forEach( doc => 
+                {
+                    if(!isNaN(doc.data().stock))
+                    {
+                        if(doc.data().store === "Heroinas")
+                        {
+                        this.storeInfo.heroinas = this.storeInfo.heroinas + parseInt(doc.data().stock);
+                        }
+                        if (doc.data().store === "144")
+                        {
+                        this.storeInfo.c144 = this.storeInfo.c144 + parseInt(doc.data().stock);
+                        }
+                        if (doc.data().store === "151")
+                        {
+                        this.storeInfo.c151 = this.storeInfo.c151 + parseInt(doc.data().stock);
+                        }
+                        if (doc.data().store === "Quillacollo")
+                        {
+                        this.storeInfo.quillacollo = this.storeInfo.quillacollo + parseInt(doc.data().stock);
+                        }
+                        if (doc.data().store === "Deposito")
+                        {
+                        this.storeInfo.deposito = this.storeInfo.deposito + parseInt(doc.data().stock);
+                        }
+                    }
+                });
+                console.log(this.storeInfo);
+            }
+            });
+        }
     }
 }
 </script>

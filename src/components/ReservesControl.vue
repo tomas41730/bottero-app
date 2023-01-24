@@ -7,10 +7,10 @@
                         <v-btn icon dark @click="dialogInfo = false; discountClick = true">
                             <v-icon>mdi-close</v-icon>
                         </v-btn>
-                        Informacion del producto: {{ editedItem.id }}
+                        Informacion del producto: {{ editedItem.store + ' - ' + editedItem.idShoe }}
                         <v-spacer></v-spacer>
                         <v-list-item-avatar  max-width="70px">
-                        <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
+                        <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/botteroadmin.appspot.com/o/utilities%2Flogo.png?alt=media&token=ec2d4d87-9102-4ae0-8328-e52154af033d"></v-img>
                         </v-list-item-avatar>
                     </v-toolbar>
                     
@@ -45,7 +45,7 @@
                 </v-card>
             </v-dialog>
         </template> 
-        <v-data-table :headers="saleHeaders" :items="this.sales" :search="search" item-key="name" :custom-sort="customSort" multi-sort class="elevation-1">
+        <v-data-table :headers="saleHeaders" :items="this.reserves" :search="search" item-key="cnt" multi-sort class="elevation-1">
             <template v-slot:top>
                 <v-toolbar dark color="black" class="mb-1">
                     <v-row>
@@ -56,21 +56,8 @@
                 </v-toolbar>
                 <v-toolbar dark color="black" class="mb-1">
                     <v-row>
-                        <v-col>
-                            <v-menu v-model="menu2" :close-on-content-click="true" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-text-field small clearable flat solo-inverted hide-details label="Desde" prepend-inner-icon="mdi-calendar" readonly v-bind="attrs" v-on="on"></v-text-field>
-                                </template>
-                                <v-date-picker locale="es-BO" v-model="search" @input="menu2 = false"></v-date-picker>
-                            </v-menu>
-                        </v-col>
-                        <v-col>
-                            <v-menu v-model="menu2" :close-on-content-click="true" :nudge-right="40" transition="scale-transition" offset-y min-width="auto">
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-text-field small clearable flat solo-inverted hide-details label="Hasta" prepend-inner-icon="mdi-calendar" readonly v-bind="attrs" v-on="on"></v-text-field>
-                                </template>
-                                <v-date-picker locale="es-BO" v-model="search" @input="menu2 = false"></v-date-picker>
-                            </v-menu>
+                        <v-col cols="3" sm="3" md="3">
+                            <v-select small flat solo-inverted hide-details @change="onStoreChanged" v-model="store" :items="stores" :readonly="getPermission" label="Sucursal"></v-select>
                         </v-col>
                         <v-col>
                             <v-text-field v-model="search" clearable flat solo-inverted hide-details prepend-inner-icon="mdi-magnify" label="Search"></v-text-field>
@@ -78,8 +65,8 @@
                     </v-row>
                 </v-toolbar>
             </template>
-            <template v-slot:[`item.isDebtPayed`]="{ item }">
-                <v-icon color="green" v-if="item.isDebtPayed">mdi-check-circle</v-icon> 
+            <template v-slot:[`item.isCompleted`]="{ item }">
+                <v-icon color="green" v-if="item.isCompleted">mdi-check-circle</v-icon> 
                 <v-icon color="red" v-else>mdi-close-circle</v-icon>
             </template> 
             <template v-slot:[`item.actions`]="{ item }">
@@ -91,15 +78,15 @@
                     <v-card>
                         <v-row>
                             <v-col align="center" justify="center" cols="12" sm="12" md="12">
-                                <v-data-table locale="es-BO" :items-per-page="5" :headers="headersSaleOrder" :items="saleOrder" :search="search" sort-by="name" class="elevation-1">
+                                <v-data-table locale="es-BO" :items-per-page="5" :headers="headersSaleOrder" :items="reserveOrder" item-key="cnt" sort-by="cnt" class="elevation-1">
                                     <template v-slot:top>
                                         <v-card>
                                             <v-toolbar dark color="black">
                                                 <v-btn icon dark @click="closeDialog">
                                                 <v-icon>mdi-close</v-icon>
                                                 </v-btn>
-                                                <v-toolbar-title class="text-h4" v-text="'Reserva realizada el día: ' + saleDate"></v-toolbar-title>
-                                                <v-icon color="green" v-if="saleInfo.isDebtPayed">mdi-check-circle</v-icon> 
+                                                <v-toolbar-title class="text-h4" v-text="'Reserva realizada el día: ' + reserveDate"></v-toolbar-title>
+                                                <v-icon color="green" v-if="reserveInfo.isCompleted">mdi-check-circle</v-icon> 
                                                 <v-icon color="red" v-else>mdi-close-circle</v-icon>
                                             </v-toolbar>
                                             <v-divider></v-divider>
@@ -130,18 +117,14 @@
                                     </v-toolbar>
                                     <v-col>
                                         <v-row>
-                                            <v-col justify="center" align="right" md="6">
-                                                <div class="text-h4">NIT: </div>
-                                                <div class="text-h4">Apellido: </div>
+                                            <v-col justify="center" align="right" md="4">
                                                 <div class="text-h4">Nombre: </div>
-                                                <div class="text-h4">Telefono: </div>
+                                                <div class="text-h4">Telf.: </div>
                                             </v-col>
                                             <v-divider vertical></v-divider>
-                                            <v-col justify="center" md="6">
-                                                <div class="text-h4">{{ customer.ci }}</div>
-                                                <div class="text-h4">{{ customer.lastname }}</div>
-                                                <div class="text-h4">{{ customer.name }}</div>
-                                                <div class="text-h4">{{ customer.phone }}</div>
+                                            <v-col justify="center" md="8">
+                                                <div class="text-h4">{{ reserveInfo.name }}</div>
+                                                <div class="text-h4">{{ reserveInfo.customerPhone }}</div>
                                             </v-col>
                                         </v-row>
                                     </v-col>
@@ -163,11 +146,11 @@
                                             </v-col>
                                             <v-divider vertical></v-divider>
                                             <v-col justify="center" md="3">
-                                                <div class="text-h4">{{ saleInfo.subtotal }}</div>
-                                                <div class="text-h4">{{ saleInfo.totalDiscount }}</div>
-                                                <div class="text-h4">{{ saleInfo.total }}</div>
-                                                <div class="text-h4">{{ saleInfo.payed }}</div>
-                                                <div class="text-h4">{{ saleInfo.balance }}</div>
+                                                <div class="text-h4">{{ reserveInfo.subtotal }}</div>
+                                                <div class="text-h4">{{ reserveInfo.totalDiscount }}</div>
+                                                <div class="text-h4">{{ reserveInfo.total }}</div>
+                                                <div class="text-h4">{{ reserveInfo.payed }}</div>
+                                                <div class="text-h4">{{ reserveInfo.balance }}</div>
                                             </v-col>
                                         </v-row>
                                     </v-col>
@@ -182,7 +165,7 @@
                                     </v-toolbar>
                                     <v-col>
                                         <v-row>
-                                            <v-data-table :headers="payHistoryHeaders" :items="saleInfo.paymentHistory" item-key="name" class="elevation-1">    
+                                            <v-data-table :headers="payHistoryHeaders" :items="reserveInfo.paymentHistory" item-key="cnt" class="elevation-1">    
                                                 <template v-slot:no-data>
                                                     <v-btn  ref="btnReset" color="primary" @click="initialize">
                                                         Reset
@@ -191,52 +174,28 @@
                                             </v-data-table>
                                         </v-row>
                                         <v-row>
-                                            <v-col>
-                                                <v-btn block color="primary" @click="addPay"> Agregar Pago </v-btn>
+                                            <v-col v-if="parseInt(reserveInfo.balance) <= 0">
+                                                <v-toolbar dark color="success" class="mb-1">
+                                                    <v-toolbar-title class="text-h4">
+                                                        PAGADO
+                                                        <v-icon color="prymary" large>mdi-check-circle</v-icon> 
+                                                    </v-toolbar-title>
+                                                </v-toolbar>
                                             </v-col>
+                                            <v-col v-else>
+                                                <v-form ref="form" v-model="valid" lazy-validation>
+                                                    <v-text-field id="sublabel" x-large suffix="Bs." v-model="amount" @click="onAmountChanged" :rules="[v => !!v || 'Requerido']" required></v-text-field>
+                                                    <v-select v-model="payment" :items="['Efectivo', 'Tarjeta', 'QR']" label="Forma de Pago" :rules="[v => !!v || 'Requerido']" required></v-select>
+                                                    <v-btn block color="primary" @click="addPay(item)" > Agregar Pago </v-btn>
+                                                </v-form>
+                                            </v-col>
+                                            
                                         </v-row>
                                     </v-col>
                                 </v-card>
                             </v-col>
                         </v-row>
                     </v-card>
-                    <v-dialog persistent v-model="payDialog" max-width="280px">
-                        <v-card>
-                            <v-toolbar color="black" dark>
-                                <v-btn icon dark @click="payDialog = false">
-                                <v-icon>mdi-close</v-icon>
-                                </v-btn>
-                                Reservas - {{ getStore }}
-                                <v-spacer></v-spacer>
-                                <v-list-item-avatar  max-width="70px">
-                                <v-img max-width="50px" src="https://firebasestorage.googleapis.com/v0/b/bottero-app-3a25c.appspot.com/o/utilities%2Flogo.png?alt=media&token=3104e203-0e98-4354-86d0-9aa05b5a290e"></v-img>
-                                </v-list-item-avatar>
-                            </v-toolbar>
-                            <v-card-text>
-                                <v-container>
-                                <v-row>
-                                    <v-col>
-                                    <v-col>
-                                        <v-radio-group v-model="radioGroup" row mandatory>
-                                        <v-col>
-                                            <v-row cols="2" sm="2" md="2">
-                                                <v-text-field v-model="amount" label="Monto"></v-text-field>
-                                            </v-row>
-                                            <v-row cols="2" sm="2" md="2">
-                                                <v-select v-model="payment" :items="['Efectivo', 'Tarjeta', 'QR']" label="Forma de Pago"></v-select>
-                                            </v-row>
-                                        </v-col>
-                                        </v-radio-group>
-                                    </v-col>
-                                    <v-col>
-                                        <v-btn @click="finalizePay" dark color="primary">Finalizar Pago</v-btn>
-                                    </v-col>
-                                    </v-col>
-                                </v-row>
-                                </v-container>
-                            </v-card-text>
-                        </v-card>
-                    </v-dialog>
                 </v-dialog>
             </template>
             <template v-slot:no-data>
@@ -248,24 +207,23 @@
     </v-container>
 </template>
 <script>
-import { createAlert2 } from '../services/Alerts';
-import { getCustomerByCi } from '../services/firestore/FirebaseCustomers';
-import { getProductById } from '../services/firestore/FirebaseProducts';
-import { getEachReserve, updateReservePays } from '../services/firestore/FirebaseReserves';
+// import { getProductByIdShoe } from '../services/firestore/FirebaseProducts2';
+
+import { getEachReserve, getEachReserveByStore, updateReservePays } from '../services/firestore/FirebaseReserves';
+import { getStoresNames } from '../services/firestore/FirebaseStores';
 
 export default {
     data: ()  => 
     ({
-        expanded: [],
-        singleExpand: false,
-        sales: [],
-        saleOrder: [],
+        reserves: [],
+        reserveOrder: [],
+        stores: [],
         dialog: false,
         dialogInfo: false,
         search: '',
-        saleDate: '//',
+        reserveDate: '//',
         editedItem: {},
-        saleInfo: {},
+        reserveInfo: {},
         customer: {
             ci: '',
             name: '',
@@ -285,27 +243,29 @@ export default {
             { text: 'Material', value: 'material' },
             { text: 'Telefono', value: 'customerPhone' },
             { text: 'Nombre', value: 'name' },
-            { text: 'Subtotal', value: 'subtotal' },
-            { text: 'Descuentos', value: 'totalDiscount' },
+            { text: 'Precio', value: 'itemPrice' },
+            { text: 'Descuentos', value: 'itemDiscount' },
+            { text: 'Subtotal', value: 'finalPrice' },
             { text: 'Total', value: 'total' },
             { text: 'Pagado', value: 'payed' },
             { text: 'Saldo', value: 'balance' },
-            { text: 'Estado', value: 'isDebtPayed' },
+            { text: 'Estado', value: 'isCompleted' },
+            { text: '#', value: 'idReserve2' },
             
         ],
         headersSaleOrder: [
             { text: 'Foto', value: 'photo' },
-            { text: 'C. Barras', align: 'start', sortable: true, value: 'id'},
+            { text: 'C. Barras', align: 'start', sortable: true, value: 'idShoe'},
             { text: 'Referencia', value: 'reference' },
             { text: 'Talla', value: 'size' },
             { text: 'Color', value: 'color' },
             { text: 'Material', value: 'material' },
             { text: 'Condición', value: 'condition' },
             { text: 'Sucursal', value: 'store' },
-            { text: 'Precio', value: 'price' },
-            { text: 'Cantidad', value: 'quantity' },
-            { text: 'Descuento', value: 'discount' },
-            { text: 'Monto', value: 'subtotal' },
+            { text: 'Precio', value: 'itemPrice' },
+            { text: 'Cantidad', value: 'itemQuantity' },
+            { text: 'Descuento', value: 'itemDiscount' },
+            { text: 'Monto', value: 'finalPrice' },
             // { text: 'ID', value: 'id' }
         ],
         payHistoryHeaders: [
@@ -321,14 +281,19 @@ export default {
         payment: '',
         payDialog: false,
         store: '',
-        amount: null
+        amount: 0,
+        valid: true,
     }),
     computed:
     {
         getStore()
         {
-          return this.$store.state.userStore;
+            return this.$store.state.userStore;
         },
+        getPermission()
+        {
+            return  this.$store.state.userRole != 'Admin';
+        }
     },
     watch:
     {
@@ -342,112 +307,71 @@ export default {
     {
         initialize()
         {
-            this.sales = getEachReserve();
-            console.log(this.sales);
-        },
-        expandedProducts(item) 
-        {
-            let products = '';
-            item.sale.forEach( doc => {
-                products = products+ 'Cod: ' + doc.idShoe + ' * Ref: ' + doc.reference + ' * Cantidad: ' + doc.quantity + ' * Subtotal: ' + doc.subtotal + '\n';
-            });
-            return products;
-        },
-        viewSale(item)
-        {
-            this.saleOrder = []
-            this.dialog = true;
-            this.saleInfo = item;
-            this.saleDate = item.date;
-            item.sale.forEach( prod => 
-            {
-                getProductById(prod.id).then( doc => 
-                {
-                    if(doc.exists)
-                    {
-                        let product = {...doc.data(), quantity: prod.quantity, discount: prod.discount, subtotal: prod.subtotal }
-                        this.saleOrder.push(product);
-                    }
-                });
-                
-            });
-            getCustomerByCi(item.customerCi).then( doc => 
-            {
-                if(doc.exists)
-                {
-                    this.customer = doc.data();
-                }
-                else
-                {
-                    this.customer.lastname = 'Sin Nombre';
-                    this.customer.ci = 0;
-                }
-            });
-            console.log(this.saleOrder);
+            this.stores = getStoresNames();
+            this.stores.push('Todas');
+            this.store = this.$store.state.userStore;
+            this.reserves = getEachReserveByStore(this.store);
         },
         viewItem(item)
         {
             this.editedItem = item;
             this.dialogInfo = true;
-            console.log(item);
+        },
+        viewSale(item)
+        {
+            
+            this.reserveDate = item.date;
+            this.reserveInfo = item;
+            this.reserveOrder = this.reserves.filter( doc => doc.idReserve == item.idReserve);
+            console.log(this.reserveInfo);
+            console.log(this.reserveOrder);
+            this.dialog = true;
         },
         closeDialog()
         {
-            console.log("Clooooooooooooooooooseeeee");
+            // this.onStoreChanged();
             this.dialog = false;
         },
         addPay()
         {
-            if(this.saleInfo.balance == 0)
+            if(this.$refs.form.validate())
             {
-                createAlert2('Esta reserva fue pagada en su totalidad. No se pueden añadir mas pagos.', 'error');
+                let date = new Date(Date.now()).toLocaleDateString('es-BO');
+                let time = new Date(Date.now()).toLocaleTimeString('es-BO');
+                console.log('validado');
+                this.reserveInfo.paymentHistory.push({ amount: this.amount, date: date, payment: this.payment, store: this.store, time: time});
+                console.log(this.reserveInfo);
+                this.reserveInfo.balance = parseInt(this.reserveInfo.balance) - parseInt(this.amount);
+                this.reserveInfo.payed = parseInt(this.reserveInfo.payed) + parseInt(this.amount);
+                this.reserves.filter( item => item.idReserve == this.reserveInfo.idReserve).map( doc => 
+                {
+                    doc.balance = this.reserveInfo.balance;
+                    doc.payed = this.reserveInfo.payed;
+                    doc.isCompleted = this.reserveInfo.balance <= 0;
+                })
+                updateReservePays(this.reserveInfo);
+                this.$refs.form.reset();
+            }
+            
+        },
+        onStoreChanged()
+        {
+            if(this.store == 'Todas')
+            {
+                this.reserves = getEachReserve();
             }
             else
             {
-                this.store = this.$store.state.userStore;
-                this.payDialog = true;
+                this.reserves = getEachReserveByStore(this.store);
             }
         },
-        finalizePay()
+        onAmountChanged()
         {
-            this.saleInfo.payed = this.saleInfo.payed + parseInt(this.amount);
-            this.saleInfo.balance = this.saleInfo.balance - parseInt(this.amount);
-            let pay = { date: new Date().toLocaleDateString('es-BO'), time: new Date().toLocaleTimeString('es-BO'), amount: this.amount, payment: this.payment, store: this.store }
-            this.saleInfo.paymentHistory.push(pay);
-            console.log(this.saleInfo)
-            updateReservePays(this.saleInfo);
-            this.payDialog = false;
-            const indexSale = this.sales.indexOf(item => item.id = this.saleInfo.id);
-            this.sales[indexSale] = this.saleInfo;
-            this.saleInfo = {};
-        },
-        customSort(items, index, isDesc) 
-        {
-            items.sort((a, b) => {
-                if (index[0]=='due') {
-                    if (isDesc[0]) {
-                        return new Date(b[index]) - new Date(a[index]);
-                    } 
-                    else 
-                    {
-                        return new Date(a[index]) - new Date(b[index]);
-                    }
-                }
-                else 
-                {
-                    if(typeof a[index] !== 'undefined'){
-                    if (!isDesc[0]) 
-                    {
-                        return a[index].toLowerCase().localeCompare(b[index].toLowerCase());
-                    }
-                    else 
-                    {
-                        return b[index].toLowerCase().localeCompare(a[index].toLowerCase());
-                    }
-                    }
-                }
-            });
-            return items;
+            console.log(this.amount);
+            if(this.amount == 0)
+            {
+                this.amount = null;
+            }
         }
     }
   }
